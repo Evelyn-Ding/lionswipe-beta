@@ -135,7 +135,10 @@ create trigger enforce_edu_email_trigger
 -- "Late Night": {...} } matching SAMPLE_MENUS in api/menus.js. Written only by the
 -- scraper (using the service role key, which bypasses RLS) — anon/authenticated
 -- users can only read. api/menus.js falls back to curated sample data if today's
--- row is missing (scraper hasn't run yet, or it failed).
+-- row is missing (scraper hasn't run yet, or it failed). Rows older than 7 days
+-- are deleted by the scraper itself (cleanupOldMenus() in scrape-menus.js) on
+-- every run — Postgres/Supabase has no built-in row expiry, so this table would
+-- otherwise grow forever.
 create table if not exists public.daily_menus (
   date date primary key,
   menus jsonb not null,

@@ -96,6 +96,7 @@ async function main() {
   }
 
   const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' }); // YYYY-MM-DD
+  await cleanupOldMenus(today);
   const menus = extractMenus(html, today);
   if (!menus) {
     console.log('\n⚠️  Page loaded, but dining_terms/dining_nodes/menu_data weren\'t found in it — the site\'s markup may have changed. Check scripts/scrape-output/page.html for `var menu_data`.');
@@ -203,6 +204,33 @@ function stableStringify(value) {
     return `{${keys.map(k => JSON.stringify(k) + ':' + stableStringify(value[k])).join(',')}}`;
   }
   return JSON.stringify(value);
+}
+
+const MENU_RETENTION_DAYS = 7;
+
+// daily_menus has no built-in expiry (Supabase/Postgres doesn't auto-delete
+// rows), so prune anything older than a week on every run — cheap enough to
+// just do unconditionally rather than tracking whether it's "time yet".
+async function cleanupOldMenus(todayStr) {
+  const url = process.env.SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) return; // upsertToSupabase already logs the missing-config case
+
+  const cutoff = new Date(todayStr);
+  cutoff.setUTCDate(cutoff.getUTCDate() - MENU_RETENTION_DAYS);
+  const cutoffStr = cutoff.toISOString().slice(0, 10);
+
+  const { createClient } = require('@supabase/supabase-js');
+  const supabase = createClient(url, key);
+  const { error, count } = await supabase
+    .from('daily_menus')
+    .delete({ count: 'exact' })
+    .lt('date', cutoffStr);
+  if (error) {
+    console.warn('Failed to delete old daily_menus rows:', error.message);
+  } else if (count) {
+    console.log(`Deleted ${count} daily_menus row(s) older than ${cutoffStr} (${MENU_RETENTION_DAYS}-day retention).`);
+  }
 }
 
 async function upsertToSupabase(menus, dateStr) {
