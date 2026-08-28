@@ -1,7 +1,11 @@
 # LionSwipe
 Story: https://lionswipe.lovable.app/
+
 Demo: https://lionswipe.vercel.app/
+
 Video: https://youtu.be/IzkPfH7cWFA
+
+
 Columbia dining menus, an off-campus food search backed by Claude, and meal-swipe /
 spending tracking. Frontend is a single `index.html` (no build step); `api/` holds
 Vercel serverless functions; Supabase handles auth + data.
