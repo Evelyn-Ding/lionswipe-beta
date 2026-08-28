@@ -4,7 +4,7 @@ create table if not exists public.meal_logs (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users(id) on delete cascade,
   ts timestamptz not null default now(),
-  type text not null check (type in ('hall','out')),
+  type text not null check (type in ('hall','out','grocery')),
   name text not null,
   swipes int,        -- set when type = 'hall'
   amount numeric,    -- set when type = 'out'
@@ -71,15 +71,18 @@ create policy "Users can update their own plan"
 
 grant select, insert, update on public.meal_plans to authenticated;
 
--- Per-user spending goal (fully optional, set/edited from the Settings modal's
--- "Spending Goal" tab — never prompted on signup like meal_plans is). One row per
--- user; no row simply means no goal is set. `period` controls which window
--- index.html compares actual spend against ("today"/"this week"/etc).
+-- Per-user spending goals (fully optional, set/edited from the Settings modal's
+-- "Spending Goal" / "Grocery Budget" tabs — never prompted on signup like
+-- meal_plans is). One row per user per category ('out' = eating out, 'grocery');
+-- no row for a category simply means no goal is set for it. `period` controls
+-- which window index.html compares actual spend against ("today"/"this week"/etc).
 create table if not exists public.spending_goals (
-  user_id uuid primary key references auth.users(id) on delete cascade,
+  user_id uuid not null references auth.users(id) on delete cascade,
+  category text not null default 'out' check (category in ('out','grocery')),
   amount numeric not null,
   period text not null check (period in ('day','week','month','semester')),
-  updated_at timestamptz not null default now()
+  updated_at timestamptz not null default now(),
+  primary key (user_id, category)
 );
 
 alter table public.spending_goals enable row level security;
@@ -127,37 +130,6 @@ create trigger enforce_edu_email_trigger
   for each row
   execute function public.enforce_edu_email();
 
--- Ask Roarie conversation history (see the "Ask Roarie for ideas" panel in index.html).
--- One row per user, mirroring meal_plans/spending_goals — `messages` is the raw
--- Anthropic-format array ([{role, content}, ...]) so it can be replayed straight back
--- into /api/chat.js on the next turn with no reshaping. Guest conversations live in
--- localStorage and migrate here on sign-in, same as guest logs/plan/spending goal.
-create table if not exists public.roarie_chats (
-  user_id uuid primary key references auth.users(id) on delete cascade,
-  messages jsonb not null,
-  updated_at timestamptz not null default now()
-);
-
-alter table public.roarie_chats enable row level security;
-
-create policy "Users can view their own Roarie chat"
-  on public.roarie_chats for select
-  using (auth.uid() = user_id);
-
-create policy "Users can insert their own Roarie chat"
-  on public.roarie_chats for insert
-  with check (auth.uid() = user_id);
-
-create policy "Users can update their own Roarie chat"
-  on public.roarie_chats for update
-  using (auth.uid() = user_id);
-
-create policy "Users can delete their own Roarie chat"
-  on public.roarie_chats for delete
-  using (auth.uid() = user_id);
-
-grant select, insert, update, delete on public.roarie_chats to authenticated;
-
 -- Scraped daily menus (see scripts/scrape-menus.js). One row per calendar day; the
 -- `menus` JSON is shaped like { Breakfast: {...}, Lunch: {...}, Dinner: {...},
 -- "Late Night": {...} } matching SAMPLE_MENUS in api/menus.js. Written only by the
@@ -180,39 +152,6 @@ grant select on public.daily_menus to anon, authenticated;
 
 -- No insert/update/delete policy for anon/authenticated — only the service role
 -- (used by scripts/scrape-menus.js, never exposed to the browser) can write here.
-
--- Curated off-campus restaurant pool for Roarie (see scripts/scrape-restaurants.js
--- and api/chat.js). Roarie's live web_search verification per chat turn (real
--- address + real current menu prices, never guessed) is accurate but slow — this
--- table holds the same standard of verified data for a fixed pool of popular
--- Morningside Heights restaurants, refreshed on a schedule instead of once per
--- message, so api/chat.js can usually answer from a fast DB read and only fall
--- back to live search for restaurants outside the pool. `menu_items` is
--- [{item, price}], matching the shape Roarie's JSON reply already uses. Written
--- only by the scraper (service role key, bypasses RLS) — anon/authenticated
--- users can only read.
-create table if not exists public.curated_restaurants (
-  id text primary key,
-  name text not null,
-  address text,
-  cuisine text,
-  walk_minutes int,
-  menu_items jsonb not null default '[]'::jsonb,
-  note text,
-  active boolean not null default true,
-  verified_at timestamptz
-);
-
-alter table public.curated_restaurants enable row level security;
-
-create policy "Anyone can read curated restaurants"
-  on public.curated_restaurants for select
-  using (true);
-
-grant select on public.curated_restaurants to anon, authenticated;
-
--- No insert/update/delete policy for anon/authenticated — only the service role
--- (used by scripts/scrape-restaurants.js, never exposed to the browser) can write here.
 
 -- Swipe Market (see the "Swipe Market" page in index.html, modeled loosely on
 -- swipemarketcu.com). Signed-in students post "selling N swipes" or "buying N

@@ -107,55 +107,11 @@
   .hallCard ul{list-style:none;padding:0;margin:0;font-size:14px;line-height:1.55;}
   .hallCard .closedTxt{font-family:'Figtree',ui-sans-serif,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;font-size:13px;color:var(--muted);}
 
-  /* ---- Not appetizing toggle ---- */
-  .toggleWrap{text-align:center;margin:26px 0;}
-  #notAppBtn{padding:11px 34px;border-radius:24px;font-size:14px;}
-  .toggleSub{font-family:'Figtree',ui-sans-serif,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;font-size:11px;color:var(--muted);margin-top:6px;}
-
-  #searchSection{display:none;}
-  #searchSection.show{display:block;}
-
-  .filters{display:flex;justify-content:center;gap:8px;margin:14px 0;flex-wrap:wrap;}
-  .filterBtn{font-family:'Figtree',ui-sans-serif,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;font-size:12px;padding:6px 14px;border-radius:16px;border:1px solid var(--line);background:var(--card);color:var(--ink);}
-  .filterBtn.active{background:var(--columbia-blue);border-color:var(--navy);color:var(--navy);font-weight:600;}
-
-  .chatRow{display:flex;gap:8px;align-items:center;background:var(--card);border:1.5px solid var(--navy);border-radius:26px;padding:6px 8px 6px 18px;max-width:640px;margin:0 auto 24px;}
-  .chatRow input{flex:1;border:none;outline:none;font-family:'Figtree',ui-sans-serif,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;font-size:14px;background:transparent;color:var(--ink);}
-  ::placeholder{color:var(--muted);opacity:1;}
-  .chatRow button{background:var(--navy);color:var(--primary-fg);border:none;width:36px;height:36px;border-radius:50%;font-size:15px;}
-
-  /* ---- Not Appetizing: two panels ---- */
-  .notAppPanels{display:flex;gap:18px;align-items:stretch;}
-  .notAppPanel{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;flex:1 1 0;min-width:0;}
-  .roariePanel{flex:1.4 1 0;}
-  @media (max-width:760px){
-    .notAppPanels{flex-direction:column;}
-  }
-  .notAppHeadRow{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:4px;}
-  .notAppPanel h3{margin:0;color:var(--navy);font-weight:700;font-size:19px;}
-  .roarieQ{margin:14px 0 2px;color:var(--navy);font-weight:700;font-size:16px;}
-  .roarieSub{font-size:11.5px;color:var(--muted);margin-bottom:10px;}
+  /* ---- Enter Your Own Meal ---- */
+  .enterMealPanel{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;margin-bottom:22px;}
+  .enterMealPanel h3{margin:0;color:var(--navy);font-weight:700;font-size:19px;}
   .enterMealSub{font-size:13px;color:var(--muted);margin:6px 0 16px;}
-
-  .roarieLog{display:flex;flex-direction:column;gap:10px;margin-top:16px;}
-  .roarieTurn{display:flex;flex-direction:column;gap:10px;}
-  .roarieMsg{font-family:'Figtree',ui-sans-serif,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;font-size:13.5px;line-height:1.45;padding:9px 14px;border-radius:14px;max-width:85%;}
-  .roarieMsg.user{align-self:flex-end;background:var(--navy);color:var(--primary-fg);}
-  .roarieMsg.bot{align-self:flex-start;background:rgba(184,212,232,.25);color:var(--ink);}
-  .roarieCards{display:flex;flex-direction:column;gap:12px;}
-
-  .resultCard{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;display:flex;gap:14px;cursor:pointer;}
-  .resultCard:hover{border-color:var(--navy);}
-  .resultCard .num{font-size:20px;color:var(--gold);font-weight:600;min-width:24px;}
-  .resultCard h4{margin:0 0 3px;color:var(--navy);font-size:16px;}
-  .resultCard .meta{font-family:'Figtree',ui-sans-serif,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;font-size:12px;color:var(--muted);margin-bottom:4px;}
-  .resultCard p{margin:0 0 6px;font-size:13.5px;line-height:1.4;}
-  .resultCard .menuItems{list-style:none;padding:0;margin:4px 0 0;font-size:13px;line-height:1.6;}
-  .resultCard .menuItems li:before{content:"— ";color:var(--gold);}
-  .resultCard.cook{background:var(--secondary);border-color:var(--gold);}
-  .resultCard .price{font-weight:700;color:var(--navy);white-space:nowrap;}
-
-  .loading{text-align:center;font-family:'Figtree',ui-sans-serif,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;font-size:13px;color:var(--muted);padding:20px;}
+  ::placeholder{color:var(--muted);opacity:1;}
 
   /* ---- Modal ---- */
   .overlay{position:fixed;inset:0;background:rgba(0,20,40,.4);display:none;align-items:center;justify-content:center;z-index:50;}
@@ -262,6 +218,13 @@
   .sw.target{background:repeating-linear-gradient(45deg,var(--gold),var(--gold) 3px,var(--secondary) 3px,var(--secondary) 6px);}
   .chartLegend{display:flex;gap:16px;flex-wrap:wrap;font-family:'Figtree',ui-sans-serif,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;font-size:11px;color:var(--muted);margin:-2px 0 14px;}
   .chartLegend div{display:flex;align-items:center;gap:6px;}
+  .hallFreqList{display:flex;flex-direction:column;gap:10px;}
+  .hallFreqRow{display:flex;align-items:center;gap:10px;}
+  .hallFreqLabel{width:150px;flex-shrink:0;font-family:'Figtree',ui-sans-serif,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;font-size:12.5px;color:var(--ink);text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .hallFreqTrack{flex:1;background:var(--secondary);border-radius:6px;height:20px;}
+  .hallFreqFill{background:var(--navy);height:100%;border-radius:6px;min-width:3px;}
+  .hallFreqVal{font-family:'Figtree',ui-sans-serif,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;font-size:12px;color:var(--muted);min-width:18px;}
+  .hallFreqEmpty{border-top:1.5px solid var(--line);padding-top:16px;text-align:center;color:var(--muted);font-size:13px;}
   .configWarning{background:var(--danger-bg);border:1px solid var(--danger);color:var(--danger);font-family:'Figtree',ui-sans-serif,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;font-size:13px;padding:12px 16px;border-radius:8px;margin-bottom:18px;}
 
   /* ---- Dining plan options ---- */
@@ -305,7 +268,7 @@
           <button class="btn util" id="settingsBtn">&#9881; Profile</button>
           <button class="btn util" id="themeToggleBtn">&#9789; Dark</button>
         </div>
-        <div class="marketNudgeWrap">
+        <div class="marketNudgeWrap flagMarket">
           <button class="btn solid util" id="marketBtn">Swipe Market &rarr;</button>
           <div class="marketNudge util">Buy and sell swipes here!</div>
         </div>
@@ -322,40 +285,10 @@
 
     <div class="hallGrid" id="hallGrid"></div>
 
-    <div class="toggleWrap">
-      <button class="btn solid" id="notAppBtn">Not Appetizing?</button>
-      <div class="toggleSub">Click here for more options</div>
-    </div>
-
-    <div id="searchSection">
-      <div class="notAppPanels">
-        <div class="notAppPanel roariePanel">
-          <div class="notAppHeadRow">
-            <h3>Ask Roarie for ideas</h3>
-            <button class="btn util" id="roarieNewChatBtn">Reset Chat</button>
-          </div>
-          <h4 class="roarieQ">What do you feel like eating?</h4>
-          <div class="roarieSub util">Enter cravings, meal ideas, or what you don't want to eat</div>
-          <div class="chatRow util">
-            <input id="chatInput" placeholder="e.g. mac and cheese and bbq brisket&hellip;">
-            <button id="sendBtn">&#10148;</button>
-          </div>
-          <div class="filters" id="filters">
-            <button class="filterBtn" data-f="u20">Under $20</button>
-            <button class="filterBtn" data-f="u30">Under $30</button>
-            <button class="filterBtn" data-f="w5">&lt;5 min walk</button>
-            <button class="filterBtn" data-f="w10">&lt;10 min walk</button>
-          </div>
-          <div class="roarieLog" id="roarieLog"></div>
-          <div class="loading" id="loadingMsg" style="display:none;">Roarie is asking around campus...</div>
-        </div>
-
-        <div class="notAppPanel">
-          <h3>Enter Your Own Meal</h3>
-          <div class="enterMealSub util">Already know where you ate? Skip the chat and log it directly.</div>
-          <button class="btn solid util" id="enterMealBtn" style="width:100%;">+ Log a Meal</button>
-        </div>
-      </div>
+    <div class="enterMealPanel">
+      <h3>Enter Your Own Meal</h3>
+      <div class="enterMealSub util">Log an eating-out purchase or a grocery run.</div>
+      <button class="btn solid util" id="enterMealBtn" style="width:100%;">+ Log a Meal</button>
     </div>
   </div>
 
@@ -382,12 +315,32 @@
       </div>
       <div class="scrollBars" id="moneyChart"></div>
     </div>
+    <div class="statGrid" id="statGrid3"></div>
+    <div class="chartBlock">
+      <h4>Grocery Spending / Week &mdash; scroll for history &amp; target pace</h4>
+      <div class="chartLegend">
+        <div><span class="sw" style="background:var(--navy);"></span>Spent on groceries</div>
+        <div><span class="sw target"></span>Target spend to hit your grocery budget</div>
+      </div>
+      <div class="scrollBars" id="groceryChart"></div>
+    </div>
     <div class="chartBlock">
       <h4>Dining Hall vs. Eating Out</h4>
       <div class="pieWrap">
         <svg id="pieSvg" width="160" height="160" viewBox="0 0 160 160"></svg>
         <div class="legend" id="pieLegend"></div>
       </div>
+    </div>
+    <div class="chartBlock">
+      <h4>Eating Out vs. Grocery Spending</h4>
+      <div class="pieWrap">
+        <svg id="spendPieSvg" width="160" height="160" viewBox="0 0 160 160"></svg>
+        <div class="legend" id="spendPieLegend"></div>
+      </div>
+    </div>
+    <div class="chartBlock">
+      <h4>Dining Halls Visited &mdash; top 9</h4>
+      <div class="hallFreqList" id="hallFreqChart"></div>
     </div>
     <div class="chartBlock">
       <h4>Meal History</h4>
@@ -454,7 +407,11 @@
 
 <div class="overlay" id="spendOverlay">
   <div class="modal">
-    <p class="util" style="font-size:13px;color:var(--muted);">Where did you eat?</p>
+    <div class="settingsTabs" id="spendCatTabs">
+      <button type="button" class="settingsTab active" data-cat="out">Eating Out</button>
+      <button type="button" class="settingsTab" data-cat="grocery">Grocery Shopping</button>
+    </div>
+    <p class="util" style="font-size:13px;color:var(--muted);" id="spendPlaceLabel">Where did you eat?</p>
     <input class="authField" id="spendPlaceName" placeholder="e.g. Chipotle">
     <p class="util" style="font-size:13px;color:var(--muted);">How much did you spend?</p>
     <input type="number" id="spendAmount" placeholder="$0.00" step="0.01">
@@ -486,6 +443,7 @@
     <div class="settingsTabs" id="settingsTabs">
       <button type="button" class="settingsTab active" data-tab="plan">Dining Plan</button>
       <button type="button" class="settingsTab" data-tab="spend">Spending Goal</button>
+      <button type="button" class="settingsTab" data-tab="grocery">Grocery Budget</button>
     </div>
 
     <div id="planTabPanel">
@@ -521,6 +479,22 @@
         <option value="semester">Semester</option>
       </select>
       <p style="font-size:11px;color:var(--muted);text-align:left;margin-top:-4px;">Leave the amount blank to skip / clear your spending goal.</p>
+    </div>
+
+    <div id="groceryTabPanel" style="display:none;">
+      <p style="font-size:13px;color:var(--muted);">Set a target for how much you spend on groceries, over whatever period works for you.</p>
+
+      <label style="display:block;text-align:left;font-size:12px;color:var(--muted);margin-bottom:4px;">Amount</label>
+      <input class="authField" id="groceryGoalAmount" type="number" min="0" step="0.01" placeholder="e.g. 50">
+
+      <label style="display:block;text-align:left;font-size:12px;color:var(--muted);margin-bottom:4px;">Per</label>
+      <select class="authField" id="groceryGoalPeriod">
+        <option value="day">Day</option>
+        <option value="week" selected>Week</option>
+        <option value="month">Month</option>
+        <option value="semester">Semester</option>
+      </select>
+      <p style="font-size:11px;color:var(--muted);text-align:left;margin-top:-4px;">Leave the amount blank to skip / clear your grocery budget.</p>
     </div>
 
     <div class="err" id="planErr" style="display:none;"></div>
@@ -627,17 +601,17 @@
 
     <div class="helpSection">
       <h4>What LionSwipe Does</h4>
-      <p>LionSwipe helps Columbia students get more out of their meal plan. It shows real Columbia dining hall menus, searches nearby off-campus restaurants and looks up their actual current prices, and tracks your dining swipes and off-campus spending so you always know where you stand for the semester.</p>
+      <p>LionSwipe helps Columbia students get more out of their meal plan. It shows real Columbia dining hall menus and tracks your dining swipes, eating-out spending, and grocery spending so you always know where you stand for the semester.</p>
     </div>
 
     <div class="helpSection">
       <h4>What Info We Ask For</h4>
-      <p>To track your plan, we ask how many swipes your meal plan has and when your semester starts and ends (or you can pick a preset plan). From there you just log dining hall swipes and off-campus purchases as you go, and you can optionally set a spending goal by day, week, month, or semester. You can use LionSwipe as a guest with no sign-up — your data stays in your browser until you create an account, at which point we offer to migrate it over.</p>
+      <p>To track your plan, we ask how many swipes your meal plan has and when your semester starts and ends (or you can pick a preset plan). From there you just log dining hall swipes, eating-out purchases, and grocery purchases as you go, and you can optionally set an eating-out budget and a grocery budget, each by day, week, month, or semester. You can use LionSwipe as a guest with no sign-up — your data stays in your browser until you create an account, at which point we offer to migrate it over.</p>
     </div>
 
     <div class="helpSection">
       <h4>The Problem We're Solving</h4>
-      <p>It's easy to lose track of how many meal swipes you have left, overspend on off-campus food without noticing, and not know what's actually on the dining hall menu until you're standing in line. LionSwipe puts real menus, real off-campus prices, and a running tally of swipes and spending in one place, so you can make quick, informed food decisions.</p>
+      <p>It's easy to lose track of how many meal swipes you have left, overspend on food without noticing, and not know what's actually on the dining hall menu until you're standing in line. LionSwipe puts real menus and a running tally of swipes and spending in one place, so you can make quick, informed food decisions.</p>
     </div>
 
     <div class="helpSection">
@@ -714,10 +688,16 @@ function weeksRemainingInSemester(now){
   return Math.max(1, Math.ceil((SEMESTER_END - now) / WEEK_MS));
 }
 
+// Swipe Market is fully built but hidden for this beta release (in-app messaging
+// needs more streamlining first) — flip to true to bring it back, no other changes
+// needed. See the .flagMarket class on the header button and the init toggle below.
+const FEATURES = { swipeMarket: false };
+
 let currentUser = null;   // supabase auth user
 let logs = [];            // rows from meal_logs for the current user
 let userPlan = null;      // { total_swipes, weekly_allowance } from meal_plans, or null until set
-let spendGoal = null;      // { amount, period } from spending_goals, or null until set — fully optional, never prompted
+let spendGoal = null;      // { amount, period } from spending_goals (category 'out'), or null until set — fully optional, never prompted
+let groceryGoal = null;    // { amount, period } from spending_goals (category 'grocery'), or null until set — fully optional, never prompted
 
 /* ---------------- Date/time (Columbia = America/New_York) ---------------- */
 function tick(){
@@ -788,235 +768,6 @@ function renderHalls(){
   });
 }
 
-/* ---------------- Not Appetizing toggle ---------------- */
-const searchSection = document.getElementById('searchSection');
-document.getElementById('notAppBtn').onclick = ()=>{
-  searchSection.classList.toggle('show');
-};
-
-/* ---------------- Filters ---------------- */
-const activeFilters = new Set();
-document.querySelectorAll('.filterBtn').forEach(btn=>{
-  btn.onclick = ()=>{
-    btn.classList.toggle('active');
-    const f = btn.dataset.f;
-    activeFilters.has(f) ? activeFilters.delete(f) : activeFilters.add(f);
-  };
-});
-
-/* ---------------- Grocery reference prices ----------------
-   Westside Market and Morton Williams don't expose a public price API and (like
-   dining.columbia.edu) sit behind bot protection that blocks a plain server-side
-   fetch, so these are manually curated sample prices near their real shelf prices.
-   Update this list by hand as prices drift, or wire it through /api/menus-style
-   endpoint if a scraping proxy becomes available. ---------------- */
-const GROCERY = [
-  {store:"Westside Market", item:"Boneless Chicken Breast (1lb)", price:5.99},
-  {store:"Westside Market", item:"Jasmine Rice (2lb)", price:4.49},
-  {store:"Morton Williams", item:"Corn Tortillas (12ct)", price:2.99},
-  {store:"Morton Williams", item:"Mixed Salad Greens", price:3.49},
-  {store:"Westside Market", item:"Eggs (dozen)", price:4.29},
-  {store:"Morton Williams", item:"Salsa", price:3.99}
-];
-function cookYourOwnCard(){
-  const picks = [...GROCERY].sort(()=>0.5-Math.random()).slice(0,3);
-  const total = picks.reduce((s,p)=>s+p.price,0).toFixed(2);
-  return {
-    isCook:true,
-    name:"Cook Your Own!",
-    meta:"Shopping list · Westside Market / Morton Williams",
-    items: picks.map(p=>`${p.item} — $${p.price.toFixed(2)} (${p.store})`),
-    price:`$${total}`
-  };
-}
-
-/* ---------------- Roarie: multi-turn food chat ----------------
-   Replaces the old one-shot search. `roarieMessages` is kept in the exact Anthropic
-   Messages API shape ([{role,content}, ...]) — that's the single source of truth: it's
-   what gets sent back to /api/chat.js each turn, what gets persisted (localStorage for
-   guests, the roarie_chats table once signed in), and what renderRoarieLog() replays to
-   rebuild the on-screen conversation. Assistant turns are stored as Roarie's raw JSON
-   text reply so the model gets back exactly what it said, with no lossy reshaping. */
-const GUEST_ROARIE_KEY = 'lionswipe_guest_roarie_chat';
-function loadGuestRoarieChat(){ try{ return JSON.parse(localStorage.getItem(GUEST_ROARIE_KEY)) || []; }catch(e){ return []; } }
-function saveGuestRoarieChat(msgs){ localStorage.setItem(GUEST_ROARIE_KEY, JSON.stringify(msgs)); }
-
-let roarieMessages = [];
-const roarieLogEl = document.getElementById('roarieLog');
-const loadingMsg = document.getElementById('loadingMsg');
-
-function parseRoarieContent(content){
-  let clean = (content||'').replace(/```json|```/g,'').trim();
-  const s = clean.indexOf('{'); const e = clean.lastIndexOf('}');
-  if(s!==-1 && e!==-1) clean = clean.slice(s, e+1);
-  try{ return JSON.parse(clean); }catch(err){ return { reply: content || "Here's what I found:", recommendations: [] }; }
-}
-
-function resultCardEl(p, num, onClick){
-  const card = document.createElement('div');
-  card.className = 'resultCard';
-  const itemsHtml = (p.menu_items||[]).map(mi=>`<li>${mi.item} — <b>${mi.price}</b></li>`).join('');
-  const addressHtml = p.address
-    ? `<a class="meta util" href="https://maps.google.com/?q=${encodeURIComponent(p.address)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">${p.address}</a>`
-    : '';
-  card.innerHTML = `<div class="num">${num}.</div>
-    <div style="flex:1;">
-      <h4>${p.name}</h4>
-      <div class="meta util">${p.walk||''}</div>
-      ${addressHtml}
-      <p>${p.note||''}</p>
-      <ul class="menuItems util">${itemsHtml}</ul>
-    </div>`;
-  card.onclick = onClick;
-  return card;
-}
-function cookYourOwnCardEl(num){
-  const cy = cookYourOwnCard();
-  const card = document.createElement('div');
-  card.className = 'resultCard cook';
-  card.innerHTML = `<div class="num">${num}.</div>
-    <div style="flex:1;">
-      <h4>${cy.name}</h4>
-      <div class="meta util">${cy.meta}</div>
-      <ul class="menuItems util">${cy.items.map(i=>`<li>${i}</li>`).join('')}</ul>
-    </div>
-    <div class="price">${cy.price}</div>`;
-  card.onclick = ()=> openSpendModal(cy.name);
-  return card;
-}
-
-function renderRoarieLog(){
-  roarieLogEl.innerHTML = '';
-  let turn = null;
-  roarieMessages.forEach(m=>{
-    if(m.role === 'user'){
-      turn = document.createElement('div');
-      turn.className = 'roarieTurn';
-      const bubble = document.createElement('div');
-      bubble.className = 'roarieMsg user';
-      bubble.textContent = m.content;
-      turn.appendChild(bubble);
-      roarieLogEl.appendChild(turn);
-    } else {
-      if(!turn){ turn = document.createElement('div'); turn.className = 'roarieTurn'; roarieLogEl.appendChild(turn); }
-      const parsed = parseRoarieContent(m.content);
-      const bubble = document.createElement('div');
-      bubble.className = 'roarieMsg bot';
-      bubble.textContent = parsed.reply || "Here's what I found:";
-      turn.appendChild(bubble);
-      const recs = parsed.recommendations || [];
-      if(recs.length){
-        const cardsWrap = document.createElement('div');
-        cardsWrap.className = 'roarieCards';
-        recs.forEach((p,i)=> cardsWrap.appendChild(resultCardEl(p, i+1, ()=> openSpendModal(p.name))));
-        cardsWrap.appendChild(cookYourOwnCardEl(recs.length+1));
-        turn.appendChild(cardsWrap);
-      }
-      turn = null;
-    }
-  });
-  window.scrollTo({ top: document.body.scrollHeight });
-}
-
-async function saveRoarieChat(){
-  if(!currentUser){ saveGuestRoarieChat(roarieMessages); return; }
-  if(!supabase) return;
-  const { error } = await supabase.from('roarie_chats').upsert({
-    user_id: currentUser.id, messages: roarieMessages, updated_at: new Date().toISOString()
-  });
-  if(error) console.error(error);
-}
-async function loadRoarieChat(){
-  if(!currentUser){ roarieMessages = loadGuestRoarieChat(); renderRoarieLog(); return; }
-  if(!supabase){ roarieMessages = []; renderRoarieLog(); return; }
-  const { data, error } = await supabase.from('roarie_chats').select('*').eq('user_id', currentUser.id).maybeSingle();
-  if(error) console.error(error);
-  roarieMessages = (data && data.messages) ? data.messages : [];
-  renderRoarieLog();
-}
-
-// Kept in sync with MAX_HISTORY_MESSAGES in api/chat.js: capping the window sent per
-// request is what makes the server's prompt cache (and this fetch) fast — sending the
-// full, ever-growing history every turn is the slow path.
-const MAX_HISTORY_MESSAGES = 30;
-
-function extractPartialReply(raw){
-  const m = raw.match(/"reply"\s*:\s*"((?:[^"\\]|\\.)*)"/);
-  if(!m) return null;
-  try{ return JSON.parse('"'+m[1]+'"'); }catch(e){ return null; }
-}
-
-async function sendRoarieMessage(){
-  const input = document.getElementById('chatInput');
-  const query = input.value.trim();
-  if(!query) return;
-  input.value = '';
-
-  roarieMessages.push({ role:'user', content: query });
-  renderRoarieLog();
-  loadingMsg.textContent = 'Roarie is asking around campus...';
-  loadingMsg.style.display = 'block';
-  saveRoarieChat();
-
-  let filterText = [];
-  if(activeFilters.has('u20')) filterText.push('under $20 per person');
-  if(activeFilters.has('u30')) filterText.push('under $30 per person');
-  if(activeFilters.has('w5')) filterText.push('less than a 5 minute walk from Columbia University (116th & Broadway)');
-  if(activeFilters.has('w10')) filterText.push('less than a 10 minute walk from Columbia University (116th & Broadway)');
-
-  const historyToSend = roarieMessages.slice(-MAX_HISTORY_MESSAGES);
-  let raw = '';
-  let sawError = null;
-
-  try{
-    const resp = await fetch("/api/chat", {
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body: JSON.stringify({ messages: historyToSend, filters: filterText })
-    });
-    if(!resp.ok || !resp.body) throw new Error('bad response');
-
-    const reader = resp.body.getReader();
-    const decoder = new TextDecoder();
-    let buf = '';
-    while(true){
-      const { done, value } = await reader.read();
-      if(done) break;
-      buf += decoder.decode(value, { stream:true });
-      const parts = buf.split('\n\n');
-      buf = parts.pop();
-      for(const part of parts){
-        const line = part.split('\n').find(l=>l.startsWith('data: '));
-        if(!line) continue;
-        let evt;
-        try{ evt = JSON.parse(line.slice(6)); }catch(e){ continue; }
-        if(evt.error){ sawError = evt.error; continue; }
-        if(evt.status){ loadingMsg.textContent = evt.status; continue; }
-        if(evt.text){
-          raw += evt.text;
-          const partial = extractPartialReply(raw);
-          if(partial) loadingMsg.textContent = partial;
-        }
-      }
-    }
-    if(sawError && !raw) throw new Error(sawError);
-    const replyText = raw || '{"reply":"Sorry, I couldn\'t come up with anything just now — try again?","recommendations":[]}';
-    roarieMessages.push({ role:'assistant', content: replyText });
-  }catch(e){
-    roarieMessages.push({ role:'assistant', content: '{"reply":"Something went wrong reaching me — try again in a moment.","recommendations":[]}' });
-  }
-  loadingMsg.style.display = 'none';
-  renderRoarieLog();
-  saveRoarieChat();
-}
-document.getElementById('sendBtn').onclick = sendRoarieMessage;
-document.getElementById('chatInput').addEventListener('keydown', e=>{ if(e.key==='Enter') sendRoarieMessage(); });
-document.getElementById('roarieNewChatBtn').onclick = ()=>{
-  roarieMessages = [];
-  renderRoarieLog();
-  saveRoarieChat();
-};
-
 /* ---------------- Swipe modal ---------------- */
 let swipeHall = null, swipeCount = 1;
 const swipeOverlay = document.getElementById('swipeOverlay');
@@ -1035,12 +786,23 @@ document.getElementById('swipeConfirm').onclick = async ()=>{
 };
 
 /* ---------------- Spend modal ----------------
-   Shared by clicking a search/chat result (name pre-filled) and by the "Enter Your
-   Own Meal" panel (opened with no name, so the field starts blank and focused) — one
-   modal, one code path, so both entry points stay visually/behaviorally identical. */
+   Opened from the "Enter Your Own Meal" panel to log either an eating-out
+   purchase or a grocery run — spendLogType tracks which category tab is
+   selected, defaulting back to 'out' every time the modal opens. */
+let spendLogType = 'out';
 const spendOverlay = document.getElementById('spendOverlay');
+function setSpendLogType(cat){
+  spendLogType = cat;
+  document.querySelectorAll('#spendCatTabs .settingsTab').forEach(b=>b.classList.toggle('active', b.dataset.cat===cat));
+  document.getElementById('spendPlaceLabel').textContent = cat==='grocery' ? 'Where did you shop?' : 'Where did you eat?';
+  document.getElementById('spendPlaceName').placeholder = cat==='grocery' ? 'e.g. Trader Joe\'s' : 'e.g. Chipotle';
+}
+document.querySelectorAll('#spendCatTabs .settingsTab').forEach(btn=>{
+  btn.onclick = ()=> setSpendLogType(btn.dataset.cat);
+});
 function openSpendModal(name){
   const nameInput = document.getElementById('spendPlaceName');
+  setSpendLogType('out');
   nameInput.value = name || '';
   document.getElementById('spendAmount').value = '';
   spendOverlay.classList.add('show');
@@ -1052,7 +814,7 @@ document.getElementById('spendConfirm').onclick = async ()=>{
   const name = document.getElementById('spendPlaceName').value.trim();
   const amt = parseFloat(document.getElementById('spendAmount').value);
   if(!name || isNaN(amt) || amt<0) return;
-  await insertLog({ type:'out', name, amount:amt, ts:new Date().toISOString() });
+  await insertLog({ type:spendLogType, name, amount:amt, ts:new Date().toISOString() });
   spendOverlay.classList.remove('show');
 };
 
@@ -1066,8 +828,8 @@ const editLogOverlay = document.getElementById('editLogOverlay');
 function openEditLogModal(log){
   editLogId = log.id;
   editLogType = log.type;
-  document.getElementById('editLogTitle').textContent = log.type==='hall' ? 'Edit Dining Hall Visit' : 'Edit Meal';
-  document.getElementById('editLogNameLabel').textContent = log.type==='hall' ? 'Dining hall' : 'Where did you eat?';
+  document.getElementById('editLogTitle').textContent = log.type==='hall' ? 'Edit Dining Hall Visit' : log.type==='grocery' ? 'Edit Grocery Entry' : 'Edit Meal';
+  document.getElementById('editLogNameLabel').textContent = log.type==='hall' ? 'Dining hall' : log.type==='grocery' ? 'Where did you shop?' : 'Where did you eat?';
   document.getElementById('editLogName').value = log.name || '';
   document.getElementById('editLogValueLabel').textContent = log.type==='hall' ? 'Swipes used' : 'Amount spent';
   const valueInput = document.getElementById('editLogValue');
@@ -1100,17 +862,20 @@ document.getElementById('editLogConfirm').onclick = async ()=>{
 const GUEST_LOGS_KEY = 'lionswipe_guest_logs';
 const GUEST_PLAN_KEY = 'lionswipe_guest_plan';
 const GUEST_SPEND_GOAL_KEY = 'lionswipe_guest_spend_goal';
+const GUEST_GROCERY_GOAL_KEY = 'lionswipe_guest_grocery_goal';
 function loadGuestLogs(){ try{ return JSON.parse(localStorage.getItem(GUEST_LOGS_KEY)) || []; }catch(e){ return []; } }
 function saveGuestLogs(arr){ localStorage.setItem(GUEST_LOGS_KEY, JSON.stringify(arr)); }
 function loadGuestPlan(){ try{ return JSON.parse(localStorage.getItem(GUEST_PLAN_KEY)); }catch(e){ return null; } }
 function saveGuestPlan(plan){ plan ? localStorage.setItem(GUEST_PLAN_KEY, JSON.stringify(plan)) : localStorage.removeItem(GUEST_PLAN_KEY); }
 function loadGuestSpendGoal(){ try{ return JSON.parse(localStorage.getItem(GUEST_SPEND_GOAL_KEY)); }catch(e){ return null; } }
 function saveGuestSpendGoal(g){ g ? localStorage.setItem(GUEST_SPEND_GOAL_KEY, JSON.stringify(g)) : localStorage.removeItem(GUEST_SPEND_GOAL_KEY); }
+function loadGuestGroceryGoal(){ try{ return JSON.parse(localStorage.getItem(GUEST_GROCERY_GOAL_KEY)); }catch(e){ return null; } }
+function saveGuestGroceryGoal(g){ g ? localStorage.setItem(GUEST_GROCERY_GOAL_KEY, JSON.stringify(g)) : localStorage.removeItem(GUEST_GROCERY_GOAL_KEY); }
 function clearGuestData(){
   localStorage.removeItem(GUEST_LOGS_KEY);
   localStorage.removeItem(GUEST_PLAN_KEY);
   localStorage.removeItem(GUEST_SPEND_GOAL_KEY);
-  localStorage.removeItem(GUEST_ROARIE_KEY);
+  localStorage.removeItem(GUEST_GROCERY_GOAL_KEY);
 }
 
 /* ---------------- Supabase (signed in) / localStorage (guest): logs & dining plan ---------------- */
@@ -1228,11 +993,14 @@ async function savePlan(totalSwipes, weeklyAllowance, planName){
   return true;
 }
 
-/* ---------------- Spending goal (fully optional — never prompted, only set via Settings) ---------------- */
+/* ---------------- Spending goals (fully optional — never prompted, only set via Settings) ----------------
+   Two fully independent goals, 'out' (eating out) and 'grocery', stored as separate
+   rows in spending_goals keyed on (user_id, category) — see saveGroceryGoal etc.
+   below for the grocery mirror of these three functions. */
 async function loadSpendGoal(){
   if(!currentUser){ spendGoal = loadGuestSpendGoal(); updateSwipesSummary(); return; }
   if(!supabase){ spendGoal = null; return; }
-  const { data, error } = await supabase.from('spending_goals').select('*').eq('user_id', currentUser.id).maybeSingle();
+  const { data, error } = await supabase.from('spending_goals').select('*').eq('user_id', currentUser.id).eq('category','out').maybeSingle();
   if(error){ console.error(error); }
   spendGoal = data ? { amount: data.amount, period: data.period } : null;
   updateSwipesSummary();
@@ -1246,7 +1014,7 @@ async function saveSpendGoal(amount, period){
   }
   if(!supabase) return false;
   const { error } = await supabase.from('spending_goals').upsert({
-    user_id: currentUser.id, amount, period, updated_at: new Date().toISOString()
+    user_id: currentUser.id, category:'out', amount, period, updated_at: new Date().toISOString()
   });
   if(error){ console.error(error); return false; }
   spendGoal = { amount, period };
@@ -1261,9 +1029,48 @@ async function clearSpendGoal(){
     return true;
   }
   if(!supabase) return false;
-  const { error } = await supabase.from('spending_goals').delete().eq('user_id', currentUser.id);
+  const { error } = await supabase.from('spending_goals').delete().eq('user_id', currentUser.id).eq('category','out');
   if(error){ console.error(error); return false; }
   spendGoal = null;
+  updateSwipesSummary();
+  return true;
+}
+
+async function loadGroceryGoal(){
+  if(!currentUser){ groceryGoal = loadGuestGroceryGoal(); updateSwipesSummary(); return; }
+  if(!supabase){ groceryGoal = null; return; }
+  const { data, error } = await supabase.from('spending_goals').select('*').eq('user_id', currentUser.id).eq('category','grocery').maybeSingle();
+  if(error){ console.error(error); }
+  groceryGoal = data ? { amount: data.amount, period: data.period } : null;
+  updateSwipesSummary();
+}
+async function saveGroceryGoal(amount, period){
+  if(!currentUser){
+    groceryGoal = { amount, period };
+    saveGuestGroceryGoal(groceryGoal);
+    updateSwipesSummary();
+    return true;
+  }
+  if(!supabase) return false;
+  const { error } = await supabase.from('spending_goals').upsert({
+    user_id: currentUser.id, category:'grocery', amount, period, updated_at: new Date().toISOString()
+  });
+  if(error){ console.error(error); return false; }
+  groceryGoal = { amount, period };
+  updateSwipesSummary();
+  return true;
+}
+async function clearGroceryGoal(){
+  if(!currentUser){
+    saveGuestGroceryGoal(null);
+    groceryGoal = null;
+    updateSwipesSummary();
+    return true;
+  }
+  if(!supabase) return false;
+  const { error } = await supabase.from('spending_goals').delete().eq('user_id', currentUser.id).eq('category','grocery');
+  if(error){ console.error(error); return false; }
+  groceryGoal = null;
   updateSwipesSummary();
   return true;
 }
@@ -1325,11 +1132,12 @@ renderPlanOptions();
 
 const planOverlay = document.getElementById('planOverlay');
 function switchSettingsTab(tab){
-  document.querySelectorAll('.settingsTab').forEach(b=>b.classList.toggle('active', b.dataset.tab===tab));
-  document.getElementById('planTabPanel').style.display = tab==='spend' ? 'none' : 'block';
+  document.querySelectorAll('#settingsTabs .settingsTab').forEach(b=>b.classList.toggle('active', b.dataset.tab===tab));
+  document.getElementById('planTabPanel').style.display = tab==='plan' ? 'block' : 'none';
   document.getElementById('spendTabPanel').style.display = tab==='spend' ? 'block' : 'none';
+  document.getElementById('groceryTabPanel').style.display = tab==='grocery' ? 'block' : 'none';
 }
-document.querySelectorAll('.settingsTab').forEach(btn=>{
+document.querySelectorAll('#settingsTabs .settingsTab').forEach(btn=>{
   btn.onclick = ()=> switchSettingsTab(btn.dataset.tab);
 });
 function openPlanModal({mandatory=false, rollover=false, prevType=null, leftover=0, tab='plan'}={}){
@@ -1339,6 +1147,9 @@ function openPlanModal({mandatory=false, rollover=false, prevType=null, leftover
 
   document.getElementById('spendGoalAmount').value = spendGoal ? spendGoal.amount : '';
   document.getElementById('spendGoalPeriod').value = spendGoal ? spendGoal.period : 'week';
+
+  document.getElementById('groceryGoalAmount').value = groceryGoal ? groceryGoal.amount : '';
+  document.getElementById('groceryGoalPeriod').value = groceryGoal ? groceryGoal.period : 'week';
 
   // Highlight the matching preset if the saved/typed plan name matches one exactly,
   // otherwise leave nothing selected (manual entry or an unrecognized name).
@@ -1380,7 +1191,7 @@ const helpOverlay = document.getElementById('helpOverlay');
 document.getElementById('helpBtn').onclick = ()=> helpOverlay.classList.add('show');
 document.getElementById('helpCancel').onclick = ()=> helpOverlay.classList.remove('show');
 
-const HELP_CONTEXT = `LionSwipe is a web app that helps Columbia students get more out of their meal plan. It shows real-time Columbia dining hall menus, and can search nearby off-campus restaurants for food that fits what a student is looking for, using live web search to return real, current menu prices instead of guesses. It also tracks meal swipes and off-campus spending: students log dining hall swipes and off-campus purchases, can pick a preset semester swipe plan or set a custom one, and can optionally set a spending goal by day, week, month, or semester. LionSwipe works fully as a guest with no login required (data is saved locally in the browser) and offers to migrate that data over if the student later creates an account. The problem it solves: students often don't know what's on the dining hall menu, lose track of remaining swipes, and overspend off-campus without a clear picture — LionSwipe brings all of that into one place.`;
+const HELP_CONTEXT = `LionSwipe is a web app that helps Columbia students get more out of their meal plan. It shows real-time Columbia dining hall menus and tracks meal swipes, eating-out spending, and grocery spending: students log dining hall swipes, eating-out purchases, and grocery purchases, can pick a preset semester swipe plan or set a custom one, and can optionally set an eating-out budget and a grocery budget, each by day, week, month, or semester. LionSwipe works fully as a guest with no login required (data is saved locally in the browser) and offers to migrate that data over if the student later creates an account. The problem it solves: students often don't know what's on the dining hall menu, lose track of remaining swipes, and overspend without a clear picture — LionSwipe brings all of that into one place.`;
 
 async function sendHelpChat(){
   const input = document.getElementById('helpChatInput');
@@ -1449,10 +1260,22 @@ document.getElementById('planSubmit').onclick = async ()=>{
     return;
   }
 
+  const groceryAmountStr = document.getElementById('groceryGoalAmount').value.trim();
+  const groceryPeriod = document.getElementById('groceryGoalPeriod').value;
+  const groceryAmount = parseFloat(groceryAmountStr);
+  const groceryTouched = groceryAmountStr !== '';
+  if(groceryTouched && (isNaN(groceryAmount) || groceryAmount < 0)){
+    errEl.textContent = 'Please enter a valid grocery budget amount (or leave it blank to clear the budget).';
+    errEl.style.display = 'block';
+    return;
+  }
+
   let ok = true;
   if(planTouched) ok = await savePlan(total, weekly, planName) && ok;
   if(spendTouched) ok = await saveSpendGoal(spendAmount, spendPeriod) && ok;
   else if(spendGoal) ok = await clearSpendGoal() && ok;
+  if(groceryTouched) ok = await saveGroceryGoal(groceryAmount, groceryPeriod) && ok;
+  else if(groceryGoal) ok = await clearGroceryGoal() && ok;
 
   if(!ok){ errEl.textContent = 'Could not save — try again.'; errEl.style.display='block'; return; }
   planOverlay.classList.remove('show');
@@ -1516,16 +1339,16 @@ async function maybeOfferGuestMigration(){
   const guestLogs = loadGuestLogs();
   const guestPlan = loadGuestPlan();
   const guestGoal = loadGuestSpendGoal();
-  const guestChat = loadGuestRoarieChat();
-  if(guestLogs.length===0 && !guestPlan && !guestGoal && guestChat.length===0) return;
+  const guestGroceryGoal = loadGuestGroceryGoal();
+  if(guestLogs.length===0 && !guestPlan && !guestGoal && !guestGroceryGoal) return;
 
   const parts = [];
   if(guestLogs.length) parts.push(`${guestLogs.length} logged swipe${guestLogs.length===1?'':'s'}/meal${guestLogs.length===1?'':'s'}`);
   if(guestPlan) parts.push('a dining plan');
   if(guestGoal) parts.push('a spending goal');
-  if(guestChat.length) parts.push('your Roarie chat history');
+  if(guestGroceryGoal) parts.push('a grocery budget');
 
-  const migrate = confirm(`You have guest data saved in this browser (${parts.join(', ')}). Migrate it into your account now? (This will overwrite any dining plan/spending goal/Roarie chat already saved on your account.)`);
+  const migrate = confirm(`You have guest data saved in this browser (${parts.join(', ')}). Migrate it into your account now? (This will overwrite any dining plan/spending goal/grocery budget already saved on your account.)`);
   if(!migrate) return;
 
   try{
@@ -1542,10 +1365,9 @@ async function maybeOfferGuestMigration(){
       const ok = await saveSpendGoal(guestGoal.amount, guestGoal.period);
       if(!ok) throw new Error('spending goal save failed');
     }
-    if(guestChat.length){
-      roarieMessages = guestChat;
-      await saveRoarieChat();
-      renderRoarieLog();
+    if(guestGroceryGoal){
+      const ok = await saveGroceryGoal(guestGroceryGoal.amount, guestGroceryGoal.period);
+      if(!ok) throw new Error('grocery budget save failed');
     }
     clearGuestData();
     await refreshLogs();
@@ -1563,7 +1385,7 @@ if(supabase){
     await refreshLogs();   // logs must be loaded before loadOrPromptPlan so rollover leftover-swipe math is correct
     await loadOrPromptPlan();
     await loadSpendGoal();
-    await loadRoarieChat();
+    await loadGroceryGoal();
     if(_event === 'SIGNED_IN' && currentUser) await maybeOfferGuestMigration();
   });
   supabase.auth.getSession().then(async ({data})=>{
@@ -1572,18 +1394,17 @@ if(supabase){
     await refreshLogs();
     await loadOrPromptPlan();
     await loadSpendGoal();
-    await loadRoarieChat();
+    await loadGroceryGoal();
   });
 } else {
   // No Supabase project configured (e.g. local preview with an empty config.js) —
   // there's no auth session to wait on, so hydrate guest data from localStorage
-  // directly here. Without this, logs/plan/spend-goal/chat all reset on every
+  // directly here. Without this, logs/plan/spend-goal all reset on every
   // reload despite being saved correctly, since the calls above never run.
   logs = loadGuestLogs();
   userPlan = loadGuestPlan();
   spendGoal = loadGuestSpendGoal();
-  roarieMessages = loadGuestRoarieChat();
-  renderRoarieLog();
+  groceryGoal = loadGuestGroceryGoal();
   updateSwipesSummary();
 }
 
@@ -1617,6 +1438,7 @@ function updateSwipesSummary(){
   const usedSemester = logs.filter(l=>l.type==='hall' && l.ts >= SEMESTER_START.getTime()).reduce((s,l)=>s+l.swipes,0);
   const weekLogs = logsThisPeriod('week');
   const spentOutWeek = weekLogs.filter(l=>l.type==='out').reduce((s,l)=>s+l.amount,0);
+  const spentGroceryWeek = weekLogs.filter(l=>l.type==='grocery').reduce((s,l)=>s+l.amount,0);
 
   // "Swipes left" depends on a real saved plan (total_swipes) — show "—" rather
   // than inventing a number when there isn't one yet.
@@ -1642,7 +1464,18 @@ function updateSwipesSummary(){
       })()
     : '';
 
-  // Guests get everything (logging, dining plan, spending goal) working locally
+  // Grocery budget progress — mirrors spendGoalLine above exactly, just scoped to
+  // type==='grocery' and the separate groceryGoal state.
+  const groceryGoalLine = groceryGoal
+    ? (()=>{
+        const spentInGoalPeriod = logsThisPeriod(groceryGoal.period).filter(l=>l.type==='grocery').reduce((s,l)=>s+l.amount,0);
+        const periodLabel = {day:'today', week:'this week', month:'this month', semester:'this semester'}[groceryGoal.period];
+        const over = spentInGoalPeriod > groceryGoal.amount;
+        return `<div class="swipesLine editable" id="groceryGoalLine" title="Click to edit your grocery budget"><span>Grocery budget (${periodLabel}):</span><b style="${over?'color:var(--danger);':''}">$${spentInGoalPeriod.toFixed(2)} / $${groceryGoal.amount.toFixed(2)}</b></div>`;
+      })()
+    : '';
+
+  // Guests get everything (logging, dining plan, spending goals) working locally
   // via localStorage — this just nudges them that it's not permanent/synced yet.
   const guestNote = !currentUser
     ? `<div class="swipesLine guestNote">Saved in this browser only — <a href="#" id="guestSignInLink">sign in / create account</a> to save it permanently.</div>`
@@ -1653,7 +1486,9 @@ function updateSwipesSummary(){
     <div class="swipesLine"><span>Swipes/week needed:</span><b>${weekNeeded}</b></div>
     <div class="swipesLine editable" id="swipesLeftLine" title="Click to edit your dining plan"><span>Swipes left:</span><b>${left===null?'—':left}</b></div>
     <div class="swipesLine"><span>Total spent eating out this week:</span><b>$${spentOutWeek.toFixed(2)}</b></div>
+    <div class="swipesLine"><span>Total spent on groceries this week:</span><b>$${spentGroceryWeek.toFixed(2)}</b></div>
     ${spendGoalLine}
+    ${groceryGoalLine}
     ${guestNote}
   `;
   const slLine = document.getElementById('swipesLeftLine');
@@ -1663,6 +1498,10 @@ function updateSwipesSummary(){
   const sgLine = document.getElementById('spendGoalLine');
   if(sgLine){
     sgLine.onclick = ()=> openPlanModal({ mandatory:false, tab:'spend' });
+  }
+  const ggLine = document.getElementById('groceryGoalLine');
+  if(ggLine){
+    ggLine.onclick = ()=> openPlanModal({ mandatory:false, tab:'grocery' });
   }
   const guestLink = document.getElementById('guestSignInLink');
   if(guestLink){
@@ -2425,6 +2264,18 @@ function spendPerWeekNeeded(now){
   return Math.ceil((remainingBudget / weeksRemainingInSemester(now)) * 100) / 100;
 }
 
+// Grocery mirror of spendPerWeekNeeded above — same formula, keyed off groceryGoal
+// and type==='grocery' instead of spendGoal/'out'.
+function groceryPerWeekNeeded(now){
+  if(!groceryGoal) return null;
+  const weeksPerPeriod = { day:1/7, week:1, month:4.33, semester:SEMESTER_WEEKS }[groceryGoal.period];
+  const weeklyGoalAmount = groceryGoal.amount / weeksPerPeriod;
+  const semesterBudget = weeklyGoalAmount * totalSemesterWeeks();
+  const spentSemesterSoFar = logsThisPeriod('semester').filter(l=>l.type==='grocery').reduce((s,l)=>s+l.amount,0);
+  const remainingBudget = Math.max(0, semesterBudget - spentSemesterSoFar);
+  return Math.ceil((remainingBudget / weeksRemainingInSemester(now)) * 100) / 100;
+}
+
 function renderBreakdown(){
   const now = Date.now();
   const weekLogs = logsThisPeriod('week');
@@ -2435,6 +2286,9 @@ function renderBreakdown(){
   const spentWeek = weekLogs.filter(l=>l.type==='out').reduce((s,l)=>s+l.amount,0);
   const spentMonth = monthLogs.filter(l=>l.type==='out').reduce((s,l)=>s+l.amount,0);
   const spentSemester = semesterLogs.filter(l=>l.type==='out').reduce((s,l)=>s+l.amount,0);
+  const spentWeekGrocery = weekLogs.filter(l=>l.type==='grocery').reduce((s,l)=>s+l.amount,0);
+  const spentMonthGrocery = monthLogs.filter(l=>l.type==='grocery').reduce((s,l)=>s+l.amount,0);
+  const spentSemesterGrocery = semesterLogs.filter(l=>l.type==='grocery').reduce((s,l)=>s+l.amount,0);
   const weekNeeded = swipesPerWeekNeeded(swipesLeft, now);
   // Same weeks-left/weeks-total the pacing formulas above divide by — shown next to
   // the plan/goal subtitle so the Swipes/Week Needed (and spend target) numbers are
@@ -2461,14 +2315,20 @@ function renderBreakdown(){
     ${statCard('$'+spentMonth.toFixed(2),'Spent This Month')}
     ${statCard('$'+spentSemester.toFixed(2),'Spent This Semester')}
   `;
+  document.getElementById('statGrid3').innerHTML = `
+    ${statCard('$'+spentWeekGrocery.toFixed(2),'Spent This Week (Groceries)')}
+    ${statCard('$'+spentMonthGrocery.toFixed(2),'Spent This Month (Groceries)')}
+    ${statCard('$'+spentSemesterGrocery.toFixed(2),'Spent This Semester (Groceries)')}
+  `;
 
   const weeks = {};
   logs.forEach(l=>{
     if(l.ts < SEMESTER_START.getTime()) return; // keep chart totals aligned with the semester-scoped stat boxes above
     const wk = weekKey(l.ts);
-    if(!weeks[wk]) weeks[wk] = {swipes:0, money:0};
+    if(!weeks[wk]) weeks[wk] = {swipes:0, money:0, grocery:0};
     if(l.type==='hall') weeks[wk].swipes += l.swipes;
     if(l.type==='out') weeks[wk].money += l.amount;
+    if(l.type==='grocery') weeks[wk].grocery += l.amount;
   });
   const thisWeekStart = startOfWeek(now).getTime();
 
@@ -2482,7 +2342,7 @@ function renderBreakdown(){
   let historyArr = [];
   for(let i=historyWeeksToShow-1;i>=0;i--){
     const wk = thisWeekStart - i*WEEK_MS;
-    historyArr.push({wk, ...(weeks[wk]||{swipes:0,money:0})});
+    historyArr.push({wk, ...(weeks[wk]||{swipes:0,money:0,grocery:0})});
   }
 
   // Future bars are recalculated fresh every render from swipesPerWeekNeeded /
@@ -2503,6 +2363,12 @@ function renderBreakdown(){
   const moneyWeekArr = historyArr.map(w=>({wk:w.wk, val:w.money, future:false}));
   if(spendGoal){
     futureTsList.forEach(wk=> moneyWeekArr.push({wk, val:moneyTargetPerWeek, future:true}));
+  }
+
+  const groceryTargetPerWeek = groceryPerWeekNeeded(now);
+  const groceryWeekArr = historyArr.map(w=>({wk:w.wk, val:w.grocery, future:false}));
+  if(groceryGoal){
+    futureTsList.forEach(wk=> groceryWeekArr.push({wk, val:groceryTargetPerWeek, future:true}));
   }
 
   const maxSwipe = Math.max(...swipeWeekArr.map(w=>w.val),1);
@@ -2530,9 +2396,28 @@ function renderBreakdown(){
     moneyChart.appendChild(col);
   });
 
+  const maxGrocery = Math.max(...groceryWeekArr.map(w=>w.val),1);
+  const groceryChart = document.getElementById('groceryChart');
+  groceryChart.innerHTML = '';
+  groceryWeekArr.forEach(w=>{
+    const col = document.createElement('div'); col.className='barCol';
+    const h = Math.round((w.val/maxGrocery)*130);
+    const barStyle = w.future ? `height:${h}px;` : `height:${h}px;background:var(--navy);`;
+    col.innerHTML = `<div class="barTrack"><div class="bar${w.future?' target':''}" style="${barStyle}"></div></div>
+      <div class="barVal">$${w.future ? Math.ceil(w.val) : w.val.toFixed(0)}</div>
+      <div class="barLbl">${fmtWeekLabel(w.wk)}${w.future?' (target)':''}</div>`;
+    groceryChart.appendChild(col);
+  });
+
   const hallMeals = logs.filter(l=>l.type==='hall').reduce((s,l)=>s+l.swipes,0);
   const outMeals = logs.filter(l=>l.type==='out').length;
   drawPie(hallMeals, outMeals);
+
+  const outSpentAll = logs.filter(l=>l.type==='out').reduce((s,l)=>s+l.amount,0);
+  const grocerySpentAll = logs.filter(l=>l.type==='grocery').reduce((s,l)=>s+l.amount,0);
+  drawSpendPie(outSpentAll, grocerySpentAll);
+
+  renderHallFrequencyChart();
   renderMealHistory();
 }
 function renderMealHistory(){
@@ -2546,7 +2431,7 @@ function renderMealHistory(){
     const dateLabel = new Date(l.ts).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
     const isHall = l.type==='hall';
     const priceLabel = isHall ? `${l.swipes}<small>swipe${l.swipes===1?'':'s'}</small>` : `$${(l.amount||0).toFixed(2)}<small>spent</small>`;
-    const typeLabel = isHall ? 'Dining Hall' : 'Eating Out';
+    const typeLabel = isHall ? 'Dining Hall' : l.type==='grocery' ? 'Grocery' : 'Eating Out';
     return `<div class="listingCard">
       <div class="lPrice">${priceLabel}</div>
       <div class="lInfo">
@@ -2603,7 +2488,56 @@ function drawPie(a,b){
   `;
 }
 
+// Near-copy of drawPie above, just a different pair of numbers ($ eating out vs
+// $ grocery instead of meal counts) and its own svg/legend elements.
+function drawSpendPie(outAmt, groceryAmt){
+  const total = outAmt+groceryAmt || 1;
+  const svg = document.getElementById('spendPieSvg');
+  const r=70,cx=80,cy=80;
+  const outAngle = (outAmt/total)*360;
+  function polar(cx,cy,r,angle){ const rad=(angle-90)*Math.PI/180; return [cx+r*Math.cos(rad), cy+r*Math.sin(rad)]; }
+  function arcPath(startAngle,endAngle,color){
+    const [x1,y1]=polar(cx,cy,r,startAngle);
+    const [x2,y2]=polar(cx,cy,r,endAngle);
+    const large = endAngle-startAngle>180?1:0;
+    return `<path d="M${cx},${cy} L${x1},${y1} A${r},${r} 0 ${large} 1 ${x2},${y2} Z" fill="${color}"/>`;
+  }
+  let html = '';
+  html += arcPath(0, outAngle, '#D9A441');
+  html += arcPath(outAngle, 360, '#415283');
+  svg.innerHTML = html;
+  document.getElementById('spendPieLegend').innerHTML = `
+    <div><span class="sw" style="background:#D9A441;"></span>Eating Out — $${outAmt.toFixed(2)}</div>
+    <div><span class="sw" style="background:#415283;"></span>Grocery — $${groceryAmt.toFixed(2)}</div>
+  `;
+}
+
+// Horizontal bar list of how many times each dining hall has been logged (count
+// of 'hall' log entries per hall name, i.e. visits — not total swipes, so a
+// 3-swipe entry still counts as one visit). Halls only ever appear here once
+// they've actually been logged (there's no fixed master hall list to zero-fill
+// against), sorted most-visited first, capped at the 9 most-visited halls.
+function renderHallFrequencyChart(){
+  const container = document.getElementById('hallFreqChart');
+  const counts = {};
+  logs.forEach(l=>{ if(l.type==='hall') counts[l.name] = (counts[l.name]||0) + 1; });
+  const entries = Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,9);
+  if(entries.length===0){
+    container.innerHTML = `<div class="hallFreqEmpty">log a dining hall to see what happens...</div>`;
+    return;
+  }
+  const max = entries[0][1];
+  container.innerHTML = entries.map(([name,count])=>`
+    <div class="hallFreqRow">
+      <div class="hallFreqLabel">${escapeHtml(name)}</div>
+      <div class="hallFreqTrack"><div class="hallFreqFill" style="width:${Math.round((count/max)*100)}%;"></div></div>
+      <div class="hallFreqVal">${count}</div>
+    </div>
+  `).join('');
+}
+
 /* ---------------- init ---------------- */
+if(!FEATURES.swipeMarket) document.querySelectorAll('.flagMarket').forEach(el=> el.style.display='none');
 updateLoginBtn();
 updateSwipesSummary();
 loadMenus();
