@@ -12,53 +12,100 @@
 
 const SAMPLE_MENUS = {
   Breakfast: {
-    "Ferris": { hours: "7:00 AM – 10:00 AM", stations: [
+    "Chef Don's Pizza Pi": { closed: true },
+    "Chef Mike's Sub Shop": { closed: true },
+    "Fac Shack": { hours: "8:00 AM – 11:00 AM", stations: [
+      { name: "Grab & Go", items: ["Bacon Egg & Cheese Bagel", "Yogurt Parfait"] }
+    ]},
+    "Faculty House": { closed: true },
+    "Ferris Booth Commons": { hours: "7:00 AM – 10:00 AM", stations: [
       { name: "Main Line", items: ["Scrambled Eggs", "Turkey Bacon", "Home Fries"] },
       { name: "Bakery", items: ["Assorted Muffins", "Bagels & Cream Cheese"] }
     ]},
-    "JJ's": { hours: "9:00 AM – 12:00 AM", stations: [
+    "Grace Dodge Dining Hall": { hours: "7:30 AM – 10:00 AM", stations: [
+      { name: "Hot Station", items: ["Oatmeal Bar", "Pancakes"] }
+    ]},
+    "JJ's Place": { hours: "9:00 AM – 12:00 AM", stations: [
       { name: "Grill", items: ["Bacon Egg & Cheese", "Hash Browns"] }
     ]},
-    "Faculty House": { closed: true },
-    "Grace Dodge": { hours: "7:30 AM – 10:00 AM", stations: [
-      { name: "Hot Station", items: ["Oatmeal Bar", "Pancakes"] }
+    "Johnny's Food Truck": { closed: true },
+    "John Jay Dining Hall": { hours: "7:30 AM – 10:30 AM", stations: [
+      { name: "Main Line", items: ["Scrambled Eggs", "French Toast", "Bacon"] }
     ]}
   },
   Lunch: {
-    "Ferris": { hours: "11:00 AM – 3:00 PM", stations: [
-      { name: "Main Line", items: ["Grilled Chicken", "Rice Pilaf", "Roasted Vegetables"] },
-      { name: "Action Station", items: ["Build-Your-Own Bowl"] }
+    "Chef Don's Pizza Pi": { hours: "11:00 AM – 3:00 PM", stations: [
+      { name: "Pizza Counter", items: ["Cheese Slice", "Pepperoni Slice", "Garlic Knots"] }
     ]},
-    "JJ's": { hours: "12:00 PM – midnight", stations: [
-      { name: "Main Line", items: ["Cilantro Lime Rice", "Black Beans", "Chicken Quesadilla"] }
+    "Chef Mike's Sub Shop": { hours: "11:00 AM – 4:00 PM", stations: [
+      { name: "Sub Counter", items: ["Italian Sub", "Turkey Club Sub", "Veggie Sub"] }
+    ]},
+    "Fac Shack": { hours: "11:00 AM – 3:00 PM", stations: [
+      { name: "Grab & Go", items: ["Turkey Wrap", "Chicken Caesar Wrap", "Chips"] }
     ]},
     "Faculty House": { hours: "11:30 AM – 2:00 PM", stations: [
       { name: "Buffet", items: ["Seasonal Salad Bar", "Pasta Primavera"] }
     ]},
-    "Grace Dodge": { hours: "11:00 AM – 2:00 PM", stations: [
+    "Ferris Booth Commons": { hours: "11:00 AM – 3:00 PM", stations: [
+      { name: "Main Line", items: ["Grilled Chicken", "Rice Pilaf", "Roasted Vegetables"] },
+      { name: "Action Station", items: ["Build-Your-Own Bowl"] }
+    ]},
+    "Grace Dodge Dining Hall": { hours: "11:00 AM – 2:00 PM", stations: [
       { name: "Hot Station", items: ["Turkey Club", "Tomato Soup"] }
+    ]},
+    "JJ's Place": { hours: "12:00 PM – midnight", stations: [
+      { name: "Main Line", items: ["Cilantro Lime Rice", "Black Beans", "Chicken Quesadilla"] }
+    ]},
+    "Johnny's Food Truck": { hours: "11:30 AM – 3:00 PM", stations: [
+      { name: "Truck Window", items: ["Chicken Tender Basket", "Loaded Fries", "Lemonade"] }
+    ]},
+    "John Jay Dining Hall": { hours: "11:00 AM – 2:30 PM", stations: [
+      { name: "Main Line", items: ["Grilled Salmon", "Roasted Potatoes", "Green Beans"] },
+      { name: "Grill", items: ["Cheeseburger", "Veggie Burger"] }
     ]}
   },
   Dinner: {
-    "Ferris": { hours: "5:00 PM – 8:30 PM", stations: [
+    "Chef Don's Pizza Pi": { hours: "5:00 PM – 9:00 PM", stations: [
+      { name: "Pizza Counter", items: ["Margherita Slice", "Sicilian Slice", "Caesar Salad"] }
+    ]},
+    "Chef Mike's Sub Shop": { hours: "4:00 PM – 9:00 PM", stations: [
+      { name: "Sub Counter", items: ["Meatball Sub", "Chicken Parm Sub", "Buffalo Chicken Sub"] }
+    ]},
+    "Fac Shack": { closed: true },
+    "Faculty House": { closed: true },
+    "Ferris Booth Commons": { hours: "5:00 PM – 8:30 PM", stations: [
       { name: "Main Line", items: ["Roasted Chicken", "Pan Roasted Sprouts"] },
       { name: "Action Station", items: ["Stir Fry Bar"] }
     ]},
-    "JJ's": { hours: "12:00 PM – midnight", stations: [
+    "Grace Dodge Dining Hall": { hours: "5:00 PM – 8:00 PM", stations: [
+      { name: "Hot Station", items: ["Ramen Bar"] }
+    ]},
+    "JJ's Place": { hours: "12:00 PM – midnight", stations: [
       { name: "Main Line", items: ["Cilantro Lime Rice", "Black Beans", "Citrus Peanuts"] }
     ]},
-    "Faculty House": { closed: true },
-    "Grace Dodge": { hours: "5:00 PM – 8:00 PM", stations: [
-      { name: "Hot Station", items: ["Ramen Bar"] }
+    "Johnny's Food Truck": { hours: "5:00 PM – 9:00 PM", stations: [
+      { name: "Truck Window", items: ["Cheeseburger", "Loaded Fries", "Milkshake"] }
+    ]},
+    "John Jay Dining Hall": { hours: "5:00 PM – 8:30 PM", stations: [
+      { name: "Main Line", items: ["Baked Ziti", "Garlic Bread", "Caesar Salad"] }
     ]}
   },
   "Late Night": {
-    "Ferris": { closed: true },
-    "JJ's": { hours: "10:00 PM – 2:00 AM", stations: [
+    "Chef Don's Pizza Pi": { hours: "9:00 PM – 1:00 AM", stations: [
+      { name: "Late Night Slices", items: ["Cheese Slice", "Buffalo Chicken Slice"] }
+    ]},
+    "Chef Mike's Sub Shop": { closed: true },
+    "Fac Shack": { closed: true },
+    "Faculty House": { closed: true },
+    "Ferris Booth Commons": { closed: true },
+    "Grace Dodge Dining Hall": { closed: true },
+    "JJ's Place": { hours: "10:00 PM – 2:00 AM", stations: [
       { name: "Grill", items: ["Mozzarella Sticks", "Late Night Fries"] }
     ]},
-    "Faculty House": { closed: true },
-    "Grace Dodge": { closed: true }
+    "Johnny's Food Truck": { hours: "9:00 PM – 1:00 AM", stations: [
+      { name: "Truck Window", items: ["Mozzarella Sticks", "Chicken Tenders"] }
+    ]},
+    "John Jay Dining Hall": { closed: true }
   }
 };
 
