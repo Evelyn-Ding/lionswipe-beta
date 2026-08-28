@@ -71,8 +71,9 @@ so a successful run will correctly print all-empty meal periods — that's expec
 not a bug. Re-test once dining halls are back in session (check `SEMESTER_START` in
 `config.js`) to confirm real content comes through.
 
-**Production schedule:** `.github/workflows/scrape-menus.yml` runs the scraper twice
-a day via GitHub Actions once this repo is pushed to GitHub, using `SUPABASE_URL` /
+**Production schedule:** `.github/workflows/scrape-menus.yml` runs the scraper six
+times a day (7/8/9/10/11am and 4pm ET) via GitHub Actions once this repo is pushed
+to GitHub, using `SUPABASE_URL` /
 `SUPABASE_SERVICE_ROLE_KEY` repo secrets (Settings → Secrets and variables →
 Actions). The service role key bypasses Row Level Security to write — never put it
 in `config.js` or anything shipped to the browser.

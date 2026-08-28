@@ -2,8 +2,11 @@ name: Scrape dining menus
 
 on:
   schedule:
-    # 6:30am and 4:30pm America/New_York (10:30 and 20:30 UTC) — adjust as needed.
-    - cron: "30 10,20 * * *"
+    # 7, 8, 9, 10, 11am, and 4pm America/New_York (11:00, 12:00, 13:00, 14:00,
+    # 15:00, 20:00 UTC — EDT offset, so these run ~1hr earlier in real ET time
+    # during EST/winter since GitHub Actions cron has no DST awareness) —
+    # adjust as needed.
+    - cron: "0 11,12,13,14,15,20 * * *"
   workflow_dispatch: {} # lets you trigger a run manually from the Actions tab
 
 jobs:

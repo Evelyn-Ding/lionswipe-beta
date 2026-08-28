@@ -192,6 +192,19 @@ function extractMenus(html, targetDate) {
   return menus;
 }
 
+// Recursively sorts object keys (leaving array order — meal/station/item order —
+// untouched, since that's real content) so two menus objects with identical
+// content always stringify identically regardless of what order Columbia's own
+// data happened to list locations/stations in on a given run.
+function stableStringify(value) {
+  if (Array.isArray(value)) return `[${value.map(stableStringify).join(',')}]`;
+  if (value && typeof value === 'object') {
+    const keys = Object.keys(value).sort();
+    return `{${keys.map(k => JSON.stringify(k) + ':' + stableStringify(value[k])).join(',')}}`;
+  }
+  return JSON.stringify(value);
+}
+
 async function upsertToSupabase(menus, dateStr) {
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -201,6 +214,23 @@ async function upsertToSupabase(menus, dateStr) {
   }
   const { createClient } = require('@supabase/supabase-js');
   const supabase = createClient(url, key);
+
+  // Scraping runs 3x/day (see .github/workflows/scrape-menus.yml), but Columbia
+  // doesn't necessarily change the published menu between runs — skip the write
+  // (and the scraped_at bump) when today's row already holds identical content,
+  // so daily_menus only changes when the actual menu does.
+  const { data: existing, error: fetchError } = await supabase
+    .from('daily_menus')
+    .select('menus')
+    .eq('date', dateStr)
+    .maybeSingle();
+  if (fetchError) {
+    console.warn('daily_menus lookup failed, writing anyway:', fetchError.message);
+  } else if (existing && stableStringify(existing.menus) === stableStringify(menus)) {
+    console.log(`No change in menus for ${dateStr} — skipping write.`);
+    return;
+  }
+
   const { error } = await supabase.from('daily_menus').upsert({
     date: dateStr,
     menus,
