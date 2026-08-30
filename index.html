@@ -130,13 +130,6 @@
   .helpSection{margin-bottom:18px;}
   .helpSection h4{margin:0 0 6px;color:var(--navy);font-family:'Figtree',ui-sans-serif,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;font-size:13px;text-transform:uppercase;letter-spacing:.06em;}
   .helpSection p{margin:0;font-size:14px;line-height:1.5;color:var(--ink);}
-  .helpPlaceholder{color:var(--muted);font-style:italic;}
-  .helpDivider{border:none;border-top:1px solid var(--line);margin:20px 0;}
-  .helpChat{display:flex;flex-direction:column;gap:10px;}
-  .helpChatLog{display:flex;flex-direction:column;gap:8px;max-height:220px;overflow-y:auto;padding:4px 2px;}
-  .helpChatMsg{font-size:13px;line-height:1.4;padding:8px 12px;border-radius:12px;max-width:85%;}
-  .helpChatMsg.user{align-self:flex-end;background:var(--navy);color:var(--primary-fg);}
-  .helpChatMsg.bot{align-self:flex-start;background:rgba(184,212,232,.25);color:var(--ink);}
   .authField{width:100%;padding:10px;border:1.5px solid var(--line);border-radius:8px;margin-bottom:10px;font-family:'Figtree',ui-sans-serif,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;font-size:14px;background:var(--card);color:var(--ink);}
   .authSwitch{font-family:'Figtree',ui-sans-serif,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;font-size:12px;color:var(--navy);cursor:pointer;text-decoration:underline;margin-top:8px;display:inline-block;}
   .err{color:var(--danger);font-family:'Figtree',ui-sans-serif,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;font-size:12px;margin-top:-4px;margin-bottom:8px;}
@@ -601,33 +594,22 @@
 
     <div class="helpSection">
       <h4>What LionSwipe Does</h4>
-      <p>LionSwipe helps Columbia students get more out of their meal plan. It shows real Columbia dining hall menus and tracks your dining swipes, eating-out spending, and grocery spending so you always know where you stand for the semester.</p>
-    </div>
-
-    <div class="helpSection">
-      <h4>What Info We Ask For</h4>
-      <p>To track your plan, we ask how many swipes your meal plan has and when your semester starts and ends (or you can pick a preset plan). From there you just log dining hall swipes, eating-out purchases, and grocery purchases as you go, and you can optionally set an eating-out budget and a grocery budget, each by day, week, month, or semester. You can use LionSwipe as a guest with no sign-up — your data stays in your browser until you create an account, at which point we offer to migrate it over.</p>
+      <p>Columbia students use LionSwipe to get more out of their meal plan. It displays live dining hall menus for you to track your meal swipes, as well as spending on eating out and grocery shopping - so you never have to guess about where you stand.</p>
     </div>
 
     <div class="helpSection">
       <h4>The Problem We're Solving</h4>
-      <p>It's easy to lose track of how many meal swipes you have left, overspend on food without noticing, and not know what's actually on the dining hall menu until you're standing in line. LionSwipe puts real menus and a running tally of swipes and spending in one place, so you can make quick, informed food decisions.</p>
+      <p>It's easy to lose track of how many meal swipes you have left or how much money you've been spending on eating out. LionSwipe offers live dining data and a comprehensive dashboard with your meal swipe and spending information all in once place, so you can save time and energy when deciding what to eat.</p>
+    </div>
+
+    <div class="helpSection">
+      <h4>What Info We Ask For</h4>
+      <p>All you have to input is your meal plan for the semester, and you can add spending goals for if you want to budget. Then, you just log dining hall meal swipes and off-campus spending as you go. You can use LionSwipe as a guest with no log-in required — your data stays in your browser - until you sign up for an account to make saving and managing your data easier.</p>
     </div>
 
     <div class="helpSection">
       <h4>Our Story</h4>
-      <p class="helpPlaceholder">[insert co-founder story / inspiration]</p>
-    </div>
-
-    <hr class="helpDivider">
-
-    <div class="helpSection helpChat">
-      <h4>Ask a Question</h4>
-      <div class="helpChatLog" id="helpChatLog"></div>
-      <div class="chatRow util" style="max-width:none;margin:0;">
-        <input id="helpChatInput" placeholder="Ask how LionSwipe works...">
-        <button id="helpChatSend">&#10148;</button>
-      </div>
+      <p>LionSwipe was built by Evelyn and Zoey, who are sophomores studying CS at Columbia :)</p>
     </div>
 
     <div style="margin-top:14px;text-align:center;"><button class="btn" id="helpCancel">Close</button></div>
@@ -1186,51 +1168,11 @@ document.getElementById('settingsBtn').onclick = ()=>{
   openPlanModal({ mandatory:false });
 };
 
-/* ---------------- Help modal + chatbot ---------------- */
+/* ---------------- Help modal ---------------- */
 const helpOverlay = document.getElementById('helpOverlay');
 document.getElementById('helpBtn').onclick = ()=> helpOverlay.classList.add('show');
 document.getElementById('helpCancel').onclick = ()=> helpOverlay.classList.remove('show');
 
-const HELP_CONTEXT = `LionSwipe is a web app that helps Columbia students get more out of their meal plan. It shows real-time Columbia dining hall menus and tracks meal swipes, eating-out spending, and grocery spending: students log dining hall swipes, eating-out purchases, and grocery purchases, can pick a preset semester swipe plan or set a custom one, and can optionally set an eating-out budget and a grocery budget, each by day, week, month, or semester. LionSwipe works fully as a guest with no login required (data is saved locally in the browser) and offers to migrate that data over if the student later creates an account. The problem it solves: students often don't know what's on the dining hall menu, lose track of remaining swipes, and overspend without a clear picture — LionSwipe brings all of that into one place.`;
-
-async function sendHelpChat(){
-  const input = document.getElementById('helpChatInput');
-  const question = input.value.trim();
-  if(!question) return;
-  const log = document.getElementById('helpChatLog');
-
-  const userMsg = document.createElement('div');
-  userMsg.className = 'helpChatMsg user';
-  userMsg.textContent = question;
-  log.appendChild(userMsg);
-  input.value = '';
-  log.scrollTop = log.scrollHeight;
-
-  const botMsg = document.createElement('div');
-  botMsg.className = 'helpChatMsg bot';
-  botMsg.textContent = '...';
-  log.appendChild(botMsg);
-  log.scrollTop = log.scrollHeight;
-
-  const prompt = `You are a helpful assistant answering questions about the LionSwipe app for a user who opened its Help panel. Use this context about the app:\n${HELP_CONTEXT}\n\nUser question: "${question}"\n\nAnswer concisely and helpfully in 2-4 sentences.`;
-
-  try{
-    const resp = await fetch("/api/search", {
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body: JSON.stringify({ prompt })
-    });
-    const data = await resp.json();
-    botMsg.textContent = data.text || "Sorry, I couldn't find an answer to that.";
-  }catch(e){
-    botMsg.textContent = "Something went wrong — please try again.";
-  }
-  log.scrollTop = log.scrollHeight;
-}
-document.getElementById('helpChatSend').onclick = sendHelpChat;
-document.getElementById('helpChatInput').addEventListener('keydown', e=>{
-  if(e.key === 'Enter') sendHelpChat();
-});
 document.getElementById('planSubmit').onclick = async ()=>{
   const errEl = document.getElementById('planErr');
   errEl.style.display = 'none';

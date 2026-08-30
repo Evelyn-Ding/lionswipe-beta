@@ -22,9 +22,9 @@ Run `schema.sql` once in the Supabase SQL editor to create the tables.
 
 ## Running the app locally
 
-The frontend calls `/api/search` and `/api/menus`, so a plain static server (e.g.
-`npx serve .`) won't fully work — those routes will 404. Use the Vercel CLI instead,
-which runs the `api/*.js` functions locally exactly as they'd run in production:
+The frontend calls `/api/menus`, so a plain static server (e.g. `npx serve .`)
+won't fully work — that route will 404. Use the Vercel CLI instead, which runs
+the `api/*.js` functions locally exactly as they'd run in production:
 
 ```
 npm i -g vercel      # once
@@ -32,11 +32,11 @@ vercel dev
 ```
 
 First run will ask to link a Vercel project (or you can skip linking and it still
-serves locally). Set `ANTHROPIC_API_KEY` (for `/api/search`) either by linking to a
-Vercel project that already has it set, or by creating a local `.env` file:
+serves locally). No API keys are required for local dev beyond Supabase — set
+`SUPABASE_URL` either by linking to a Vercel project that already has it set, or
+by creating a local `.env` file:
 
 ```
-ANTHROPIC_API_KEY=sk-ant-...
 SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=...   # only needed for the scraper, see below — never in config.js
 ```

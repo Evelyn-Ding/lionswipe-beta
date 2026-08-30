@@ -1,5 +1,5 @@
 // Minimal local dev server — no Vercel CLI, no login, no GitHub OAuth involved.
-// Serves index.html/config.js as static files and runs api/search.js + api/menus.js
+// Serves index.html/config.js as static files and runs the api/*.js handlers
 // the same way Vercel would: handler(req, res) with req.body pre-parsed as JSON and
 // res.status()/res.json() shimmed to match Vercel's Node runtime conventions.
 const http = require('http');
@@ -78,9 +78,7 @@ async function callApiHandler(relPath, req, res) {
 
 const server = http.createServer(async (req, res) => {
   try {
-    if (req.url.startsWith('/api/search')) {
-      await callApiHandler('api/search.js', req, res);
-    } else if (req.url.startsWith('/api/menus')) {
+    if (req.url.startsWith('/api/menus')) {
       await callApiHandler('api/menus.js', req, res);
     } else if (req.url.startsWith('/api/delete-account')) {
       await callApiHandler('api/delete-account.js', req, res);
@@ -96,7 +94,4 @@ const server = http.createServer(async (req, res) => {
 
 server.listen(PORT, () => {
   console.log(`LionSwipe dev server running at http://localhost:${PORT}`);
-  if (!process.env.ANTHROPIC_API_KEY) {
-    console.warn('  Note: ANTHROPIC_API_KEY is not set — /api/search will fail until it is. Add it to a .env file in the project root.');
-  }
 });
