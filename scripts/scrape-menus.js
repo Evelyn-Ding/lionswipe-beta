@@ -74,20 +74,34 @@ async function main() {
     Object.defineProperty(navigator, 'languages', { get: () => ['en-US', 'en'] });
   });
 
-  const page = await context.newPage();
+  // Everything below can throw mid-navigation (e.g. page.content() while the page
+  // is still loading) — wrap in try/finally so browser.close() always runs. Without
+  // this, an uncaught error here leaves the Chromium subprocess running, which
+  // keeps Node's event loop alive and hangs the process until CI's job timeout
+  // force-kills it hours later (confirmed via a run that hung 6h on 2026-08-30).
+  let html;
+  try {
+    const page = await context.newPage();
 
-  console.log(`Navigating to ${TARGET_URL} (headless=${HEADLESS})...`);
-  await page.goto(TARGET_URL, { waitUntil: 'networkidle', timeout: 30000 }).catch(e => {
-    console.warn('Navigation warning (continuing anyway):', e.message);
-  });
-  await page.waitForTimeout(6000); // Cloudflare's passive challenge clears (or doesn't) within a few seconds
+    console.log(`Navigating to ${TARGET_URL} (headless=${HEADLESS})...`);
+    // 'domcontentloaded' rather than 'networkidle': the dining_terms/dining_nodes/
+    // menu_data we need are server-rendered inline in the initial HTML, so we don't
+    // need to wait for this page's ~6 third-party domains (Google Analytics/Maps,
+    // Typekit, Cloudflare's challenge script, etc.) to go fully quiet — 'networkidle'
+    // was timing out intermittently on CI whenever any one of them was slow, which
+    // left the page mid-navigation and crashed the later page.content() call.
+    await page.goto(TARGET_URL, { waitUntil: 'domcontentloaded', timeout: 30000 }).catch(e => {
+      console.warn('Navigation warning (continuing anyway):', e.message);
+    });
+    await page.waitForTimeout(6000); // Cloudflare's passive challenge clears (or doesn't) within a few seconds
 
-  const html = await page.content();
+    html = await page.content();
+    await page.screenshot({ path: path.join(OUT_DIR, 'page.png'), fullPage: true });
+    fs.writeFileSync(path.join(OUT_DIR, 'page.html'), html);
+  } finally {
+    await browser.close();
+  }
   const stillChallenged = /Just a moment|Checking your browser|cf-browser-verification/i.test(html);
-
-  await page.screenshot({ path: path.join(OUT_DIR, 'page.png'), fullPage: true });
-  fs.writeFileSync(path.join(OUT_DIR, 'page.html'), html);
-  await browser.close();
 
   if (stillChallenged) {
     console.log('\n❌ Still a Cloudflare challenge page — the stealth mitigation has stopped working. Check scripts/scrape-output/page.png.');
