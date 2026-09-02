@@ -1,12 +1,12 @@
 name: Scrape curated restaurants
 
 on:
-  schedule:
-    # Weekly, Monday 9:00 UTC (~4-5am America/New_York) — restaurant menu prices
-    # move far less often than daily dining hall menus (see scrape-menus.yml),
-    # and api/chat.js already treats entries over 14 days old as stale, so
-    # weekly keeps them fresh without burning Anthropic web_search calls daily.
-    - cron: "0 9 * * 1"
+  # Disabled: scripts/scrape-restaurants.js was removed in the "simplified
+  # features" cleanup (cfee1da), so the scheduled run just fails instantly.
+  # Re-enable the cron trigger below if the curated-restaurants feature and
+  # its scraper script come back.
+  # schedule:
+  #   - cron: "0 9 * * 1"
   workflow_dispatch: {} # lets you trigger a run manually from the Actions tab
 
 jobs:
