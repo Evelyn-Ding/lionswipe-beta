@@ -169,6 +169,11 @@ grant select on public.daily_menus to anon, authenticated;
 
 -- No insert/update/delete policy for anon/authenticated — only the service role
 -- (used by scripts/scrape-menus.js, never exposed to the browser) can write here.
+-- service_role normally gets full table access automatically, but that default
+-- grant isn't guaranteed on every project (confirmed missing on one created via
+-- the SQL editor rather than the Table Editor UI — see the meal_logs comment
+-- above) — so grant it explicitly rather than relying on it.
+grant select, insert, update, delete on public.daily_menus to service_role;
 
 -- Swipe Market (see the "Swipe Market" page in index.html, modeled loosely on
 -- swipemarketcu.com). Signed-in students post "selling N swipes" or "buying N
