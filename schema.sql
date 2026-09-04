@@ -13,18 +13,22 @@ create table if not exists public.meal_logs (
 
 alter table public.meal_logs enable row level security;
 
+drop policy if exists "Users can view their own logs" on public.meal_logs;
 create policy "Users can view their own logs"
   on public.meal_logs for select
   using (auth.uid() = user_id);
 
+drop policy if exists "Users can insert their own logs" on public.meal_logs;
 create policy "Users can insert their own logs"
   on public.meal_logs for insert
   with check (auth.uid() = user_id);
 
+drop policy if exists "Users can delete their own logs" on public.meal_logs;
 create policy "Users can delete their own logs"
   on public.meal_logs for delete
   using (auth.uid() = user_id);
 
+drop policy if exists "Users can update their own logs" on public.meal_logs;
 create policy "Users can update their own logs"
   on public.meal_logs for update
   using (auth.uid() = user_id) with check (auth.uid() = user_id);
@@ -59,14 +63,17 @@ create table if not exists public.meal_plans (
 
 alter table public.meal_plans enable row level security;
 
+drop policy if exists "Users can view their own plan" on public.meal_plans;
 create policy "Users can view their own plan"
   on public.meal_plans for select
   using (auth.uid() = user_id);
 
+drop policy if exists "Users can insert their own plan" on public.meal_plans;
 create policy "Users can insert their own plan"
   on public.meal_plans for insert
   with check (auth.uid() = user_id);
 
+drop policy if exists "Users can update their own plan" on public.meal_plans;
 create policy "Users can update their own plan"
   on public.meal_plans for update
   using (auth.uid() = user_id);
@@ -89,18 +96,22 @@ create table if not exists public.spending_goals (
 
 alter table public.spending_goals enable row level security;
 
+drop policy if exists "Users can view their own spending goal" on public.spending_goals;
 create policy "Users can view their own spending goal"
   on public.spending_goals for select
   using (auth.uid() = user_id);
 
+drop policy if exists "Users can insert their own spending goal" on public.spending_goals;
 create policy "Users can insert their own spending goal"
   on public.spending_goals for insert
   with check (auth.uid() = user_id);
 
+drop policy if exists "Users can update their own spending goal" on public.spending_goals;
 create policy "Users can update their own spending goal"
   on public.spending_goals for update
   using (auth.uid() = user_id);
 
+drop policy if exists "Users can delete their own spending goal" on public.spending_goals;
 create policy "Users can delete their own spending goal"
   on public.spending_goals for delete
   using (auth.uid() = user_id);
@@ -149,6 +160,7 @@ create table if not exists public.daily_menus (
 
 alter table public.daily_menus enable row level security;
 
+drop policy if exists "Anyone can read today's menus" on public.daily_menus;
 create policy "Anyone can read today's menus"
   on public.daily_menus for select
   using (true);
@@ -213,21 +225,25 @@ alter table public.swipe_listings enable row level security;
 -- Active listings are visible to any signed-in student (that's the whole point of
 -- a marketplace); a poster can also see their own completed listings so
 -- their "My Listings" tab shows full history.
+drop policy if exists "Signed-in users can view active listings and their own" on public.swipe_listings;
 create policy "Signed-in users can view active listings and their own"
   on public.swipe_listings for select
   to authenticated
   using (status = 'active' or auth.uid() = user_id);
 
+drop policy if exists "Users can insert their own listings" on public.swipe_listings;
 create policy "Users can insert their own listings"
   on public.swipe_listings for insert
   to authenticated
   with check (auth.uid() = user_id);
 
+drop policy if exists "Users can update their own listings" on public.swipe_listings;
 create policy "Users can update their own listings"
   on public.swipe_listings for update
   to authenticated
   using (auth.uid() = user_id);
 
+drop policy if exists "Users can delete their own listings" on public.swipe_listings;
 create policy "Users can delete their own listings"
   on public.swipe_listings for delete
   to authenticated
@@ -276,6 +292,7 @@ create table if not exists public.swipe_matches (
 
 alter table public.swipe_matches enable row level security;
 
+drop policy if exists "Participants can view their own matches" on public.swipe_matches;
 create policy "Participants can view their own matches"
   on public.swipe_matches for select
   to authenticated
@@ -390,6 +407,7 @@ create table if not exists public.swipe_messages (
 
 alter table public.swipe_messages enable row level security;
 
+drop policy if exists "Participants can view their match's messages" on public.swipe_messages;
 create policy "Participants can view their match's messages"
   on public.swipe_messages for select
   to authenticated
@@ -398,6 +416,7 @@ create policy "Participants can view their match's messages"
 -- sender must be one of the match's two participants, and recipient must be
 -- specifically the *other* one — this is what stops anyone from messaging a
 -- match they're not part of, without needing a separate "is participant" check.
+drop policy if exists "Participants can message the other side of their match" on public.swipe_messages;
 create policy "Participants can message the other side of their match"
   on public.swipe_messages for insert
   to authenticated
@@ -412,6 +431,7 @@ create policy "Participants can message the other side of their match"
     )
   );
 
+drop policy if exists "Recipients can mark messages read" on public.swipe_messages;
 create policy "Recipients can mark messages read"
   on public.swipe_messages for update
   to authenticated
