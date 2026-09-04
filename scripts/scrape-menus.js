@@ -14,20 +14,29 @@
 //
 // HOW EXTRACTION WORKS: rather than parsing rendered DOM/CSS (which the new site's
 // per-hall pages don't fully populate without clicking a Locations/Days widget),
-// every dining.columbia.edu content page embeds the *entire* site's dining data as
-// inline JS variables in a <script> tag:
+// every dining.columbia.edu content page embeds dining data as inline JS variables
+// in a <script> tag:
 //   var dining_terms = `{...}`;  // meal-period id -> name, station id -> name
+//                                // (site-wide, identical on every page)
 //   var dining_nodes = `{...}`;  // every dining location: id, title, hours, path
-//   var menu_data    = `[...]`;  // every published menu: which location, which
+//                                // (site-wide, identical on every page)
+//   var menu_data    = `[...]`;  // published menus: which location, which
 //                                // date/meal-period, which stations, which items
 // Each variable is a backtick JS template literal containing double-escaped JSON
 // (it went through JSON encoding once, then got embedded as a JS string another
 // time). We reverse that by evaluating the literal with Function() — the same
-// unescaping the browser itself would do — then JSON.parse the result. Verified
-// against both a live (empty, summer) capture and a 2024 archived snapshot with
-// real menu content (see git history / conversation for how this was found).
-// Because menu_data covers every location, ONE page load is enough — no need to
-// visit each dining hall separately.
+// unescaping the browser itself would do — then JSON.parse the result.
+//
+// IMPORTANT: menu_data is NOT site-wide — confirmed 2026-09-04 that each hall's
+// content page only embeds that hall's own menu entries (e.g. Ferris Booth
+// Commons' page has menu_data for location id 12 only, nothing for John Jay's
+// id 10). An earlier version of this script only ever loaded John Jay's page
+// and assumed that page's menu_data covered every location — that was true
+// against an empty summer/archived capture but false once the semester's real
+// per-hall menus were live, so the app ended up showing ~nothing for 15 of 16
+// dining locations. We now load dining_terms/dining_nodes once from a bootstrap
+// page, then visit every location's own page (dining_nodes[].path) and merge
+// each one's menu_data in.
 
 const fs = require('fs');
 const path = require('path');
@@ -51,69 +60,108 @@ async function main() {
     channel: 'chrome',
     args: ['--disable-blink-features=AutomationControlled']
   });
-  const context = await browser.newContext({
-    userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36',
-    viewport: { width: 1280, height: 900 },
-    locale: 'en-US'
-  });
 
-  // Stealth patches: mask the Playwright/CDP fingerprints Cloudflare's Managed
-  // Challenge checks for (navigator.webdriver, missing chrome.runtime, empty
-  // plugin list, permission-query quirks).
-  await context.addInitScript(() => {
-    Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
-    window.chrome = window.chrome || { runtime: {} };
-    const originalQuery = window.navigator.permissions.query;
-    window.navigator.permissions.query = (parameters) =>
-      parameters.name === 'notifications'
-        ? Promise.resolve({ state: Notification.permission })
-        : originalQuery(parameters);
-    Object.defineProperty(navigator, 'plugins', {
-      get: () => [1, 2, 3, 4, 5].map(() => ({ name: 'Chrome PDF Plugin' }))
+  // Loading each hall's page in its OWN browser context (rather than reusing one
+  // context/page for every navigation) is required, not just tidy: confirmed
+  // 2026-09-04 that reusing a single context passes Cloudflare's challenge on the
+  // first page load but gets challenged on every subsequent same-context
+  // navigation, however long you wait between them — a fresh context (new
+  // cookies/fingerprint) reliably clears the challenge again each time.
+  async function loadPage(url, screenshotPath) {
+    const context = await browser.newContext({
+      userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36',
+      viewport: { width: 1280, height: 900 },
+      locale: 'en-US'
     });
-    Object.defineProperty(navigator, 'languages', { get: () => ['en-US', 'en'] });
-  });
+    // Stealth patches: mask the Playwright/CDP fingerprints Cloudflare's Managed
+    // Challenge checks for (navigator.webdriver, missing chrome.runtime, empty
+    // plugin list, permission-query quirks).
+    await context.addInitScript(() => {
+      Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
+      window.chrome = window.chrome || { runtime: {} };
+      const originalQuery = window.navigator.permissions.query;
+      window.navigator.permissions.query = (parameters) =>
+        parameters.name === 'notifications'
+          ? Promise.resolve({ state: Notification.permission })
+          : originalQuery(parameters);
+      Object.defineProperty(navigator, 'plugins', {
+        get: () => [1, 2, 3, 4, 5].map(() => ({ name: 'Chrome PDF Plugin' }))
+      });
+      Object.defineProperty(navigator, 'languages', { get: () => ['en-US', 'en'] });
+    });
+    try {
+      const page = await context.newPage();
+      console.log(`Navigating to ${url} (headless=${HEADLESS})...`);
+      // 'domcontentloaded' rather than 'networkidle': the dining_terms/dining_nodes/
+      // menu_data we need are server-rendered inline in the initial HTML, so we don't
+      // need to wait for this page's ~6 third-party domains (Google Analytics/Maps,
+      // Typekit, Cloudflare's challenge script, etc.) to go fully quiet — 'networkidle'
+      // was timing out intermittently on CI whenever any one of them was slow, which
+      // left the page mid-navigation and crashed the later page.content() call.
+      await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 }).catch(e => {
+        console.warn('Navigation warning (continuing anyway):', e.message);
+      });
+      await page.waitForTimeout(6000); // Cloudflare's passive challenge clears (or doesn't) within a few seconds
+      if (screenshotPath) await page.screenshot({ path: screenshotPath, fullPage: true });
+      return await page.content();
+    } finally {
+      await context.close();
+    }
+  }
 
   // Everything below can throw mid-navigation (e.g. page.content() while the page
   // is still loading) — wrap in try/finally so browser.close() always runs. Without
   // this, an uncaught error here leaves the Chromium subprocess running, which
   // keeps Node's event loop alive and hangs the process until CI's job timeout
   // force-kills it hours later (confirmed via a run that hung 6h on 2026-08-30).
-  let html;
+  const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' }); // YYYY-MM-DD
+  const menus = { Breakfast: {}, Lunch: {}, Dinner: {}, 'Late Night': {} };
+  let anyPageLoaded = false;
+
   try {
-    const page = await context.newPage();
+    // Bootstrap load: dining_terms/dining_nodes are identical on every page, so
+    // one load gives us the meal/station name lookup and the full location list
+    // (with each location's own page path) that drives the loop below.
+    const bootstrapHtml = await loadPage(TARGET_URL, path.join(OUT_DIR, 'page.png'));
+    fs.writeFileSync(path.join(OUT_DIR, 'page.html'), bootstrapHtml);
 
-    console.log(`Navigating to ${TARGET_URL} (headless=${HEADLESS})...`);
-    // 'domcontentloaded' rather than 'networkidle': the dining_terms/dining_nodes/
-    // menu_data we need are server-rendered inline in the initial HTML, so we don't
-    // need to wait for this page's ~6 third-party domains (Google Analytics/Maps,
-    // Typekit, Cloudflare's challenge script, etc.) to go fully quiet — 'networkidle'
-    // was timing out intermittently on CI whenever any one of them was slow, which
-    // left the page mid-navigation and crashed the later page.content() call.
-    await page.goto(TARGET_URL, { waitUntil: 'domcontentloaded', timeout: 30000 }).catch(e => {
-      console.warn('Navigation warning (continuing anyway):', e.message);
-    });
-    await page.waitForTimeout(6000); // Cloudflare's passive challenge clears (or doesn't) within a few seconds
+    if (isCloudflareChallenge(bootstrapHtml)) {
+      console.log('\n❌ Still a Cloudflare challenge page — the stealth mitigation has stopped working. Check scripts/scrape-output/page.html.');
+      process.exitCode = 1;
+      return;
+    }
 
-    html = await page.content();
-    await page.screenshot({ path: path.join(OUT_DIR, 'page.png'), fullPage: true });
-    fs.writeFileSync(path.join(OUT_DIR, 'page.html'), html);
+    const terms = extractInlineVar(bootstrapHtml, 'dining_terms');
+    const nodes = extractInlineVar(bootstrapHtml, 'dining_nodes');
+    if (!terms || !nodes) {
+      console.log('\n⚠️  Page loaded, but dining_terms/dining_nodes weren\'t found in it — the site\'s markup may have changed. Check scripts/scrape-output/page.html.');
+      process.exitCode = 1;
+      return;
+    }
+    const locationsById = {};
+    (nodes.locations || []).forEach(loc => { locationsById[loc.nid] = decodeEntities(loc.title); });
+
+    await cleanupOldMenus(today);
+
+    mergeMenus(menus, extractMenus(bootstrapHtml, today, terms, locationsById));
+    anyPageLoaded = true;
+
+    const otherLocations = (nodes.locations || []).filter(loc => loc.path && !TARGET_URL.endsWith(loc.path));
+    for (const loc of otherLocations) {
+      const url = new URL(loc.path, TARGET_URL).toString();
+      const html = await loadPage(url);
+      if (isCloudflareChallenge(html)) {
+        console.warn(`Skipping ${locationsById[loc.nid] || loc.path} — Cloudflare challenge on this page.`);
+        continue;
+      }
+      const partial = extractMenus(html, today, terms, locationsById);
+      if (partial) mergeMenus(menus, partial);
+    }
   } finally {
     await browser.close();
   }
-  const stillChallenged = /Just a moment|Checking your browser|cf-browser-verification/i.test(html);
 
-  if (stillChallenged) {
-    console.log('\n❌ Still a Cloudflare challenge page — the stealth mitigation has stopped working. Check scripts/scrape-output/page.png.');
-    process.exitCode = 1;
-    return;
-  }
-
-  const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' }); // YYYY-MM-DD
-  await cleanupOldMenus(today);
-  const menus = extractMenus(html, today);
-  if (!menus) {
-    console.log('\n⚠️  Page loaded, but dining_terms/dining_nodes/menu_data weren\'t found in it — the site\'s markup may have changed. Check scripts/scrape-output/page.html for `var menu_data`.');
+  if (!anyPageLoaded) {
     process.exitCode = 1;
     return;
   }
@@ -169,14 +217,20 @@ function fmtTime(iso) {
   return `${h}:${String(m).padStart(2, '0')} ${ampm}`;
 }
 
-function extractMenus(html, targetDate) {
-  const terms = extractInlineVar(html, 'dining_terms');
-  const nodes = extractInlineVar(html, 'dining_nodes');
-  const menuData = extractInlineVar(html, 'menu_data');
-  if (!terms || !nodes || !menuData) return null;
+function isCloudflareChallenge(html) {
+  return /Just a moment|Checking your browser|cf-browser-verification/i.test(html);
+}
 
-  const locationsById = {};
-  (nodes.locations || []).forEach(loc => { locationsById[loc.nid] = decodeEntities(loc.title); });
+// Combines a per-page partial menus object (Breakfast/Lunch/Dinner/'Late Night' ->
+// hall name -> {hours, stations}) into the running totals across all hall pages.
+function mergeMenus(target, partial) {
+  if (!partial) return;
+  KNOWN_MEALS.forEach(meal => Object.assign(target[meal], partial[meal]));
+}
+
+function extractMenus(html, targetDate, terms, locationsById) {
+  const menuData = extractInlineVar(html, 'menu_data');
+  if (!menuData) return null;
 
   const menus = { Breakfast: {}, Lunch: {}, Dinner: {}, 'Late Night': {} };
 
