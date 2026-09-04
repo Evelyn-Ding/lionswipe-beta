@@ -47,6 +47,7 @@ create table if not exists public.meal_plans (
   weekly_allowance int not null,
   semester_start timestamptz,
   semester_type text check (semester_type in ('fall','spring')),
+  swipes_adjustment int not null default 0,
   updated_at timestamptz not null default now()
 );
 
@@ -54,6 +55,7 @@ create table if not exists public.meal_plans (
 -- alter table public.meal_plans add column if not exists plan_name text;
 -- alter table public.meal_plans add column if not exists semester_start timestamptz;
 -- alter table public.meal_plans add column if not exists semester_type text check (semester_type in ('fall','spring'));
+-- alter table public.meal_plans add column if not exists swipes_adjustment int not null default 0;
 
 alter table public.meal_plans enable row level security;
 

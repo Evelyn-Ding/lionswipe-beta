@@ -77,6 +77,9 @@
   .btn:hover{background:var(--navy);color:var(--primary-fg);}
   .btn.solid{background:var(--navy);color:var(--primary-fg);}
   .btn.solid:hover{background:#454268;}
+  .btn:disabled{opacity:.45;cursor:not-allowed;}
+  .btn:disabled:hover{background:var(--card);color:var(--navy);}
+  .btn.solid:disabled:hover{background:var(--navy);color:var(--primary-fg);}
   .btn.danger{border-color:var(--danger);color:var(--danger);}
   .btn.danger:hover{background:var(--danger);color:#fff;}
   .swipesBox{font-family:'Figtree',ui-sans-serif,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;font-size:12px;color:var(--ink);text-align:right;}
@@ -140,7 +143,9 @@
   #breakdownPage.show{display:block;}
   #mainPage.hide{display:none;}
   .backBtn{margin-bottom:16px;}
-  .breakdownSub{font-size:11px;letter-spacing:.04em;color:var(--muted);margin-bottom:18px;}
+  .breakdownSub{font-size:11px;letter-spacing:.04em;color:var(--muted);}
+  .breakdownSubRow{display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap;}
+  .breakdownSubRow #editProfileBtn{font-size:11px;padding:5px 10px;flex-shrink:0;}
 
   /* ---- Swipe Market page ---- */
   #marketPage{display:none;}
@@ -172,6 +177,7 @@
   .listingCard.agreement{border-color:var(--success);background:var(--success-bg);}
   .listingCard.agreementCancelled{opacity:.6;}
   .listingEmpty{text-align:center;color:var(--muted);font-size:13px;padding:34px 0;}
+  .mealHistorySub{font-size:11px;color:var(--muted);margin:-4px 0 12px;}
   .mealHistoryList{max-height:420px;overflow-y:auto;margin-bottom:0;}
   .mealHistoryList .listingCard{padding:12px 16px;}
   .tabBadge{display:inline-block;min-width:16px;height:16px;padding:0 4px;margin-left:5px;border-radius:8px;background:var(--danger);color:#fff;font-size:10px;font-weight:700;line-height:16px;text-align:center;vertical-align:2px;}
@@ -195,6 +201,9 @@
   .statCard{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px;text-align:center;}
   .statCard .val{font-family:var(--font-display);font-size:32px;color:var(--navy);font-weight:700;}
   .statCard .lbl{font-family:'Figtree',ui-sans-serif,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-top:4px;}
+  #swipesLeftCard{cursor:pointer;transition:.15s;}
+  #swipesLeftCard:hover{border-color:var(--navy);background:var(--columbia-blue);}
+  #swipesLeftCard .clickHint{font-size:10.5px;font-weight:600;color:var(--navy);margin-top:6px;}
   .chartBlock{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px;margin-bottom:22px;}
   .chartBlock h4{margin:0 0 12px;color:var(--navy);font-family:'Figtree',ui-sans-serif,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;font-size:13px;text-transform:uppercase;letter-spacing:.06em;}
   .scrollBars{display:flex;gap:14px;overflow-x:auto;padding-bottom:6px;}
@@ -289,7 +298,10 @@
   <div id="breakdownPage">
     <button class="btn backBtn util" id="backBtn">&larr; Back to LionSwipe</button>
     <h2 style="color:var(--navy);font-weight:800;margin-bottom:2px;">Your Breakdown</h2>
-    <div class="breakdownSub util" id="breakdownSub"></div>
+    <div class="breakdownSubRow">
+      <button class="btn util" id="editProfileBtn" title="Edit dining plan / spending goal">&#9881; Profile</button>
+      <div class="breakdownSub util" id="breakdownSub"></div>
+    </div>
     <div class="statGrid" id="statGrid"></div>
     <div class="chartBlock">
       <h4>Meal Swipes Used / Week &mdash; scroll for history &amp; target pace</h4>
@@ -301,12 +313,12 @@
     </div>
     <div class="statGrid" id="statGrid2"></div>
     <div class="chartBlock">
-      <h4>Money Spent / Week &mdash; scroll for history &amp; target pace</h4>
+      <h4>Money Spent Eating Out / Week &mdash; scroll for history &amp; target pace</h4>
       <div class="chartLegend">
         <div><span class="sw" style="background:var(--gold);"></span>Spent eating out</div>
         <div><span class="sw target"></span>Target spend to hit your spending goal</div>
       </div>
-      <div class="scrollBars" id="moneyChart"></div>
+      <div class="scrollBars" id="outChart"></div>
     </div>
     <div class="statGrid" id="statGrid3"></div>
     <div class="chartBlock">
@@ -337,6 +349,7 @@
     </div>
     <div class="chartBlock">
       <h4>Meal History</h4>
+      <div class="mealHistorySub" id="mealHistorySub"></div>
       <div class="listingGrid mealHistoryList" id="mealHistoryList"></div>
     </div>
   </div>
@@ -411,6 +424,23 @@
     <div class="row">
       <button class="btn solid" id="spendConfirm">Log Meal</button>
       <button class="btn" id="spendCancel">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="swipesLeftOverlay">
+  <div class="modal util" style="max-width:380px;text-align:left;">
+    <h3 style="text-align:center;">Correct Swipes Left</h3>
+    <p class="util" style="font-size:13px;color:var(--muted);">Enter your actual swipes left, exactly as it shows on SSOL.</p>
+    <input type="number" id="swipesLeftCorrectionInput" min="0" step="1" placeholder="e.g. 120">
+    <label style="display:flex;align-items:flex-start;gap:8px;font-size:13px;color:var(--ink);margin:14px 0 10px;cursor:pointer;">
+      <input type="checkbox" id="swipesLeftConfirmCheck" style="margin-top:3px;">
+      <span>I confirm this is the accurate # of swipes updated on SSOL.</span>
+    </label>
+    <p class="util" style="font-size:12px;color:var(--muted);line-height:1.5;">Any dining hall swipes you've already logged stay saved — you can still view them anytime below in Meal History. They just won't be counted toward Swipes Used anymore once you save this, since this number becomes the current one going forward.</p>
+    <div class="row">
+      <button class="btn solid" id="swipesLeftConfirmBtn" disabled>Save</button>
+      <button class="btn" id="swipesLeftCancelBtn">Cancel</button>
     </div>
   </div>
 </div>
@@ -669,6 +699,47 @@ function totalSemesterWeeks(){ return Math.max(1, Math.ceil((SEMESTER_END - SEME
 function weeksRemainingInSemester(now){
   return Math.max(1, Math.ceil((SEMESTER_END - now) / WEEK_MS));
 }
+
+// Day/week/month bucketing is done against America/New_York wall-clock time
+// (Columbia is always Eastern), not the viewer's own browser timezone — so a
+// student checking their stats from a different timezone still sees swipes
+// bucketed into the same ET day/week that the dining hall logged them in.
+// Defined up here (ahead of tick()'s first call below) since tick() calls
+// fmtWeekLabel(), which depends on ET_ZONE — a const referenced before its
+// declaration line runs throws a ReferenceError, at module scope, which had
+// been silently aborting the entire rest of the script.
+const ET_ZONE = 'America/New_York';
+const ET_WEEKDAY_INDEX = {Sun:0,Mon:1,Tue:2,Wed:3,Thu:4,Fri:5,Sat:6};
+function etParts(ts){
+  const dtf = new Intl.DateTimeFormat('en-US', {timeZone:ET_ZONE, hour12:false,
+    year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',weekday:'short'});
+  const p = {};
+  dtf.formatToParts(new Date(ts)).forEach(x=>{ if(x.type!=='literal') p[x.type]=x.value; });
+  return { y:+p.year, m:+p.month, d:+p.day, hh: p.hour==='24'?0:+p.hour, wd:p.weekday };
+}
+// The UTC instant corresponding to a given Eastern wall-clock y/m/d 00:00:00,
+// correct across the EST/EDT boundary (offset computed at local noon on that
+// date, to avoid landing on the DST-transition hour itself).
+function etMidnightUTC(y,m,d){
+  const dtf = new Intl.DateTimeFormat('en-US', {timeZone:ET_ZONE, hour12:false,
+    year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  const approx = Date.UTC(y, m-1, d, 12, 0, 0);
+  const p = {};
+  dtf.formatToParts(new Date(approx)).forEach(x=>{ if(x.type!=='literal') p[x.type]=x.value; });
+  const hour = p.hour==='24'?0:+p.hour;
+  const offset = Date.UTC(+p.year, +p.month-1, +p.day, hour, +p.minute, +p.second) - approx;
+  return Date.UTC(y, m-1, d, 0, 0, 0) - offset;
+}
+function startOfDayET(ts){ const p = etParts(ts); return etMidnightUTC(p.y,p.m,p.d); }
+function startOfWeek(d){
+  const p = etParts(d);
+  const dow = ET_WEEKDAY_INDEX[p.wd];
+  const diff = (dow===0?-6:1) - dow; // move back to Monday
+  const dt = new Date(Date.UTC(p.y,p.m-1,p.d));
+  dt.setUTCDate(dt.getUTCDate()+diff);
+  return new Date(etMidnightUTC(dt.getUTCFullYear(), dt.getUTCMonth()+1, dt.getUTCDate()));
+}
+function startOfMonthET(ts){ const p = etParts(ts); return etMidnightUTC(p.y,p.m,1); }
 
 // Swipe Market is fully built but hidden for this beta release (in-app messaging
 // needs more streamlining first) — flip to true to bring it back, no other changes
@@ -933,7 +1004,8 @@ async function loadOrPromptPlan(){
   if(error){ console.error(error); }
   if(data){
     userPlan = { total_swipes: data.total_swipes, weekly_allowance: data.weekly_allowance,
-                 plan_name: data.plan_name || '', semester_start: data.semester_start, semester_type: data.semester_type };
+                 plan_name: data.plan_name || '', semester_start: data.semester_start, semester_type: data.semester_type,
+                 swipes_adjustment: data.swipes_adjustment || 0 };
     updateSwipesSummary();
 
     // End-of-semester check: if this plan was saved for an earlier term than the one
@@ -943,9 +1015,9 @@ async function loadOrPromptPlan(){
     if(storedStart && storedStart !== SEMESTER_START.getTime()){
       let leftover = 0;
       if(data.semester_type === 'fall'){
-        const usedPrevSemester = logs.filter(l=> l.type==='hall' && l.ts>=storedStart && l.ts<SEMESTER_START.getTime())
+        const usedPrevSemester_logged = logs.filter(l=> l.type==='hall' && l.ts>=storedStart && l.ts<SEMESTER_START.getTime())
                                       .reduce((s,l)=>s+l.swipes,0);
-        leftover = Math.max(0, data.total_swipes - usedPrevSemester);
+        leftover = Math.max(0, data.total_swipes - usedPrevSemester_logged);
       }
       openPlanModal({ mandatory:false, rollover:true, prevType:data.semester_type, leftover });
     }
@@ -955,8 +1027,16 @@ async function loadOrPromptPlan(){
   }
 }
 async function savePlan(totalSwipes, weeklyAllowance, planName){
+  // swipes_adjustment carries over unchanged when the plan total changes (e.g.
+  // switching dining plans mid-semester) — it's a correction to how many
+  // swipes have *actually* been used against the logged history, which
+  // doesn't change just because the plan total did. Recombined with the new
+  // total_swipes, "Swipes Used"/"Swipes Left" stay correct immediately
+  // without needing to be re-entered.
+  const swipesAdjustment = userPlan ? (userPlan.swipes_adjustment||0) : 0;
   const planObj = { total_swipes: totalSwipes, weekly_allowance: weeklyAllowance, plan_name: planName || '',
-                     semester_start: SEMESTER_START.toISOString(), semester_type: SEMESTER_TYPE };
+                     semester_start: SEMESTER_START.toISOString(), semester_type: SEMESTER_TYPE,
+                     swipes_adjustment: swipesAdjustment };
   if(!currentUser){
     saveGuestPlan(planObj);
     userPlan = planObj;
@@ -967,7 +1047,7 @@ async function savePlan(totalSwipes, weeklyAllowance, planName){
   const { error } = await supabase.from('meal_plans').upsert({
     user_id: currentUser.id, total_swipes: totalSwipes, weekly_allowance: weeklyAllowance,
     plan_name: planName || null, semester_start: SEMESTER_START.toISOString(), semester_type: SEMESTER_TYPE,
-    updated_at: new Date().toISOString()
+    swipes_adjustment: swipesAdjustment, updated_at: new Date().toISOString()
   });
   if(error){ console.error(error); return false; }
   userPlan = planObj;
@@ -1377,14 +1457,14 @@ document.getElementById('deleteAccountBtn').onclick = async ()=>{
 /* ---------------- Swipes summary (header, plain text) ---------------- */
 function updateSwipesSummary(){
   const now = new Date();
-  const usedSemester = logs.filter(l=>l.type==='hall' && l.ts >= SEMESTER_START.getTime()).reduce((s,l)=>s+l.swipes,0);
+  const usedSemester_logged = logs.filter(l=>l.type==='hall' && l.ts >= SEMESTER_START.getTime()).reduce((s,l)=>s+l.swipes,0);
   const weekLogs = logsThisPeriod('week');
   const spentOutWeek = weekLogs.filter(l=>l.type==='out').reduce((s,l)=>s+l.amount,0);
   const spentGroceryWeek = weekLogs.filter(l=>l.type==='grocery').reduce((s,l)=>s+l.amount,0);
 
   // "Swipes left" depends on a real saved plan (total_swipes) — show "—" rather
   // than inventing a number when there isn't one yet.
-  const left = userPlan ? Math.max(0, userPlan.total_swipes - usedSemester) : null;
+  const swipesLeft_ssol = getSwipesLeftSsol(usedSemester_logged);
 
   // "Swipes/week needed" is the pace required *right now* to use up whatever's
   // left of the plan by SEMESTER_END — remaining swipes divided by remaining
@@ -1392,7 +1472,7 @@ function updateSwipesSummary(){
   // swipes unused). Recomputed on every log, so it rises if you fall behind and
   // drops as you catch up — not a fixed weekly allowance. Shared with the
   // Breakdown page (swipesPerWeekNeeded) so the two numbers always agree.
-  const weekNeeded = userPlan ? swipesPerWeekNeeded(left, now.getTime()) : '—';
+  const weekNeeded = userPlan ? swipesPerWeekNeeded(swipesLeft_ssol, now.getTime()) : '—';
 
   // Spending goal progress: recompute "spent" over whatever period the goal is
   // set for (day/week/month/semester) — only rendered at all when a goal is set,
@@ -1424,19 +1504,15 @@ function updateSwipesSummary(){
     : '';
 
   document.getElementById('swipesSummary').innerHTML = `
-    <div class="swipesLine"><span>Swipes used:</span><b>${usedSemester}</b></div>
+    <div class="swipesLine"><span>Swipes used:</span><b>${getSwipesUsedSsol(usedSemester_logged)}</b></div>
     <div class="swipesLine"><span>Swipes/week needed:</span><b>${weekNeeded}</b></div>
-    <div class="swipesLine editable" id="swipesLeftLine" title="Click to edit your dining plan"><span>Swipes left:</span><b>${left===null?'—':left}</b></div>
+    <div class="swipesLine" id="swipesLeftLine"><span>Swipes left:</span><b>${swipesLeft_ssol===null?'—':swipesLeft_ssol}</b></div>
     <div class="swipesLine"><span>Total spent eating out this week:</span><b>$${spentOutWeek.toFixed(2)}</b></div>
     <div class="swipesLine"><span>Total spent on groceries this week:</span><b>$${spentGroceryWeek.toFixed(2)}</b></div>
     ${spendGoalLine}
     ${groceryGoalLine}
     ${guestNote}
   `;
-  const slLine = document.getElementById('swipesLeftLine');
-  if(slLine){
-    slLine.onclick = ()=> openPlanModal({ mandatory:false, tab:'plan' });
-  }
   const sgLine = document.getElementById('spendGoalLine');
   if(sgLine){
     sgLine.onclick = ()=> openPlanModal({ mandatory:false, tab:'spend' });
@@ -1465,6 +1541,7 @@ document.getElementById('backBtn').onclick = ()=>{
   document.getElementById('breakdownPage').classList.remove('show');
   document.getElementById('mainPage').classList.remove('hide');
 };
+document.getElementById('editProfileBtn').onclick = ()=> openPlanModal({ mandatory:false, tab:'plan' });
 
 /* ---------------- Swipe Market page ---------------- */
 // Requires a real account end-to-end (no guest/localStorage mode like logs have) —
@@ -1576,9 +1653,10 @@ function isExpired(l){
 function fmtMeetingWindow(l){
   if(!l.meeting_start || !l.meeting_end) return '';
   const start = new Date(l.meeting_start), end = new Date(l.meeting_end);
-  const dateFmt = new Intl.DateTimeFormat('en-US', {weekday:'short', month:'short', day:'numeric'});
-  const timeFmt = new Intl.DateTimeFormat('en-US', {hour:'numeric', minute:'2-digit'});
-  const sameDay = start.toDateString() === end.toDateString();
+  const dateFmt = new Intl.DateTimeFormat('en-US', {weekday:'short', month:'short', day:'numeric', timeZone:ET_ZONE});
+  const timeFmt = new Intl.DateTimeFormat('en-US', {hour:'numeric', minute:'2-digit', timeZone:ET_ZONE});
+  const startP = etParts(start.getTime()), endP = etParts(end.getTime());
+  const sameDay = startP.y===endP.y && startP.m===endP.m && startP.d===endP.d;
   return sameDay
     ? `${dateFmt.format(start)} &middot; ${timeFmt.format(start)}&ndash;${timeFmt.format(end)}`
     : `${dateFmt.format(start)} ${timeFmt.format(start)} &ndash; ${dateFmt.format(end)} ${timeFmt.format(end)}`;
@@ -1760,7 +1838,7 @@ function fmtTimeAgo(d){
   if(hrs < 24) return `${hrs}h ago`;
   const days = Math.round(hrs/24);
   if(days < 7) return `${days}d ago`;
-  return d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+  return d.toLocaleDateString('en-US',{month:'short',day:'numeric',timeZone:ET_ZONE});
 }
 
 document.getElementById('listingGrid').onclick = async (e)=>{
@@ -2160,24 +2238,60 @@ document.getElementById('repostSubmit').onclick = async ()=>{
   renderListingGrid();
 };
 
-function startOfWeek(d){
-  const dt = new Date(d);
-  const day = dt.getDay(); // 0 sun
-  const diff = (day===0?-6:1) - day; // move to Monday
-  dt.setDate(dt.getDate()+diff);
-  dt.setHours(0,0,0,0);
-  return dt;
-}
 function weekKey(ts){ return startOfWeek(ts).getTime(); }
 function periodCutoff(period){
   const now = Date.now();
-  if(period==='day'){ const d=new Date(); d.setHours(0,0,0,0); return d.getTime(); }
+  if(period==='day'){ return startOfDayET(now); }
   if(period==='week'){ return startOfWeek(now).getTime(); }
   if(period==='semester'){ return SEMESTER_START.getTime(); }
-  const d=new Date(); d.setDate(1); d.setHours(0,0,0,0); return d.getTime(); // month (default)
+  return startOfMonthET(now); // month (default)
 }
 function logsThisPeriod(period){
   return logs.filter(l=>l.ts>=periodCutoff(period));
+}
+
+// Single source of truth for "swipes used" — used by the header stat and the
+// Breakdown page's stat card. Normally just what's been logged this semester,
+// but swipes_adjustment (see updateSwipesLeft) layers a correction on top for
+// when a student joins mid-semester with some swipes already used elsewhere,
+// or notices their official student account total has drifted from what
+// LionSwipe has logged (a few missed/forgotten entries) — once corrected,
+// the official number is treated as ground truth and "used" is reported
+// against *that*, not the raw (now known-incomplete) log sum. The logged
+// history itself is never rewritten — new swipes still log normally and
+// still move this number by exactly the right amount, since the correction
+// is a fixed offset layered on top of whatever the logs say.
+function getSwipesUsedSsol(usedSemester_logged){
+  return usedSemester_logged + (userPlan ? (userPlan.swipes_adjustment||0) : 0);
+}
+// "Swipes left" is just total_swipes minus the corrected used count above —
+// always consistent with the Swipes Used card, so the two never disagree.
+function getSwipesLeftSsol(usedSemester_logged){
+  if(!userPlan) return null;
+  return Math.max(0, userPlan.total_swipes - getSwipesUsedSsol(usedSemester_logged));
+}
+// Called from the Swipes Left stat card's inline editor: back-solves the
+// swipes_adjustment needed so getSwipesLeftSsol() comes out to
+// newSwipesLeft_ssol right now, and persists just that delta — total_swipes
+// and the logged history are untouched; only the derived "used"/"left"
+// figures move.
+async function updateSwipesLeft(newSwipesLeft_ssol, usedSemester_logged){
+  if(!userPlan) return false;
+  const newSwipesUsed_ssol = userPlan.total_swipes - newSwipesLeft_ssol;
+  const adjustment = newSwipesUsed_ssol - usedSemester_logged;
+  userPlan.swipes_adjustment = adjustment;
+  if(!currentUser){
+    saveGuestPlan(userPlan);
+  } else {
+    if(!supabase) return false;
+    const { error } = await supabase.from('meal_plans')
+      .update({ swipes_adjustment: adjustment, updated_at: new Date().toISOString() })
+      .eq('user_id', currentUser.id);
+    if(error){ console.error(error); return false; }
+  }
+  updateSwipesSummary();
+  renderBreakdown();
+  return true;
 }
 
 // Single source of truth for "swipes/week needed" — used by the header stat,
@@ -2185,9 +2299,9 @@ function logsThisPeriod(period){
 // so all three always show the same number. Dynamic: recomputed from whatever
 // swipes are left right now divided by however many weeks remain, so it rises
 // if you fall behind pace and drops as you catch up.
-function swipesPerWeekNeeded(swipesLeftVal, now){
-  if(swipesLeftVal===null || swipesLeftVal===undefined) return null;
-  return Math.ceil(swipesLeftVal / weeksRemainingInSemester(now));
+function swipesPerWeekNeeded(swipesLeftVal_ssol, now){
+  if(swipesLeftVal_ssol===null || swipesLeftVal_ssol===undefined) return null;
+  return Math.ceil(swipesLeftVal_ssol / weeksRemainingInSemester(now));
 }
 
 // The $/week you'd need to spend eating out, from now through the end of the
@@ -2223,15 +2337,15 @@ function renderBreakdown(){
   const weekLogs = logsThisPeriod('week');
   const monthLogs = logsThisPeriod('month');
   const semesterLogs = logsThisPeriod('semester');
-  const usedSemester = logs.filter(l=>l.type==='hall' && l.ts >= SEMESTER_START.getTime()).reduce((s,l)=>s+l.swipes,0);
-  const swipesLeft = userPlan ? Math.max(0, userPlan.total_swipes - usedSemester) : null;
-  const spentWeek = weekLogs.filter(l=>l.type==='out').reduce((s,l)=>s+l.amount,0);
-  const spentMonth = monthLogs.filter(l=>l.type==='out').reduce((s,l)=>s+l.amount,0);
-  const spentSemester = semesterLogs.filter(l=>l.type==='out').reduce((s,l)=>s+l.amount,0);
-  const spentWeekGrocery = weekLogs.filter(l=>l.type==='grocery').reduce((s,l)=>s+l.amount,0);
-  const spentMonthGrocery = monthLogs.filter(l=>l.type==='grocery').reduce((s,l)=>s+l.amount,0);
-  const spentSemesterGrocery = semesterLogs.filter(l=>l.type==='grocery').reduce((s,l)=>s+l.amount,0);
-  const weekNeeded = swipesPerWeekNeeded(swipesLeft, now);
+  const usedSemester_logged = logs.filter(l=>l.type==='hall' && l.ts >= SEMESTER_START.getTime()).reduce((s,l)=>s+l.swipes,0);
+  const swipesLeft_ssol = getSwipesLeftSsol(usedSemester_logged);
+  const spentOutWeek = weekLogs.filter(l=>l.type==='out').reduce((s,l)=>s+l.amount,0);
+  const spentOutMonth = monthLogs.filter(l=>l.type==='out').reduce((s,l)=>s+l.amount,0);
+  const spentOutSemester = semesterLogs.filter(l=>l.type==='out').reduce((s,l)=>s+l.amount,0);
+  const spentGroceryWeek = weekLogs.filter(l=>l.type==='grocery').reduce((s,l)=>s+l.amount,0);
+  const spentGroceryMonth = monthLogs.filter(l=>l.type==='grocery').reduce((s,l)=>s+l.amount,0);
+  const spentGrocerySemester = semesterLogs.filter(l=>l.type==='grocery').reduce((s,l)=>s+l.amount,0);
+  const weekNeeded = swipesPerWeekNeeded(swipesLeft_ssol, now);
   // Same weeks-left/weeks-total the pacing formulas above divide by — shown next to
   // the plan/goal subtitle so the Swipes/Week Needed (and spend target) numbers are
   // checkable by hand: e.g. Swipes Left / Weeks Left should equal Swipes/Week Needed.
@@ -2248,28 +2362,29 @@ function renderBreakdown(){
     `DINING PLAN: ${planLabel} &nbsp;|&nbsp; SPENDING GOAL: ${goalLabel} &nbsp;|&nbsp; SEMESTER: ${termLabel} &nbsp;|&nbsp; WEEKS LEFT: ${weeksRemaining} / ${weeksTotal}`;
 
   document.getElementById('statGrid').innerHTML = `
-    ${statCard(usedSemester,'Swipes Used')}
+    ${swipesLeftCard(swipesLeft_ssol)}
+    ${statCard(getSwipesUsedSsol(usedSemester_logged),'Swipes Used')}
     ${statCard(weekNeeded===null?'—':weekNeeded,'Swipes/Week Needed')}
-    ${statCard(swipesLeft===null?'—':swipesLeft,'Swipes Left')}
-    ${statCard('$'+spentWeek.toFixed(2),'Spent This Week')}
   `;
   document.getElementById('statGrid2').innerHTML = `
-    ${statCard('$'+spentMonth.toFixed(2),'Spent This Month')}
-    ${statCard('$'+spentSemester.toFixed(2),'Spent This Semester')}
+    ${statCard('$'+spentOutWeek.toFixed(2),'Spent This Week (Eating Out)')}
+    ${statCard('$'+spentOutMonth.toFixed(2),'Spent This Month (Eating Out)')}
+    ${statCard('$'+spentOutSemester.toFixed(2),'Spent This Semester (Eating Out)')}
   `;
+  attachSwipesLeftEditor(usedSemester_logged);
   document.getElementById('statGrid3').innerHTML = `
-    ${statCard('$'+spentWeekGrocery.toFixed(2),'Spent This Week (Groceries)')}
-    ${statCard('$'+spentMonthGrocery.toFixed(2),'Spent This Month (Groceries)')}
-    ${statCard('$'+spentSemesterGrocery.toFixed(2),'Spent This Semester (Groceries)')}
+    ${statCard('$'+spentGroceryWeek.toFixed(2),'Spent This Week (Groceries)')}
+    ${statCard('$'+spentGroceryMonth.toFixed(2),'Spent This Month (Groceries)')}
+    ${statCard('$'+spentGrocerySemester.toFixed(2),'Spent This Semester (Groceries)')}
   `;
 
   const weeks = {};
   logs.forEach(l=>{
     if(l.ts < SEMESTER_START.getTime()) return; // keep chart totals aligned with the semester-scoped stat boxes above
     const wk = weekKey(l.ts);
-    if(!weeks[wk]) weeks[wk] = {swipes:0, money:0, grocery:0};
+    if(!weeks[wk]) weeks[wk] = {swipes:0, out:0, grocery:0};
     if(l.type==='hall') weeks[wk].swipes += l.swipes;
-    if(l.type==='out') weeks[wk].money += l.amount;
+    if(l.type==='out') weeks[wk].out += l.amount;
     if(l.type==='grocery') weeks[wk].grocery += l.amount;
   });
   const thisWeekStart = startOfWeek(now).getTime();
@@ -2284,7 +2399,7 @@ function renderBreakdown(){
   let historyArr = [];
   for(let i=historyWeeksToShow-1;i>=0;i--){
     const wk = thisWeekStart - i*WEEK_MS;
-    historyArr.push({wk, ...(weeks[wk]||{swipes:0,money:0,grocery:0})});
+    historyArr.push({wk, ...(weeks[wk]||{swipes:0,out:0,grocery:0})});
   }
 
   // Future bars are recalculated fresh every render from swipesPerWeekNeeded /
@@ -2301,10 +2416,10 @@ function renderBreakdown(){
     futureTsList.forEach(wk=> swipeWeekArr.push({wk, val:swipeTargetPerWeek, future:true}));
   }
 
-  const moneyTargetPerWeek = spendPerWeekNeeded(now);
-  const moneyWeekArr = historyArr.map(w=>({wk:w.wk, val:w.money, future:false}));
+  const outTargetPerWeek = spendPerWeekNeeded(now);
+  const outWeekArr = historyArr.map(w=>({wk:w.wk, val:w.out, future:false}));
   if(spendGoal){
-    futureTsList.forEach(wk=> moneyWeekArr.push({wk, val:moneyTargetPerWeek, future:true}));
+    futureTsList.forEach(wk=> outWeekArr.push({wk, val:outTargetPerWeek, future:true}));
   }
 
   const groceryTargetPerWeek = groceryPerWeekNeeded(now);
@@ -2325,17 +2440,17 @@ function renderBreakdown(){
     swipeChart.appendChild(col);
   });
 
-  const maxMoney = Math.max(...moneyWeekArr.map(w=>w.val),1);
-  const moneyChart = document.getElementById('moneyChart');
-  moneyChart.innerHTML = '';
-  moneyWeekArr.forEach(w=>{
+  const maxOut = Math.max(...outWeekArr.map(w=>w.val),1);
+  const outChart = document.getElementById('outChart');
+  outChart.innerHTML = '';
+  outWeekArr.forEach(w=>{
     const col = document.createElement('div'); col.className='barCol';
-    const h = Math.round((w.val/maxMoney)*130);
+    const h = Math.round((w.val/maxOut)*130);
     const barStyle = w.future ? `height:${h}px;` : `height:${h}px;background:var(--gold);`;
     col.innerHTML = `<div class="barTrack"><div class="bar${w.future?' target':''}" style="${barStyle}"></div></div>
       <div class="barVal">$${w.future ? Math.ceil(w.val) : w.val.toFixed(0)}</div>
       <div class="barLbl">${fmtWeekLabel(w.wk)}${w.future?' (target)':''}</div>`;
-    moneyChart.appendChild(col);
+    outChart.appendChild(col);
   });
 
   const maxGrocery = Math.max(...groceryWeekArr.map(w=>w.val),1);
@@ -2360,9 +2475,11 @@ function renderBreakdown(){
   drawSpendPie(outSpentAll, grocerySpentAll);
 
   renderHallFrequencyChart();
-  renderMealHistory();
+  renderMealHistory(usedSemester_logged);
 }
-function renderMealHistory(){
+function renderMealHistory(usedSemester_logged){
+  document.getElementById('mealHistorySub').textContent =
+    `Meal Swipes Used: ${getSwipesUsedSsol(usedSemester_logged)} / Meal Swipes Logged by You: ${usedSemester_logged}`;
   const container = document.getElementById('mealHistoryList');
   if(!logs.length){
     container.innerHTML = `<div class="listingEmpty">No meals logged yet.</div>`;
@@ -2401,12 +2518,66 @@ document.getElementById('mealHistoryList').onclick = async (e)=>{
   if(btn.dataset.action === 'edit-log') openEditLogModal(log);
 };
 function statCard(val,lbl){ return `<div class="statCard"><div class="val">${val}</div><div class="lbl util">${lbl}</div></div>`; }
+
+// "Swipes Left" is the one stat card that's directly editable (see
+// updateSwipesLeft) — Swipes Used and Swipes/Week Needed are pure
+// calculations off the logs and stay read-only.
+function swipesLeftCard(swipesLeft_ssol){
+  return `<div class="statCard" id="swipesLeftCard">
+    <div class="val" id="swipesLeftVal">${swipesLeft_ssol===null?'—':swipesLeft_ssol}</div>
+    <div class="lbl util">Swipes Left</div>
+    <div class="clickHint">Swipes left not up to date? Click to correct.</div>
+  </div>`;
+}
+function attachSwipesLeftEditor(usedSemester_logged){
+  const card = document.getElementById('swipesLeftCard');
+  if(!card) return;
+  card.onclick = ()=>{
+    if(!userPlan){ openPlanModal({ mandatory:false, tab:'plan' }); return; }
+    openSwipesLeftModal(usedSemester_logged);
+  };
+}
+
+// Correcting Swipes Left is a deliberate, confirmed action (not a quick inline
+// edit) — the checkbox forces an explicit acknowledgment before Save enables,
+// since this overrides what's actually been logged with a number the student
+// is asserting is accurate (see updateSwipesLeft for how the two get
+// reconciled without touching the logged history itself).
+const swipesLeftOverlay = document.getElementById('swipesLeftOverlay');
+const swipesLeftCorrectionInput = document.getElementById('swipesLeftCorrectionInput');
+const swipesLeftConfirmCheck = document.getElementById('swipesLeftConfirmCheck');
+const swipesLeftConfirmBtn = document.getElementById('swipesLeftConfirmBtn');
+let swipesLeftModalUsedSemester_logged = null;
+function openSwipesLeftModal(usedSemester_logged){
+  swipesLeftModalUsedSemester_logged = usedSemester_logged;
+  const currentSwipesLeft_ssol = getSwipesLeftSsol(usedSemester_logged);
+  swipesLeftCorrectionInput.value = currentSwipesLeft_ssol===null ? '' : currentSwipesLeft_ssol;
+  swipesLeftConfirmCheck.checked = false;
+  updateSwipesLeftConfirmBtnState();
+  swipesLeftOverlay.classList.add('show');
+  swipesLeftCorrectionInput.focus();
+  swipesLeftCorrectionInput.select();
+}
+function updateSwipesLeftConfirmBtnState(){
+  const n = parseInt(swipesLeftCorrectionInput.value, 10);
+  const valid = Number.isFinite(n) && n>=0;
+  swipesLeftConfirmBtn.disabled = !(valid && swipesLeftConfirmCheck.checked);
+}
+swipesLeftCorrectionInput.oninput = updateSwipesLeftConfirmBtnState;
+swipesLeftConfirmCheck.onchange = updateSwipesLeftConfirmBtnState;
+document.getElementById('swipesLeftCancelBtn').onclick = ()=> swipesLeftOverlay.classList.remove('show');
+swipesLeftConfirmBtn.onclick = async ()=>{
+  const newSwipesLeft_ssol = parseInt(swipesLeftCorrectionInput.value, 10);
+  if(!Number.isFinite(newSwipesLeft_ssol) || newSwipesLeft_ssol<0 || !swipesLeftConfirmCheck.checked) return;
+  swipesLeftOverlay.classList.remove('show');
+  await updateSwipesLeft(newSwipesLeft_ssol, swipesLeftModalUsedSemester_logged);
+};
 function escapeHtml(str){
   return String(str).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 function fmtWeekLabel(ts){
   const d = new Date(ts);
-  return d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+  return d.toLocaleDateString('en-US',{month:'short',day:'numeric',timeZone:ET_ZONE});
 }
 function drawPie(a,b){
   const total = a+b || 1;
