@@ -239,6 +239,21 @@
   .poName{font-weight:700;color:var(--navy);font-size:13px;}
   .poMeta{font-size:11px;color:var(--muted);margin-top:2px;line-height:1.4;}
   .planDivider{font-family:'Figtree',ui-sans-serif,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;font-size:11px;color:var(--muted);text-align:center;margin:14px 0;text-transform:uppercase;letter-spacing:.05em;}
+  .ssolCheckRow{display:flex;align-items:flex-start;gap:8px;font-size:12.5px;color:var(--ink);margin:10px 0 4px;cursor:pointer;}
+  .ssolCheckRow span{flex:1;}
+  .infoBtn{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;flex-shrink:0;border-radius:50%;border:1.5px solid var(--navy);color:var(--navy);background:var(--card);font-size:11px;font-weight:700;font-style:italic;font-family:Georgia,serif;cursor:pointer;line-height:1;padding:0;}
+  .ssolHelpModal{max-width:440px;text-align:left;max-height:85vh;overflow-y:auto;}
+  .ssolHelpModal h3{text-align:center;}
+  .ssolSteps{margin:10px 0;padding-left:20px;font-size:13.5px;line-height:1.5;color:var(--ink);}
+  .ssolSteps li{margin-bottom:10px;}
+  .dashboardChip{display:inline-flex;align-items:center;gap:6px;background:var(--secondary);border:1px solid var(--line);border-radius:8px;padding:3px 10px;font-size:12.5px;color:var(--ink);font-weight:600;margin:0 2px;}
+  .ssolRolloverNote{background:var(--columbia-blue);border-radius:10px;padding:12px 14px;font-size:12.5px;line-height:1.5;color:var(--ink);margin-top:14px;}
+  .ssolRolloverNote ul{margin:6px 0 0;padding-left:18px;}
+  .ssolRolloverNote li{margin-bottom:6px;}
+  .formulaCard{text-align:left;font-size:11.5px;color:var(--muted);line-height:1.55;padding:14px 16px;}
+  .formulaCard .formulaTitle{font-family:'Figtree',ui-sans-serif,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:6px;}
+  .formulaCard .formulaLine{margin-bottom:5px;}
+  .formulaCard .formulaLine b{color:var(--ink);}
   .settingsTabs{display:flex;gap:6px;margin-bottom:16px;}
   .settingsTab{flex:1;font-family:'Figtree',ui-sans-serif,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;font-size:12.5px;font-weight:600;padding:8px 10px;border-radius:8px;border:1.5px solid var(--line);background:var(--card);color:var(--muted);cursor:pointer;}
   .settingsTab.active{border-color:var(--navy);color:var(--navy);background:var(--columbia-blue);}
@@ -432,13 +447,12 @@
 <div class="overlay" id="swipesLeftOverlay">
   <div class="modal util" style="max-width:380px;text-align:left;">
     <h3 style="text-align:center;">Correct Swipes Left</h3>
-    <p class="util" style="font-size:13px;color:var(--muted);">Enter your actual swipes left, exactly as it shows on SSOL.</p>
+    <p class="util" style="font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px;">Enter your actual swipes left, exactly as it shows on SSOL. <button type="button" class="infoBtn" id="swipesLeftHelpBtn" title="Where do I find this on SSOL?" aria-label="Where do I find this on SSOL?">i</button></p>
     <input type="number" id="swipesLeftCorrectionInput" min="0" step="1" placeholder="e.g. 120">
     <label style="display:flex;align-items:flex-start;gap:8px;font-size:13px;color:var(--ink);margin:14px 0 10px;cursor:pointer;">
       <input type="checkbox" id="swipesLeftConfirmCheck" style="margin-top:3px;">
       <span>I confirm this is the accurate # of swipes updated on SSOL.</span>
     </label>
-    <p class="util" style="font-size:12px;color:var(--muted);line-height:1.5;">Any dining hall swipes you've already logged stay saved — you can still view them anytime below in Meal History. They just won't be counted toward Swipes Used anymore once you save this, since this number becomes the current one going forward.</p>
     <div class="row">
       <button class="btn solid" id="swipesLeftConfirmBtn" disabled>Save</button>
       <button class="btn" id="swipesLeftCancelBtn">Cancel</button>
@@ -471,22 +485,34 @@
     </div>
 
     <div id="planTabPanel">
-      <p style="font-size:13px;color:var(--muted);">Select your plan below, or enter it manually. Full details at <a href="https://dining.columbia.edu/student-dining-plans" target="_blank" rel="noopener">dining.columbia.edu/student-dining-plans</a>.</p>
+      <p style="font-size:13px;color:var(--muted);">Select your plan below. Full details at <a href="https://dining.columbia.edu/student-dining-plans" target="_blank" rel="noopener">dining.columbia.edu/student-dining-plans</a>.</p>
       <div class="info" id="planRolloverNote" style="display:none;"></div>
 
       <div class="planOptions util" id="planOptions"></div>
 
-      <div class="planDivider">or enter manually</div>
+      <div id="planManualFields" style="display:none;">
+        <div class="planDivider">Custom plan details</div>
 
-      <label style="display:block;text-align:left;font-size:12px;color:var(--muted);margin-bottom:4px;">Plan name (optional)</label>
-      <input class="authField" id="planName" placeholder="e.g. Plan B">
+        <label style="display:block;text-align:left;font-size:12px;color:var(--muted);margin-bottom:4px;">Plan name (optional)</label>
+        <input class="authField" id="planName" placeholder="e.g. Plan B">
 
-      <label style="display:block;text-align:left;font-size:12px;color:var(--muted);margin-bottom:4px;">Total swipes for the semester</label>
-      <input class="authField" id="planTotalSwipes" type="number" min="0" placeholder="e.g. 175">
+        <label style="display:block;text-align:left;font-size:12px;color:var(--muted);margin-bottom:4px;">Total swipes for the semester</label>
+        <input class="authField" id="planTotalSwipes" type="number" min="0" placeholder="e.g. 175">
 
-      <label style="display:block;text-align:left;font-size:12px;color:var(--muted);margin-bottom:4px;">Swipes per week (target pace)</label>
-      <input class="authField" id="planWeeklyAllowance" type="number" min="0" placeholder="e.g. 14">
-      <p style="font-size:11px;color:var(--muted);text-align:left;margin-top:-4px;">Only know one? Fill in whichever you have — the other can stay a rough estimate and you can edit it later from Profile in the header. Leave both blank to skip the dining plan entirely.</p>
+        <label style="display:block;text-align:left;font-size:12px;color:var(--muted);margin-bottom:4px;">Swipes per week (target pace)</label>
+        <input class="authField" id="planWeeklyAllowance" type="number" min="0" placeholder="e.g. 14">
+        <p style="font-size:11px;color:var(--muted);text-align:left;margin-top:-4px;">Only know one? Fill in whichever you have — the other can stay a rough estimate and you can edit it later from Profile in the header.</p>
+      </div>
+
+      <label class="ssolCheckRow">
+        <input type="checkbox" id="planSsolCheck">
+        <span>Joining after the semester has already started? Update your accurate # of meal swipes from SSOL.</span>
+        <button type="button" class="infoBtn" id="planSsolHelpBtn" title="Where do I find this on SSOL?" aria-label="Where do I find this on SSOL?">i</button>
+      </label>
+      <div id="planSsolFieldWrap" style="display:none;margin-bottom:6px;">
+        <label style="display:block;text-align:left;font-size:12px;color:var(--muted);margin-bottom:4px;">Your accurate swipes left, from SSOL</label>
+        <input class="authField" id="planSsolSwipesLeft" type="number" min="0" step="1" placeholder="e.g. 120">
+      </div>
     </div>
 
     <div id="spendTabPanel" style="display:none;">
@@ -644,6 +670,24 @@
     </div>
 
     <div style="margin-top:14px;text-align:center;"><button class="btn" id="helpCancel">Close</button></div>
+  </div>
+</div>
+
+<div class="overlay" id="ssolHelpOverlay">
+  <div class="modal ssolHelpModal util">
+    <h3>Finding Your Meal Swipes on SSOL</h3>
+    <ol class="ssolSteps">
+      <li>Go to <a href="https://ssol.columbia.edu" target="_blank" rel="noopener">ssol.columbia.edu</a> and log in.</li>
+      <li>Click the <span class="dashboardChip">&#9776; Dashboard</span> button, then go to <b>Campus Services &rarr; Dining &rarr; View Cardholder Transactions</b>.</li>
+    </ol>
+    <div class="ssolRolloverNote">
+      <b>Why LionSwipe keeps its own count instead of just showing SSOL:</b>
+      <ul>
+        <li>Weekly plans reset every Sunday with a fresh balance — nothing carries between weeks or terms. Term-based plans instead carry unused Fall swipes into Spring, but those carried-over swipes aren't usable (or visible on SSOL at all) until you've used up your entire Spring allowance first — and everything expires at the end of the academic year.</li>
+        <li>That means once rollover kicks in, SSOL only shows your current term's balance, not your real combined total — so its number and your actual total quietly drift apart. That's exactly the gap LionSwipe tracks for you — use "Correct Swipes Left" here whenever the two disagree. :)</li>
+      </ul>
+    </div>
+    <div style="margin-top:14px;text-align:center;"><button class="btn" id="ssolHelpClose">Close</button></div>
   </div>
 </div>
 
@@ -1237,11 +1281,16 @@ function renderPlanOptions(){
       document.getElementById('planWeeklyAllowance').value = weekly;
       wrap.querySelectorAll('.planOptionBtn').forEach(b=>b.classList.remove('selected'));
       btn.classList.add('selected');
+      // A preset's total/weekly are already shown on the button itself — the
+      // raw fields are only surfaced for "Custom", so picking a real plan
+      // hides them again.
+      document.getElementById('planManualFields').style.display = 'none';
     };
   });
   document.getElementById('planCustomBtn').onclick = ()=>{
     wrap.querySelectorAll('.planOptionBtn').forEach(b=>b.classList.remove('selected'));
     document.getElementById('planCustomBtn').classList.add('selected');
+    document.getElementById('planManualFields').style.display = 'block';
     document.getElementById('planName').focus();
   };
 }
@@ -1268,12 +1317,28 @@ function openPlanModal({mandatory=false, rollover=false, prevType=null, leftover
   document.getElementById('groceryGoalAmount').value = groceryGoal ? groceryGoal.amount : '';
   document.getElementById('groceryGoalPeriod').value = groceryGoal ? groceryGoal.period : 'week';
 
-  // Highlight the matching preset if the saved/typed plan name matches one exactly,
-  // otherwise leave nothing selected (manual entry or an unrecognized name).
+  // Highlight the matching preset if the saved/typed plan name matches one exactly;
+  // otherwise (an existing custom plan, or first-time setup) leave nothing
+  // selected and reveal the custom fields so an existing custom plan stays
+  // editable instead of stranding it hidden.
   const optsWrap = document.getElementById('planOptions');
   optsWrap.querySelectorAll('.planOptionBtn').forEach(b=>b.classList.remove('selected'));
   const matchIdx = userPlan ? DINING_PLANS.findIndex(p=>p.name === userPlan.plan_name) : -1;
-  if(matchIdx >= 0) optsWrap.querySelector(`.planOptionBtn[data-i="${matchIdx}"]`).classList.add('selected');
+  if(matchIdx >= 0){
+    optsWrap.querySelector(`.planOptionBtn[data-i="${matchIdx}"]`).classList.add('selected');
+    document.getElementById('planManualFields').style.display = 'none';
+  } else if(userPlan && userPlan.total_swipes){
+    document.getElementById('planCustomBtn').classList.add('selected');
+    document.getElementById('planManualFields').style.display = 'block';
+  } else {
+    document.getElementById('planManualFields').style.display = 'none';
+  }
+
+  // The SSOL correction checkbox always starts unchecked/blank — it's a
+  // one-time action taken deliberately each time, not a saved preference.
+  document.getElementById('planSsolCheck').checked = false;
+  document.getElementById('planSsolFieldWrap').style.display = 'none';
+  document.getElementById('planSsolSwipesLeft').value = '';
 
   const noteEl = document.getElementById('planRolloverNote');
   if(rollover && prevType === 'fall' && leftover > 0){
@@ -1307,6 +1372,16 @@ document.getElementById('settingsBtn').onclick = ()=>{
 const helpOverlay = document.getElementById('helpOverlay');
 document.getElementById('helpBtn').onclick = ()=> helpOverlay.classList.add('show');
 document.getElementById('helpCancel').onclick = ()=> helpOverlay.classList.remove('show');
+
+/* ---------------- SSOL help modal (shared by the plan modal and Correct Swipes Left) ---------------- */
+const ssolHelpOverlay = document.getElementById('ssolHelpOverlay');
+document.getElementById('planSsolHelpBtn').onclick = ()=> ssolHelpOverlay.classList.add('show');
+document.getElementById('swipesLeftHelpBtn').onclick = ()=> ssolHelpOverlay.classList.add('show');
+document.getElementById('ssolHelpClose').onclick = ()=> ssolHelpOverlay.classList.remove('show');
+
+document.getElementById('planSsolCheck').onchange = function(){
+  document.getElementById('planSsolFieldWrap').style.display = this.checked ? 'block' : 'none';
+};
 
 document.getElementById('planSubmit').onclick = async ()=>{
   const errEl = document.getElementById('planErr');
@@ -1347,12 +1422,27 @@ document.getElementById('planSubmit').onclick = async ()=>{
     return;
   }
 
+  const ssolChecked = document.getElementById('planSsolCheck').checked;
+  const ssolSwipesLeft = parseInt(document.getElementById('planSsolSwipesLeft').value, 10);
+  if(ssolChecked && (isNaN(ssolSwipesLeft) || ssolSwipesLeft < 0)){
+    errEl.textContent = 'Please enter your accurate swipes left from SSOL (or uncheck that box).';
+    errEl.style.display = 'block';
+    return;
+  }
+
   let ok = true;
   if(planTouched) ok = await savePlan(total, weekly, planName) && ok;
   if(spendTouched) ok = await saveSpendGoal(spendAmount, spendPeriod) && ok;
   else if(spendGoal) ok = await clearSpendGoal() && ok;
   if(groceryTouched) ok = await saveGroceryGoal(groceryAmount, groceryPeriod) && ok;
   else if(groceryGoal) ok = await clearGroceryGoal() && ok;
+
+  // Applied after the plan itself saves, since it back-solves against
+  // whatever total_swipes just got saved above (see updateSwipesLeft).
+  if(ssolChecked && userPlan){
+    const usedSemester_logged = logs.filter(l=>l.type==='hall' && l.ts >= SEMESTER_START.getTime()).reduce((s,l)=>s+l.swipes,0);
+    ok = await updateSwipesLeft(ssolSwipesLeft, usedSemester_logged) && ok;
+  }
 
   if(!ok){ errEl.textContent = 'Could not save — try again.'; errEl.style.display='block'; return; }
   planOverlay.classList.remove('show');
@@ -2420,6 +2510,7 @@ function renderBreakdown(){
     ${swipesLeftCard(swipesLeft_ssol)}
     ${statCard(getSwipesUsedSsol(usedSemester_logged),'Swipes Used')}
     ${statCard(weekNeeded===null?'—':weekNeeded,'Swipes/Week Needed')}
+    ${swipesFormulaCard(usedSemester_logged, swipesLeft_ssol, weekNeeded, weeksRemaining)}
   `;
   document.getElementById('statGrid2').innerHTML = `
     ${statCard('$'+spentOutWeek.toFixed(2),'Spent This Week (Eating Out)')}
@@ -2573,6 +2664,28 @@ document.getElementById('mealHistoryList').onclick = async (e)=>{
   if(btn.dataset.action === 'edit-log') openEditLogModal(log);
 };
 function statCard(val,lbl){ return `<div class="statCard"><div class="val">${val}</div><div class="lbl util">${lbl}</div></div>`; }
+
+// Spells out getSwipesUsedSsol/getSwipesLeftSsol/swipesPerWeekNeeded above with
+// the viewer's own current numbers plugged in, so the three stat cards next to
+// it are checkable by hand instead of just trusted. Renders nothing if there's
+// no plan yet — there's nothing to explain until Swipes Left has a real value.
+function swipesFormulaCard(usedSemester_logged, swipesLeft_ssol, weekNeeded, weeksRemaining){
+  if(!userPlan) return '';
+  const adjustment = userPlan.swipes_adjustment || 0;
+  const swipesUsed_ssol = usedSemester_logged + adjustment;
+  const usedLine = adjustment === 0
+    ? `Swipes Used = swipes you've logged this semester (<b>${usedSemester_logged}</b>)`
+    : `Swipes Used = logged swipes (${usedSemester_logged}) ${adjustment>0?'+':'−'} your SSOL correction (${Math.abs(adjustment)}) = <b>${swipesUsed_ssol}</b>`;
+  const leftLine = `Swipes Left = plan total (${userPlan.total_swipes}) − Swipes Used (${swipesUsed_ssol}) = <b>${swipesLeft_ssol}</b>`;
+  const paceLine = weekNeeded===null ? '' :
+    `Swipes/Week Needed = Swipes Left (${swipesLeft_ssol}) &divide; Weeks Left (${weeksRemaining}) = <b>${weekNeeded}</b>`;
+  return `<div class="statCard formulaCard">
+    <div class="formulaTitle">How these numbers are calculated</div>
+    <div class="formulaLine">${usedLine}</div>
+    <div class="formulaLine">${leftLine}</div>
+    ${paceLine ? `<div class="formulaLine">${paceLine}</div>` : ''}
+  </div>`;
+}
 
 // "Swipes Left" is the one stat card that's directly editable (see
 // updateSwipesLeft) — Swipes Used and Swipes/Week Needed are pure
