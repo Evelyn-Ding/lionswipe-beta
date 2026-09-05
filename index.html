@@ -100,7 +100,8 @@
   .tab.active{background:var(--navy);color:var(--primary-fg);}
 
   /* ---- Dining hall grid ---- */
-  .hallGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-bottom:22px;}
+  .hallGrid{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-bottom:22px;}
+  @media (max-width:900px){ .hallGrid{grid-template-columns:repeat(auto-fit,minmax(220px,1fr));} }
   .hallCard{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;cursor:pointer;transition:.15s;position:relative;}
   .hallCard:hover{border-color:var(--navy);box-shadow:0 3px 10px rgba(86,84,134,.12);}
   .hallCard.closed{opacity:.55;cursor:default;}
