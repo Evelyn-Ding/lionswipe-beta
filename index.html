@@ -235,7 +235,6 @@
   .planOptionBtn{width:100%;font-family:'Figtree',ui-sans-serif,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;text-align:left;border:1.5px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;padding:8px 12px;cursor:pointer;transition:.15s;}
   .planOptionBtn:hover{border-color:var(--navy);}
   .planOptionBtn.selected{border-color:var(--navy);background:var(--columbia-blue);}
-  .planOptionBtn.custom{border-style:dashed;}
   .poName{font-weight:700;color:var(--navy);font-size:13px;}
   .poMeta{font-size:11px;color:var(--muted);margin-top:2px;line-height:1.4;}
   .planDivider{font-family:'Figtree',ui-sans-serif,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;font-size:11px;color:var(--muted);text-align:center;margin:14px 0;text-transform:uppercase;letter-spacing:.05em;}
@@ -490,9 +489,12 @@
 
       <div class="planOptions util" id="planOptions"></div>
 
+      <!-- No visible "enter manually" option anymore — students pick one of the
+           presets above. These three fields still carry the actual values (a
+           preset click fills them in; savePlan reads them on Save) so the rest
+           of the save/edit logic didn't need to change, they're just never
+           shown to anyone. -->
       <div id="planManualFields" style="display:none;">
-        <div class="planDivider">Custom plan details</div>
-
         <label style="display:block;text-align:left;font-size:12px;color:var(--muted);margin-bottom:4px;">Plan name (optional)</label>
         <input class="authField" id="planName" placeholder="e.g. Plan B">
 
@@ -501,7 +503,6 @@
 
         <label style="display:block;text-align:left;font-size:12px;color:var(--muted);margin-bottom:4px;">Swipes per week (target pace)</label>
         <input class="authField" id="planWeeklyAllowance" type="number" min="0" placeholder="e.g. 14">
-        <p style="font-size:11px;color:var(--muted);text-align:left;margin-top:-4px;">Only know one? Fill in whichever you have — the other can stay a rough estimate and you can edit it later from Profile in the header.</p>
       </div>
 
       <label class="ssolCheckRow">
@@ -1267,10 +1268,7 @@ function renderPlanOptions(){
       <div class="poMeta">${total} total swipes (${p.meals} + ${p.comp} complimentary) &middot; ${paceNote}</div>
       <div class="poMeta">$${p.diningDollars} Dining Dollars &middot; $${p.flex} Flex &middot; $${p.costTerm}/term</div>
     </button>`;
-  }).join('') + `<button type="button" class="planOptionBtn custom" id="planCustomBtn">
-      <div class="poName">Custom / not sure yet</div>
-      <div class="poMeta">Enter your own numbers below</div>
-    </button>`;
+  }).join('');
 
   wrap.querySelectorAll('.planOptionBtn[data-i]').forEach(btn=>{
     btn.onclick = ()=>{
@@ -1281,18 +1279,8 @@ function renderPlanOptions(){
       document.getElementById('planWeeklyAllowance').value = weekly;
       wrap.querySelectorAll('.planOptionBtn').forEach(b=>b.classList.remove('selected'));
       btn.classList.add('selected');
-      // A preset's total/weekly are already shown on the button itself — the
-      // raw fields are only surfaced for "Custom", so picking a real plan
-      // hides them again.
-      document.getElementById('planManualFields').style.display = 'none';
     };
   });
-  document.getElementById('planCustomBtn').onclick = ()=>{
-    wrap.querySelectorAll('.planOptionBtn').forEach(b=>b.classList.remove('selected'));
-    document.getElementById('planCustomBtn').classList.add('selected');
-    document.getElementById('planManualFields').style.display = 'block';
-    document.getElementById('planName').focus();
-  };
 }
 renderPlanOptions();
 
@@ -1317,22 +1305,11 @@ function openPlanModal({mandatory=false, rollover=false, prevType=null, leftover
   document.getElementById('groceryGoalAmount').value = groceryGoal ? groceryGoal.amount : '';
   document.getElementById('groceryGoalPeriod').value = groceryGoal ? groceryGoal.period : 'week';
 
-  // Highlight the matching preset if the saved/typed plan name matches one exactly;
-  // otherwise (an existing custom plan, or first-time setup) leave nothing
-  // selected and reveal the custom fields so an existing custom plan stays
-  // editable instead of stranding it hidden.
+  // Highlight the matching preset if the saved/typed plan name matches one exactly.
   const optsWrap = document.getElementById('planOptions');
   optsWrap.querySelectorAll('.planOptionBtn').forEach(b=>b.classList.remove('selected'));
   const matchIdx = userPlan ? DINING_PLANS.findIndex(p=>p.name === userPlan.plan_name) : -1;
-  if(matchIdx >= 0){
-    optsWrap.querySelector(`.planOptionBtn[data-i="${matchIdx}"]`).classList.add('selected');
-    document.getElementById('planManualFields').style.display = 'none';
-  } else if(userPlan && userPlan.total_swipes){
-    document.getElementById('planCustomBtn').classList.add('selected');
-    document.getElementById('planManualFields').style.display = 'block';
-  } else {
-    document.getElementById('planManualFields').style.display = 'none';
-  }
+  if(matchIdx >= 0) optsWrap.querySelector(`.planOptionBtn[data-i="${matchIdx}"]`).classList.add('selected');
 
   // The SSOL correction checkbox always starts unchecked/blank — it's a
   // one-time action taken deliberately each time, not a saved preference.
