@@ -796,6 +796,18 @@ tick(); setInterval(tick,15000);
    (e.g. a headless-browser scraping service) without touching this file. */
 let MENUS = null;
 let currentMeal = "Dinner";
+
+// Fixed display order for the dining halls scrape-menus.js pulls from
+// liondine.com (which already aggregates Columbia + Barnard in this exact
+// order/naming) — rendered as its own box regardless of whether today's data
+// has an entry for it, so a hall with nothing scraped (closed, or not yet
+// published) still shows a "No data available" box in its usual spot rather
+// than disappearing. Must match the hall names liondine.com's own <h3> uses,
+// which scrape-menus.js passes straight through as MENUS[meal] keys.
+const DINING_HALLS = [
+  'Ferris', "JJ's", 'Faculty House', 'Grace Dodge', "Johnny's", 'Fac Shack',
+  'John Jay', 'Hewitt', "Chef Mike's", 'Diana', "Chef Don's"
+];
 async function loadMenus(){
   hallGrid.innerHTML = `<div class="loading">Loading today's menus...</div>`;
   try{
@@ -826,18 +838,23 @@ function renderHalls(){
   if(!MENUS) return;
   hallGrid.innerHTML = '';
   const data = MENUS[currentMeal] || {};
-  Object.keys(data).forEach(hall=>{
+  DINING_HALLS.forEach(hall=>{
     const info = data[hall];
     const card = document.createElement('div');
-    card.className = 'hallCard' + (info.closed ? ' closed' : '');
-    if(info.closed){
+    if(!info){
+      card.className = 'hallCard closed';
+      card.innerHTML = `<h3>${hall}</h3><div class="closedTxt">No data available</div>`;
+    } else if(info.closed){
+      card.className = 'hallCard closed';
       card.innerHTML = `<h3>${hall}</h3><div class="closedTxt">Closed for ${currentMeal.toLowerCase()}</div>`;
     } else {
+      card.className = 'hallCard';
       let stationsHtml = info.stations.map(s=>`
         <div class="stationName">${s.name}</div>
         <ul>${s.items.map(i=>`<li>${i}</li>`).join('')}</ul>
       `).join('');
-      card.innerHTML = `<h3>${hall}</h3><div class="hours util">${info.hours}</div>${stationsHtml}`;
+      const hoursHtml = info.hours ? `<div class="hours util">${info.hours}</div>` : '';
+      card.innerHTML = `<h3>${hall}</h3>${hoursHtml}${stationsHtml}`;
       card.onclick = ()=> openSwipeModal(hall);
     }
     hallGrid.appendChild(card);
