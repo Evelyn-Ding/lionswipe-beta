@@ -402,6 +402,7 @@
     <h3 id="authTitle">Log In</h3>
     <input class="authField" id="authEmail" placeholder="uni@columbia.edu / @barnard.edu">
     <input class="authField" id="authPass" type="password" placeholder="Password">
+    <input class="authField" id="authCode" placeholder="6-digit code from your email" style="display:none;" inputmode="numeric">
     <div class="err" id="authErr" style="display:none;"></div>
     <div class="info" id="authInfo" style="display:none;"></div>
     <button class="btn solid" id="authSubmit" style="width:100%;">Log In</button>
@@ -728,28 +729,15 @@ if(!CFG.SUPABASE_URL || CFG.SUPABASE_URL.includes('YOUR-PROJECT-REF')){
   supabase = window.supabase.createClient(CFG.SUPABASE_URL, CFG.SUPABASE_ANON_KEY);
 }
 
-// Handles the "Confirm your email" link landing back on our own domain. The
-// Supabase "Confirm signup" email template is customized (see README.md) to
-// link here with a token_hash instead of Supabase's default link straight to
-// https://<project-ref>.supabase.co/auth/v1/verify — a visible link to that
-// bare, unrelated-looking domain in an email claiming to be from lionswipe.com
-// is exactly the sender/link-domain-mismatch pattern Google Workspace's
-// Advanced Phishing Protection silently quarantines (confirmed 2026-09-04:
-// Resend showed "Delivered" but the email never reached a @columbia.edu inbox
-// with the default template; switching the link to our own domain and
-// verifying the token_hash client-side here fixed it). Only the "Confirm
-// signup" flow uses this today — no password-reset flow exists yet.
-if(supabase){
-  const confirmParams = new URLSearchParams(window.location.search);
-  const tokenHash = confirmParams.get('token_hash');
-  const otpType = confirmParams.get('type');
-  if(tokenHash && otpType){
-    history.replaceState(null, '', window.location.pathname);
-    supabase.auth.verifyOtp({ token_hash: tokenHash, type: otpType }).then(({ error })=>{
-      alert(error ? 'That confirmation link is invalid or has expired. Please sign up again to get a new one.' : 'Email confirmed! You are now logged in.');
-    });
-  }
-}
+// The "Confirm signup" email sends a 6-digit code ({{ .Token }} in the Supabase
+// template, see README.md) instead of a clickable magic link — even after
+// pointing the link at our own domain to fix the sender/link-domain mismatch,
+// Google Workspace's Advanced Phishing Protection kept silently quarantining
+// the email for @columbia.edu/@barnard.edu recipients (confirmed 2026-09-05:
+// Resend/Supabase logs showed the email sent, but it never reached an inbox —
+// not even spam). A bare numeric code has no link for that heuristic to flag.
+// The user types the code into the login modal (search authCode below), which
+// calls supabase.auth.verifyOtp({ email, token, type:'signup' }).
 
 const SEMESTER_END = CFG.SEMESTER_END ? new Date(CFG.SEMESTER_END) : new Date('2026-12-15T23:59:59-05:00');
 const SEMESTER_START = CFG.SEMESTER_START ? new Date(CFG.SEMESTER_START) : new Date('2026-09-02T00:00:00-04:00');
@@ -1436,24 +1424,67 @@ document.getElementById('loginBtn').onclick = async ()=>{
   }
   authMode='login'; renderAuth(); loginOverlay.classList.add('show');
 };
-document.getElementById('authCancel').onclick = ()=> loginOverlay.classList.remove('show');
-document.getElementById('authSwitch').onclick = ()=>{
+document.getElementById('authCancel').onclick = ()=>{
+  loginOverlay.classList.remove('show');
+  authMode='login'; renderAuth();
+};
+// While confirming a signup, authSwitch is repurposed as "resend code" (see renderAuth) —
+// it can't just toggle login/signup like normal since the email is already fixed at this point.
+document.getElementById('authSwitch').onclick = async ()=>{
+  if(authMode==='confirm'){
+    const errEl = document.getElementById('authErr');
+    const infoEl = document.getElementById('authInfo');
+    errEl.style.display='none'; infoEl.style.display='none';
+    const { error } = await supabase.auth.resend({ type:'signup', email: pendingConfirmEmail });
+    if(error){ errEl.textContent = error.message; errEl.style.display='block'; }
+    else { infoEl.textContent = 'Code resent — check your email.'; infoEl.style.display='block'; }
+    return;
+  }
   authMode = authMode==='login' ? 'signup' : 'login';
   renderAuth();
 };
 function renderAuth(){
-  document.getElementById('authTitle').textContent = authMode==='login' ? 'Log In' : 'Sign Up';
-  document.getElementById('authSubmit').textContent = authMode==='login' ? 'Log In' : 'Sign Up';
-  document.getElementById('authSwitch').textContent = authMode==='login' ? "Don't have an account? Sign up" : "Already have an account? Log in";
+  const passField = document.getElementById('authPass');
+  const codeField = document.getElementById('authCode');
+  const switchEl = document.getElementById('authSwitch');
   document.getElementById('authErr').style.display='none';
   document.getElementById('authInfo').style.display='none';
+  if(authMode==='confirm'){
+    document.getElementById('authTitle').textContent = 'Confirm your email';
+    document.getElementById('authSubmit').textContent = 'Confirm';
+    passField.style.display='none';
+    codeField.style.display='block';
+    codeField.value='';
+    switchEl.textContent = "Didn't get a code? Resend";
+  } else {
+    document.getElementById('authTitle').textContent = authMode==='login' ? 'Log In' : 'Sign Up';
+    document.getElementById('authSubmit').textContent = authMode==='login' ? 'Log In' : 'Sign Up';
+    passField.style.display='block';
+    codeField.style.display='none';
+    switchEl.textContent = authMode==='login' ? "Don't have an account? Sign up" : "Already have an account? Log in";
+  }
 }
+// Set once a signup needs email confirmation, so the "confirm code" step (and its
+// resend) know which address to verify against without re-reading the (by then
+// hidden) email field.
+let pendingConfirmEmail = '';
 document.getElementById('authSubmit').onclick = async ()=>{
-  const email = document.getElementById('authEmail').value.trim().toLowerCase();
-  const pass = document.getElementById('authPass').value;
   const errEl = document.getElementById('authErr');
   const infoEl = document.getElementById('authInfo');
   errEl.style.display='none'; infoEl.style.display='none';
+
+  if(authMode==='confirm'){
+    const code = document.getElementById('authCode').value.trim();
+    if(!code){ errEl.textContent='Enter the 6-digit code from your email.'; errEl.style.display='block'; return; }
+    const { error } = await supabase.auth.verifyOtp({ email: pendingConfirmEmail, token: code, type:'signup' });
+    if(error){ errEl.textContent = 'That code is invalid or has expired — try resending it.'; errEl.style.display='block'; return; }
+    loginOverlay.classList.remove('show');
+    authMode='login';
+    return;
+  }
+
+  const email = document.getElementById('authEmail').value.trim().toLowerCase();
+  const pass = document.getElementById('authPass').value;
 
   if(!/@(columbia|barnard)\.edu$/.test(email)){
     errEl.textContent = 'Please use your Columbia or Barnard email (@columbia.edu / @barnard.edu).';
@@ -1465,7 +1496,10 @@ document.getElementById('authSubmit').onclick = async ()=>{
     const { data, error } = await supabase.auth.signUp({ email, password: pass });
     if(error){ errEl.textContent = error.message; errEl.style.display='block'; return; }
     if(data.user && !data.session){
-      infoEl.textContent = 'Check your email to confirm your account, then log in.';
+      pendingConfirmEmail = email;
+      authMode = 'confirm';
+      renderAuth();
+      infoEl.textContent = 'We emailed you a 6-digit code — enter it above to confirm your account.';
       infoEl.style.display='block';
       return;
     }
