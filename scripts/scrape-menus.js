@@ -139,11 +139,15 @@ async function main() {
       return;
     }
     const locationsById = {};
-    (nodes.locations || []).forEach(loc => { locationsById[loc.nid] = decodeEntities(loc.title); });
+    const locationsFullById = {};
+    (nodes.locations || []).forEach(loc => {
+      locationsById[loc.nid] = decodeEntities(loc.title);
+      locationsFullById[loc.nid] = loc;
+    });
 
     await cleanupOldMenus(today);
 
-    mergeMenus(menus, extractMenus(bootstrapHtml, today, terms, locationsById));
+    mergeMenus(menus, extractMenus(bootstrapHtml, today, terms, locationsById, locationsFullById));
     anyPageLoaded = true;
 
     const otherLocations = (nodes.locations || []).filter(loc => loc.path && !TARGET_URL.endsWith(loc.path));
@@ -154,7 +158,7 @@ async function main() {
         console.warn(`Skipping ${locationsById[loc.nid] || loc.path} — Cloudflare challenge on this page.`);
         continue;
       }
-      const partial = extractMenus(html, today, terms, locationsById);
+      const partial = extractMenus(html, today, terms, locationsById, locationsFullById);
       if (partial) mergeMenus(menus, partial);
     }
   } finally {
@@ -205,16 +209,78 @@ function decodeEntities(str) {
     .trim();
 }
 
-// Columbia's timestamps here are naive local (Eastern) strings, e.g.
-// "2026-09-04T11:30:00" for an 11:30am lunch start — no timezone math needed,
-// just read the digits.
-function fmtTime(iso) {
-  const t = iso && iso.split('T')[1];
-  if (!t) return '';
-  let [h, m] = t.split(':').map(Number);
+// open_hours_fields times are "HMM"/"HHMM" 24h strings (e.g. "730", "2000"),
+// with "0" meaning midnight (used for hours_to on overnight ranges).
+function fmtHHMM(raw) {
+  const padded = String(raw).padStart(4, '0');
+  let h = parseInt(padded.slice(0, 2), 10);
+  const m = parseInt(padded.slice(2), 10);
   const ampm = h >= 12 ? 'PM' : 'AM';
   h = h % 12 || 12;
   return `${h}:${String(m).padStart(2, '0')} ${ampm}`;
+}
+
+const MEAL_NAME_ALIASES = {
+  'breakfast': 'Breakfast',
+  'continental breakfast': 'Breakfast',
+  'lunch': 'Lunch',
+  'dinner': 'Dinner',
+  'late night': 'Late Night'
+};
+
+// Best-effort: a location's description HTML sometimes lists specific
+// meal-serving hours as "Breakfast: 7:30 a.m. - 11:00 a.m." bullets — but the
+// format varies a lot between locations, and several have no breakdown at all
+// (see getMealHours' fallback for those). Only the FIRST bullet per meal name
+// is kept, since later ones are usually per-station breakdowns (e.g. a "Vegan
+// Station" section repeating "Lunch:"/"Dinner:" with its own narrower hours)
+// rather than the hall's overall meal hours.
+function parseDescriptionHours(descriptionHtml) {
+  const result = {};
+  const liRe = /<li[^>]*>([\s\S]*?)<\/li>/gi;
+  let m;
+  while ((m = liRe.exec(descriptionHtml || ''))) {
+    const text = decodeEntities(m[1]);
+    const colonMatch = text.match(/^([A-Za-z &]+?)\s*:\s*(.+)$/);
+    if (!colonMatch) continue;
+    const canonical = MEAL_NAME_ALIASES[colonMatch[1].trim().toLowerCase()];
+    if (!canonical || result[canonical]) continue;
+    result[canonical] = colonMatch[2].split(',')[0].trim();
+  }
+  return result;
+}
+
+const WEEKDAY_NAMES = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+
+// Fallback when a location's description has no meal-specific hours text: the
+// hall's overall open/close span for targetDate, from its structured
+// open_hours_fields (reliably present for every location, unlike the
+// free-text description breakdown parsed above).
+function getOverallOpenHours(loc, targetDate) {
+  const weekday = WEEKDAY_NAMES[new Date(targetDate + 'T12:00:00').getDay()];
+  for (const range of (loc && loc.open_hours_fields) || []) {
+    const from = (range.date_from || '').slice(0, 10);
+    const to = (range.date_to || '').slice(0, 10);
+    if (targetDate < from || targetDate > to) continue;
+    if ((range.excluded || []).includes(targetDate)) continue;
+    const todays = ((range.days || [])[0] || {})['days_' + weekday];
+    if (todays && todays.length) {
+      return todays.map(h => `${fmtHHMM(h.hours_from)} – ${fmtHHMM(h.hours_to)}`).join(', ');
+    }
+  }
+  return '';
+}
+
+// menu_data's own date_range_fields looked like a natural source for "hours"
+// but aren't — confirmed 2026-09-04 they're internal menu-content scheduling
+// windows (e.g. Ferris Booth Commons' "Breakfast" node spanned 9am-2:59pm),
+// unrelated to the hall's actual posted serving hours ("Breakfast: 7:30 -
+// 11:00 a.m." per the site itself). Real hours come from the location's own
+// description text or, failing that, its overall open/close hours.
+function getMealHours(loc, mealName, targetDate) {
+  if (!loc) return '';
+  const fromDescription = parseDescriptionHours(loc.description)[mealName];
+  return fromDescription || getOverallOpenHours(loc, targetDate);
 }
 
 function isCloudflareChallenge(html) {
@@ -228,15 +294,16 @@ function mergeMenus(target, partial) {
   KNOWN_MEALS.forEach(meal => Object.assign(target[meal], partial[meal]));
 }
 
-function extractMenus(html, targetDate, terms, locationsById) {
+function extractMenus(html, targetDate, terms, locationsById, locationsFullById) {
   const menuData = extractInlineVar(html, 'menu_data');
   if (!menuData) return null;
 
   const menus = { Breakfast: {}, Lunch: {}, Dinner: {}, 'Late Night': {} };
 
   menuData.forEach(node => {
-    const hallName = (node.locations || []).map(id => locationsById[id]).filter(Boolean)[0];
-    if (!hallName) return;
+    const hallId = (node.locations || []).find(id => locationsById[id]);
+    if (!hallId) return;
+    const hallName = locationsById[hallId];
     (node.date_range_fields || []).forEach(period => {
       const dateStr = (period.date_from || '').slice(0, 10);
       if (dateStr !== targetDate) return;
@@ -251,7 +318,7 @@ function extractMenus(html, targetDate, terms, locationsById) {
 
       if (stations.length > 0) {
         menus[mealName][hallName] = {
-          hours: `${fmtTime(period.date_from)} – ${fmtTime(period.date_to)}`,
+          hours: getMealHours(locationsFullById[hallId], mealName, targetDate),
           stations
         };
       }
