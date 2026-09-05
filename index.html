@@ -682,6 +682,29 @@ if(!CFG.SUPABASE_URL || CFG.SUPABASE_URL.includes('YOUR-PROJECT-REF')){
   supabase = window.supabase.createClient(CFG.SUPABASE_URL, CFG.SUPABASE_ANON_KEY);
 }
 
+// Handles the "Confirm your email" link landing back on our own domain. The
+// Supabase "Confirm signup" email template is customized (see README.md) to
+// link here with a token_hash instead of Supabase's default link straight to
+// https://<project-ref>.supabase.co/auth/v1/verify — a visible link to that
+// bare, unrelated-looking domain in an email claiming to be from lionswipe.com
+// is exactly the sender/link-domain-mismatch pattern Google Workspace's
+// Advanced Phishing Protection silently quarantines (confirmed 2026-09-04:
+// Resend showed "Delivered" but the email never reached a @columbia.edu inbox
+// with the default template; switching the link to our own domain and
+// verifying the token_hash client-side here fixed it). Only the "Confirm
+// signup" flow uses this today — no password-reset flow exists yet.
+if(supabase){
+  const confirmParams = new URLSearchParams(window.location.search);
+  const tokenHash = confirmParams.get('token_hash');
+  const otpType = confirmParams.get('type');
+  if(tokenHash && otpType){
+    history.replaceState(null, '', window.location.pathname);
+    supabase.auth.verifyOtp({ token_hash: tokenHash, type: otpType }).then(({ error })=>{
+      alert(error ? 'That confirmation link is invalid or has expired. Please sign up again to get a new one.' : 'Email confirmed! You are now logged in.');
+    });
+  }
+}
+
 const SEMESTER_END = CFG.SEMESTER_END ? new Date(CFG.SEMESTER_END) : new Date('2026-12-15T23:59:59-05:00');
 const SEMESTER_START = CFG.SEMESTER_START ? new Date(CFG.SEMESTER_START) : new Date('2026-09-02T00:00:00-04:00');
 // 'fall' or 'spring' — set in config.js each term. Drives end-of-semester swipe rollover:

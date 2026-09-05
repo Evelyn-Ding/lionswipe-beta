@@ -78,6 +78,30 @@ to GitHub, using `SUPABASE_URL` /
 Actions). The service role key bypasses Row Level Security to write — never put it
 in `config.js` or anything shipped to the browser.
 
+## Auth email deliverability (Supabase "Confirm signup" template)
+
+By default, Supabase's signup-confirmation email links straight to
+`https://<project-ref>.supabase.co/auth/v1/verify?...`. Sent from a custom SMTP
+domain (this project uses Resend + `lionswipe.com`), that's a sender-domain vs.
+link-domain mismatch — a pattern Google Workspace's Advanced Phishing
+Protection silently quarantines, even with SPF/DKIM/DMARC all passing and
+Resend reporting "Delivered" (confirmed 2026-09-04 against `@columbia.edu`
+addresses). `index.html` already handles verifying a `token_hash` client-side
+(search for `verifyOtp`), so the email template just needs to link to our own
+domain instead. **This is a per-Supabase-project dashboard setting, not
+version-controlled** — redo it any time the project switches Supabase backends:
+
+Supabase dashboard → Authentication → Email Templates → **Confirm signup** →
+replace the link's `href` with:
+
+```
+https://www.lionswipe.com/?token_hash={{ .TokenHash }}&type=signup
+```
+
+(If a password-reset flow gets added later, its template needs the same
+treatment with `type=recovery`, and `index.html`'s handler already forwards
+whatever `type` value it finds in the URL.)
+
 ## Deploying
 
 Vercel build command should run `node scripts/generate-config.js` first (it writes
