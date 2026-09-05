@@ -80,21 +80,31 @@ domain (this project uses Resend + `lionswipe.com`), that's a sender-domain vs.
 link-domain mismatch — a pattern Google Workspace's Advanced Phishing
 Protection silently quarantines, even with SPF/DKIM/DMARC all passing and
 Resend reporting "Delivered" (confirmed 2026-09-04 against `@columbia.edu`
-addresses). `index.html` already handles verifying a `token_hash` client-side
-(search for `verifyOtp`), so the email template just needs to link to our own
-domain instead. **This is a per-Supabase-project dashboard setting, not
+addresses). Pointing the link at our own domain instead (verifying the
+`token_hash` client-side) was tried first, but Google kept quarantining the
+email anyway — the emails still showed "Delivered" in Resend/Supabase's logs
+but never reached an inbox, not even spam (confirmed 2026-09-05). A magic link
+of any kind is apparently enough to trip the heuristic for this recipient
+domain, so the template now sends a plain 6-digit code instead, with no link
+at all. The user types the code into the login modal in `index.html`, which
+calls `supabase.auth.verifyOtp({ email, token, type:'signup' })` (search for
+`verifyOtp`). **This is a per-Supabase-project dashboard setting, not
 version-controlled** — redo it any time the project switches Supabase backends:
 
 Supabase dashboard → Authentication → Email Templates → **Confirm signup** →
-replace the link's `href` with:
+replace the template body with something like:
 
 ```
-https://www.lionswipe.com/?token_hash={{ .TokenHash }}&type=signup
+<h2>Confirm your email address</h2>
+<p>Enter this code in LionSwipe to finish signing up:</p>
+<h1>{{ .Token }}</h1>
 ```
+
+Remove any `<a href="...">` link from the template — the whole point is that
+there's nothing to click.
 
 (If a password-reset flow gets added later, its template needs the same
-treatment with `type=recovery`, and `index.html`'s handler already forwards
-whatever `type` value it finds in the URL.)
+treatment with `{{ .Token }}` and `type:'recovery'` in the `verifyOtp` call.)
 
 ## Deploying
 
