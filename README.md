@@ -45,35 +45,31 @@ Then open the URL `vercel dev` prints (usually `http://localhost:3000`).
 
 ## Testing the menu scraper
 
-`dining.columbia.edu` sits behind a Cloudflare bot-challenge that blocks plain HTTP
-requests, so menus can't be fetched with a simple `fetch()`. `scripts/scrape-menus.js`
-uses Playwright with stealth patches (masking the automation fingerprints Cloudflare's
-Managed Challenge checks for) to get past it, then reads the site's own embedded data:
-every dining.columbia.edu content page ships the day's full menu — every location,
-every meal period, every station and item — as inline JS variables
-(`dining_terms`/`dining_nodes`/`menu_data`) in a `<script>` tag. No CSS selectors or
-clicking through the UI needed; see the comment at the top of that file for details.
+`scripts/scrape-menus.js` pulls today's menus from
+[liondine.com](https://liondine.com), a site that already aggregates every
+Columbia dining hall (`dining.columbia.edu`) and Barnard's two dining locations
+(`dineoncampus.com`) into one place, in a fixed 11-hall order, and is plain
+server-rendered HTML with no Cloudflare challenge — so this is just a `fetch()`
+against `liondine.com/breakfast`, `/lunch`, `/dinner`, and `/latenight`, no
+browser needed. See the comment at the top of that file for the exact markup
+it parses (`<div class="col">` per hall, `<div class="food-type">`/
+`<div class="food-name">` per item).
 
 ```
-npx playwright install chromium
-npm run scrape:menus:headed
+npm run scrape:menus
 ```
 
-This opens a visible Chrome window, navigates to a dining hall page, and prints the
-extracted menus to the terminal. Watch the window — it should load the real page, not
-hang on "Just a moment...". `scripts/scrape-output/page.html`/`page.png` are saved
-either way for debugging. If it's stuck on the challenge, Cloudflare has likely
-changed its detection since this was written; the stealth patches in `main()` are the
-place to revisit.
+This prints the extracted menus to the terminal. `scripts/scrape-output/*.html`
+(one per meal period) are saved either way for debugging — if a run comes back
+all-empty unexpectedly, check those first for whether liondine's markup changed.
 
 Outside of the fall/spring semester (breaks, summer), dining halls publish nothing,
 so a successful run will correctly print all-empty meal periods — that's expected,
 not a bug. Re-test once dining halls are back in session (check `SEMESTER_START` in
 `config.js`) to confirm real content comes through.
 
-**Production schedule:** `.github/workflows/scrape-menus.yml` runs the scraper six
-times a day (7/8/9/10/11am and 4pm ET) via GitHub Actions once this repo is pushed
-to GitHub, using `SUPABASE_URL` /
+**Production schedule:** `.github/workflows/scrape-menus.yml` runs the scraper every
+2 hours via GitHub Actions once this repo is pushed to GitHub, using `SUPABASE_URL` /
 `SUPABASE_SERVICE_ROLE_KEY` repo secrets (Settings → Secrets and variables →
 Actions). The service role key bypasses Row Level Security to write — never put it
 in `config.js` or anything shipped to the browser.
