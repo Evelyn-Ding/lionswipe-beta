@@ -107,8 +107,8 @@
   .hallCard.closed{opacity:.55;cursor:default;}
   .hallCard h3{margin:0 0 2px;font-size:17px;color:var(--navy);}
   .hallCard .hours{font-family:'Figtree',ui-sans-serif,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;font-size:11px;color:var(--muted);margin-bottom:8px;}
-  .hallCard .stationName{font-family:'Figtree',ui-sans-serif,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--gold);margin:8px 0 3px;}
-  .hallCard ul{list-style:none;padding:0;margin:0;font-size:14px;line-height:1.55;}
+  .hallCard .stationName{font-family:'Figtree',ui-sans-serif,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--gold);margin:7px 0 2px;}
+  .hallCard ul{list-style:none;padding:0;margin:0;font-size:12px;line-height:1.4;}
   .hallCard .closedTxt{font-family:'Figtree',ui-sans-serif,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;font-size:13px;color:var(--muted);}
 
   /* ---- Enter Your Own Meal ---- */
@@ -795,8 +795,23 @@ tick(); setInterval(tick,15000);
    /api/menus currently serves curated sample data mirroring the site's structure
    rather than a live scrape — see api/menus.js for how to swap in a real source
    (e.g. a headless-browser scraping service) without touching this file. */
+// Which meal tab should be active on load, based on the current time in
+// Columbia's own timezone — mirrors liondine.com defaulting to whichever meal
+// tab is "current" on page load rather than always opening on the same one.
+// liondine doesn't expose its own switch-over schedule anywhere we could read
+// it, so these boundaries are our own best approximation of typical Columbia
+// dining hours (confirmed against liondine.com itself at two points: 10:52am ET
+// showed Breakfast active, 10:42pm ET showed Late Night active — both fit here).
+function currentMealByTime(){
+  const hour = Number(new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', hour: 'numeric', hour12: false }).format(new Date()));
+  if(hour >= 21 || hour < 2) return "Late Night";
+  if(hour < 11) return "Breakfast";
+  if(hour < 16) return "Lunch";
+  return "Dinner";
+}
+
 let MENUS = null;
-let currentMeal = "Dinner";
+let currentMeal = currentMealByTime();
 
 // Fixed display order for the dining halls scrape-menus.js pulls from
 // liondine.com (which already aggregates Columbia + Barnard in this exact
@@ -842,12 +857,11 @@ function renderHalls(){
   DINING_HALLS.forEach(hall=>{
     const info = data[hall];
     const card = document.createElement('div');
-    if(!info){
+    const hasMenu = info && info.stations && info.stations.length > 0;
+    if(!hasMenu){
       card.className = 'hallCard closed';
-      card.innerHTML = `<h3>${hall}</h3><div class="closedTxt">No data available</div>`;
-    } else if(info.closed){
-      card.className = 'hallCard closed';
-      card.innerHTML = `<h3>${hall}</h3><div class="closedTxt">Closed for ${currentMeal.toLowerCase()}</div>`;
+      const msg = (info && info.message) || 'No data available';
+      card.innerHTML = `<h3>${hall}</h3><div class="closedTxt">${msg}</div>`;
     } else {
       card.className = 'hallCard';
       let stationsHtml = info.stations.map(s=>`

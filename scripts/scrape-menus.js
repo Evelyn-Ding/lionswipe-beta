@@ -96,8 +96,13 @@ function decodeEntities(str) {
     .trim();
 }
 
-// One meal page -> { hallName -> {hours, stations} }, in liondine's own hall order
-// (each hall's own short name, e.g. "Ferris", "JJ's" — used as-is as the data key).
+// One meal page -> { hallName -> {hours, stations} } for halls with a real menu,
+// or { hallName -> {hours, message} } for halls without one — liondine gives a
+// specific reason ("Closed today", "Closed this week", "Closed for latenight",
+// "No menu published for lunch yet") rather than a generic "closed", so we keep
+// it instead of collapsing every no-menu case into one message. In liondine's
+// own hall order (each hall's own short name, e.g. "Ferris", "JJ's" — used as-is
+// as the data key).
 function extractMealPage(html) {
   const menu = {};
   const blocks = html.split('<div class="col">').slice(1);
@@ -107,6 +112,9 @@ function extractMealPage(html) {
     const hoursMatch = block.match(/<div class="hours">([\s\S]*?)<\/div>/);
     if (!nameMatch) return;
     const hallName = decodeEntities(nameMatch[1]);
+    // When there's no menu, liondine puts the reason here instead of real hours
+    // (e.g. "Closed this week", "Closed today") — that same text doubles as our
+    // no-menu message below.
     const hours = hoursMatch ? decodeEntities(hoursMatch[1]) : '';
 
     const stations = [];
@@ -126,7 +134,15 @@ function extractMealPage(html) {
     const nonEmptyStations = stations.filter(s => s.items.length > 0);
     if (nonEmptyStations.length > 0) {
       menu[hallName] = { hours, stations: nonEmptyStations };
+      return;
     }
+
+    // No real menu: a hall that's genuinely closed has its reason in `hours`
+    // (e.g. "Closed today"); a hall that's open but hasn't published a menu yet
+    // has real hours plus a separate `menu no-menu` placeholder instead.
+    const noMenuMatch = block.match(/<div class="menu no-menu">([\s\S]*?)<\/div>/);
+    const message = noMenuMatch ? decodeEntities(noMenuMatch[1]) : hours;
+    menu[hallName] = { hours, message };
   });
 
   return menu;
