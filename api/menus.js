@@ -9,12 +9,12 @@
 
 const SAMPLE_MENUS = {
   Breakfast: {
-    "Chef Don's": { closed: true },
-    "Chef Mike's": { closed: true },
+    "Chef Don's": { closed: true, message: "Closed for breakfast" },
+    "Chef Mike's": { closed: true, message: "Closed for breakfast" },
     "Fac Shack": { hours: "8:00 AM to 11:00 AM", stations: [
       { name: "Grab & Go", items: ["Bacon Egg & Cheese Bagel", "Yogurt Parfait"] }
     ]},
-    "Faculty House": { closed: true },
+    "Faculty House": { closed: true, message: "Closed for breakfast" },
     "Ferris": { hours: "7:00 AM to 10:00 AM", stations: [
       { name: "Main Line", items: ["Scrambled Eggs", "Turkey Bacon", "Home Fries"] },
       { name: "Bakery", items: ["Assorted Muffins", "Bagels & Cream Cheese"] }
@@ -25,14 +25,14 @@ const SAMPLE_MENUS = {
     "JJ's": { hours: "9:00 AM to 12:00 AM", stations: [
       { name: "Grill", items: ["Bacon Egg & Cheese", "Hash Browns"] }
     ]},
-    "Johnny's": { closed: true },
+    "Johnny's": { closed: true, message: "Closed for breakfast" },
     "John Jay": { hours: "7:30 AM to 10:30 AM", stations: [
       { name: "Main Line", items: ["Scrambled Eggs", "French Toast", "Bacon"] }
     ]},
     "Hewitt": { hours: "7:30 AM to 10:00 AM", stations: [
       { name: "Homestyle", items: ["Scrambled Eggs", "Waffles", "Tofu Scramble"] }
     ]},
-    "Diana": { closed: true }
+    "Diana": { closed: true, message: "Closed for breakfast" }
   },
   Lunch: {
     "Chef Don's": { hours: "11:00 AM to 3:00 PM", stations: [
@@ -67,7 +67,7 @@ const SAMPLE_MENUS = {
     "Hewitt": { hours: "11:00 AM to 2:00 PM", stations: [
       { name: "Homestyle", items: ["Baked Chicken Quarter", "Cajun Vegetable Rice"] }
     ]},
-    "Diana": { closed: true }
+    "Diana": { closed: true, message: "Closed for lunch" }
   },
   Dinner: {
     "Chef Don's": { hours: "5:00 PM to 9:00 PM", stations: [
@@ -76,8 +76,8 @@ const SAMPLE_MENUS = {
     "Chef Mike's": { hours: "4:00 PM to 9:00 PM", stations: [
       { name: "Sub Counter", items: ["Meatball Sub", "Chicken Parm Sub", "Buffalo Chicken Sub"] }
     ]},
-    "Fac Shack": { closed: true },
-    "Faculty House": { closed: true },
+    "Fac Shack": { closed: true, message: "Closed for dinner" },
+    "Faculty House": { closed: true, message: "Closed for dinner" },
     "Ferris": { hours: "5:00 PM to 8:30 PM", stations: [
       { name: "Main Line", items: ["Roasted Chicken", "Pan Roasted Sprouts"] },
       { name: "Action Station", items: ["Stir Fry Bar"] }
@@ -94,27 +94,27 @@ const SAMPLE_MENUS = {
     "John Jay": { hours: "5:00 PM to 8:30 PM", stations: [
       { name: "Main Line", items: ["Baked Ziti", "Garlic Bread", "Caesar Salad"] }
     ]},
-    "Hewitt": { closed: true },
-    "Diana": { closed: true }
+    "Hewitt": { closed: true, message: "Closed for dinner" },
+    "Diana": { closed: true, message: "Closed for dinner" }
   },
   "Late Night": {
     "Chef Don's": { hours: "9:00 PM to 1:00 AM", stations: [
       { name: "Late Night Slices", items: ["Cheese Slice", "Buffalo Chicken Slice"] }
     ]},
-    "Chef Mike's": { closed: true },
-    "Fac Shack": { closed: true },
-    "Faculty House": { closed: true },
-    "Ferris": { closed: true },
-    "Grace Dodge": { closed: true },
+    "Chef Mike's": { closed: true, message: "Closed for latenight" },
+    "Fac Shack": { closed: true, message: "Closed for latenight" },
+    "Faculty House": { closed: true, message: "Closed for latenight" },
+    "Ferris": { closed: true, message: "Closed for latenight" },
+    "Grace Dodge": { closed: true, message: "Closed for latenight" },
     "JJ's": { hours: "10:00 PM to 2:00 AM", stations: [
       { name: "Grill", items: ["Mozzarella Sticks", "Late Night Fries"] }
     ]},
     "Johnny's": { hours: "9:00 PM to 1:00 AM", stations: [
       { name: "Truck Window", items: ["Mozzarella Sticks", "Chicken Tenders"] }
     ]},
-    "John Jay": { closed: true },
-    "Hewitt": { closed: true },
-    "Diana": { closed: true }
+    "John Jay": { closed: true, message: "Closed for latenight" },
+    "Hewitt": { closed: true, message: "Closed for latenight" },
+    "Diana": { closed: true, message: "Closed for latenight" }
   }
 };
 
