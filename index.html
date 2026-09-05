@@ -206,6 +206,9 @@
   #swipesLeftCard:hover{border-color:var(--navy);background:var(--columbia-blue);}
   #swipesLeftCard .clickHint{font-size:10.5px;font-weight:600;color:var(--navy);margin-top:6px;}
   .chartBlock{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px;margin-bottom:22px;}
+  .chartWithFormula{display:flex;gap:18px;align-items:flex-start;flex-wrap:wrap;}
+  .chartWithFormula .chartMain{flex:1;min-width:260px;}
+  .chartWithFormula .formulaCard{flex:0 0 240px;max-width:280px;padding:0;border:none;background:transparent;}
   .chartBlock h4{margin:0 0 12px;color:var(--navy);font-family:'Figtree',ui-sans-serif,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;font-size:13px;text-transform:uppercase;letter-spacing:.06em;}
   .scrollBars{display:flex;gap:14px;overflow-x:auto;padding-bottom:6px;}
   .barCol{display:flex;flex-direction:column;align-items:center;min-width:48px;font-family:'Figtree',ui-sans-serif,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;}
@@ -319,12 +322,17 @@
     </div>
     <div class="statGrid" id="statGrid"></div>
     <div class="chartBlock">
-      <h4>Meal Swipes Used / Week &mdash; scroll for history &amp; target pace</h4>
-      <div class="chartLegend">
-        <div><span class="sw" style="background:var(--navy);"></span>Swipes used</div>
-        <div><span class="sw target"></span>Target pace needed to use up your plan by semester end</div>
+      <div class="chartWithFormula">
+        <div class="chartMain">
+          <h4>Meal Swipes Used / Week &mdash; scroll for history &amp; target pace</h4>
+          <div class="chartLegend">
+            <div><span class="sw" style="background:var(--navy);"></span>Swipes used</div>
+            <div><span class="sw target"></span>Target pace needed to use up your plan by semester end</div>
+          </div>
+          <div class="scrollBars" id="swipeChart"></div>
+        </div>
+        <div id="swipeFormulaSlot"></div>
       </div>
-      <div class="scrollBars" id="swipeChart"></div>
     </div>
     <div class="statGrid" id="statGrid2"></div>
     <div class="chartBlock">
@@ -508,7 +516,7 @@
 
       <label class="ssolCheckRow">
         <input type="checkbox" id="planSsolCheck">
-        <span>Joining after the semester has already started? Update your accurate # of meal swipes from SSOL.</span>
+        <span>Joining after the semester has already started? Click to update your accurate # of meal swipes from <a href="https://ssol.columbia.edu" target="_blank" rel="noopener" onclick="event.stopPropagation()">SSOL</a>.</span>
         <button type="button" class="infoBtn" id="planSsolHelpBtn" title="Where do I find this on SSOL?" aria-label="Where do I find this on SSOL?">i</button>
       </label>
       <div id="planSsolFieldWrap" style="display:none;margin-bottom:6px;">
@@ -683,12 +691,18 @@
       <li>Click the <span class="dashboardChip">&#9776; Dashboard</span> button, then go to <b>Campus Services &rarr; Dining &rarr; View Cardholder Transactions</b>.</li>
     </ol>
     <div class="ssolRolloverNote">
-      <b>Why LionSwipe keeps its own count instead of just showing SSOL:</b>
-      <ul>
-        <li>Weekly plans reset every Sunday with a fresh balance — nothing carries between weeks or terms. Term-based plans instead carry unused Fall swipes into Spring, but those carried-over swipes aren't usable (or visible on SSOL at all) until you've used up your entire Spring allowance first — and everything expires at the end of the academic year.</li>
-        <li>That means once rollover kicks in, SSOL only shows your current term's balance, not your real combined total — so its number and your actual total quietly drift apart. That's exactly the gap LionSwipe tracks for you — use "Correct Swipes Left" here whenever the two disagree. :)</li>
-      </ul>
+      <b>Why use LionSwipe to keep your own log instead of just using SSOL?</b>
+      <ol>
+        <li>SSOL is hard to navigate (Duo authentication makes it a hassle every time).</li>
+        <li>If you're on a term-based (semester) plan, your Fall swipes <i>will</i> roll over into Spring — but once they do, SSOL can no longer show you that combined total. That's exactly the gap LionSwipe tracks for you. :)</li>
+      </ol>
     </div>
+    <p style="font-size:12px;color:var(--muted);line-height:1.6;margin:12px 0 0;">
+      &bull; Weekly plans reset every Sunday with a fresh balance — nothing carries between weeks or terms.<br>
+      &bull; Term-based plans instead carry unused Fall swipes into Spring, but those carried-over swipes aren't usable (or visible on SSOL at all) until you've used up your entire Spring allowance first.<br>
+      &bull; For every meal plan, all swipes expire at the end of the academic year.
+    </p>
+    <p style="font-size:11.5px;color:var(--muted);line-height:1.5;font-style:italic;margin:10px 0 0;">"As a courtesy, unused meals from the Fall Term will rollover to Spring Term. However, these meals are not available until all meal swipes for Spring Term have been used and cannot be viewed in SSOL." &mdash; <a href="https://dining.columbia.edu/student-dining-plans" target="_blank" rel="noopener" style="font-style:normal;">Columbia Dining</a></p>
     <div style="margin-top:14px;text-align:center;"><button class="btn" id="ssolHelpClose">Close</button></div>
   </div>
 </div>
@@ -1308,19 +1322,19 @@ function openPlanModal({mandatory=false, rollover=false, prevType=null, leftover
   const noteEl = document.getElementById('planRolloverNote');
   if(rollover && prevType === 'fall' && leftover > 0){
     noteEl.style.display = 'block';
-    noteEl.textContent = `Your Fall semester ended with ${leftover} unused swipe${leftover===1?'':'s'} — we've pre-filled the total below with just that carryover. Add your new Spring semester's allocation on top (check dining.columbia.edu/student-dining-plans) before saving.`;
+    noteEl.textContent = `Your Fall semester ended with ${leftover} unused swipe${leftover===1?'':'s'} — pick your new Spring plan below, then check "joining after the semester started?" and enter your combined total (new plan + that carryover) once it's posted on SSOL.`;
   } else if(rollover){
     noteEl.style.display = 'block';
-    noteEl.textContent = `A new semester has started — please review and update your dining plan.`;
+    noteEl.textContent = `A new semester has started — please pick your dining plan below.`;
   } else {
     noteEl.style.display = 'none';
   }
 
-  // Rollover pre-fills only the real carryover number (never a guessed baseline);
-  // editing an existing plan prefills the user's real saved values; first-time setup
-  // starts blank so nothing invented ever gets saved as if it were real.
-  const totalVal = rollover ? (leftover > 0 ? leftover : '') : (userPlan ? userPlan.total_swipes : '');
-  const weeklyVal = rollover ? '' : (userPlan ? userPlan.weekly_allowance : '');
+  // Rollover/first-time setup starts blank (a preset must be picked — nothing
+  // invented gets saved as if it were real); editing an existing plan
+  // prefills the user's real saved values.
+  const totalVal = (rollover || !userPlan) ? '' : userPlan.total_swipes;
+  const weeklyVal = (rollover || !userPlan) ? '' : userPlan.weekly_allowance;
   document.getElementById('planTotalSwipes').value = totalVal;
   document.getElementById('planWeeklyAllowance').value = weeklyVal;
   document.getElementById('planErr').style.display = 'none';
@@ -1352,17 +1366,23 @@ document.getElementById('planSubmit').onclick = async ()=>{
   const errEl = document.getElementById('planErr');
   errEl.style.display = 'none';
 
-  // Both tabs save together regardless of which is active — each is independently
-  // optional. Dining plan fields only get validated/saved if at least one was
-  // touched; same for the spending goal amount (blank amount = leave/clear it).
+  // A dining plan is mandatory — pick one of the presets above (this also
+  // covers editing: reopening Profile pre-fills these from the existing plan,
+  // so an already-set-up student never hits this just for touching a
+  // different tab). Spending/grocery goals stay independently optional.
   const planName = document.getElementById('planName').value.trim();
   const totalStr = document.getElementById('planTotalSwipes').value.trim();
   const weeklyStr = document.getElementById('planWeeklyAllowance').value.trim();
   const total = parseInt(totalStr, 10);
   const weekly = parseInt(weeklyStr, 10);
   const planTouched = totalStr !== '' || weeklyStr !== '';
-  if(planTouched && (isNaN(total) || total < 0 || isNaN(weekly) || weekly < 0)){
-    errEl.textContent = 'Please enter valid numbers for total swipes and swipes/week (or leave both blank to skip the dining plan).';
+  if(!planTouched){
+    errEl.textContent = 'Please select a dining plan before saving.';
+    errEl.style.display = 'block';
+    return;
+  }
+  if(isNaN(total) || total < 0 || isNaN(weekly) || weekly < 0){
+    errEl.textContent = 'Please select a valid dining plan before saving.';
     errEl.style.display = 'block';
     return;
   }
@@ -1395,8 +1415,7 @@ document.getElementById('planSubmit').onclick = async ()=>{
     return;
   }
 
-  let ok = true;
-  if(planTouched) ok = await savePlan(total, weekly, planName) && ok;
+  let ok = await savePlan(total, weekly, planName);
   if(spendTouched) ok = await saveSpendGoal(spendAmount, spendPeriod) && ok;
   else if(spendGoal) ok = await clearSpendGoal() && ok;
   if(groceryTouched) ok = await saveGroceryGoal(groceryAmount, groceryPeriod) && ok;
@@ -2521,8 +2540,12 @@ function renderBreakdown(){
     ${swipesLeftCard(swipesLeft_ssol)}
     ${statCard(getSwipesUsedSsol(usedSemester_logged),'Swipes Used')}
     ${statCard(weekNeeded===null?'—':weekNeeded,'Swipes/Week Needed')}
-    ${swipesFormulaCard(usedSemester_logged, swipesLeft_ssol, weekNeeded, weeksRemaining)}
   `;
+  // Shares the chart block below (there's usually spare width there early in
+  // the semester, before many weeks' bars have accumulated) rather than
+  // sitting as a 4th box in the row above.
+  document.getElementById('swipeFormulaSlot').innerHTML =
+    swipesFormulaCard(usedSemester_logged, swipesLeft_ssol, weekNeeded, weeksRemaining);
   document.getElementById('statGrid2').innerHTML = `
     ${statCard('$'+spentOutWeek.toFixed(2),'Spent This Week (Eating Out)')}
     ${statCard('$'+spentOutMonth.toFixed(2),'Spent This Month (Eating Out)')}
