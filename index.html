@@ -128,6 +128,23 @@
   .modal input[type=number]{width:100%;padding:10px;font-size:16px;border:1.5px solid var(--line);border-radius:8px;margin:14px 0;font-family:'Figtree',ui-sans-serif,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;background:var(--card);color:var(--ink);}
   .modal .row{display:flex;gap:8px;justify-content:center;margin-top:10px;}
 
+  /* ---- Onboarding tutorial ----
+     No centered modal box here — .tutorialOverlay just dims the page, and
+     the element being explained gets .tutorialHighlight so it renders back
+     on top of that dim layer (via z-index, not a cutout) instead of a fixed
+     modal covering the real UI it's pointing at. */
+  .tutorialOverlay{position:fixed;inset:0;background:rgba(0,20,40,.55);z-index:200;display:none;}
+  .tutorialOverlay.show{display:block;}
+  .tutorialHighlight{position:relative;z-index:201;box-shadow:0 0 0 4px var(--card),0 0 0 8px var(--navy),0 14px 34px rgba(0,0,0,.35)!important;border-radius:var(--radius);}
+  .tutorialCard{position:fixed;z-index:202;background:var(--card);color:var(--ink);border-radius:14px;padding:18px 20px;width:280px;max-width:calc(100vw - 32px);box-shadow:0 10px 30px rgba(0,0,0,.35);}
+  .tutorialCard h4{margin:0 0 8px;color:var(--navy);font-family:var(--font-display);font-size:16px;}
+  .tutorialCard p{margin:0 0 14px;font-size:13px;line-height:1.5;}
+  .tutorialStepCount{font-size:10.5px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;font-weight:700;margin-bottom:6px;}
+  .tutorialActions{display:flex;justify-content:space-between;align-items:center;gap:10px;}
+  .tutorialBtns{display:flex;gap:8px;}
+  .tutorialSkip{font-family:inherit;font-size:12px;color:var(--muted);text-decoration:underline;background:none;border:none;padding:0;cursor:pointer;}
+  .tutorialSkip:hover{color:var(--navy);}
+
   /* ---- Help modal ---- */
   .helpModal{max-width:560px;text-align:left;max-height:85vh;overflow-y:auto;}
   .helpModal h3{text-align:center;}
@@ -560,6 +577,26 @@
     <div class="err" id="planErr" style="display:none;"></div>
     <button class="btn solid" id="planSubmit" style="width:100%;">Save Profile</button>
     <div style="margin-top:14px;" id="planCancelWrap"><button class="btn" id="planCancel">Cancel</button></div>
+  </div>
+</div>
+
+<!-- Onboarding walkthrough — shown once, right after a new account finishes its
+     mandatory first-time profile setup (see startTutorial). Unlike the other
+     overlays above, this one doesn't dim/center a modal box; it dims the page
+     and lets the single element being explained (see .tutorialHighlight) pop
+     back out on top, with a positioned card pointing at it. -->
+<div class="tutorialOverlay" id="tutorialOverlay">
+  <div class="tutorialCard util" id="tutorialCard">
+    <div class="tutorialStepCount" id="tutorialStepCount"></div>
+    <h4 id="tutorialTitle"></h4>
+    <p id="tutorialText"></p>
+    <div class="tutorialActions">
+      <button type="button" class="tutorialSkip" id="tutorialSkip">Skip tutorial</button>
+      <div class="tutorialBtns">
+        <button type="button" class="btn" id="tutorialBack">Back</button>
+        <button type="button" class="btn solid" id="tutorialNext">Next</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1296,7 +1333,12 @@ function switchSettingsTab(tab){
 document.querySelectorAll('#settingsTabs .settingsTab').forEach(btn=>{
   btn.onclick = ()=> switchSettingsTab(btn.dataset.tab);
 });
+// Tracks whether the currently-open Profile modal is the mandatory first-time
+// setup, so planSubmit (below) knows whether to launch the onboarding
+// tutorial once it saves — see startTutorial().
+let planModalMandatory = false;
 function openPlanModal({mandatory=false, rollover=false, prevType=null, leftover=0, tab='plan'}={}){
+  planModalMandatory = mandatory;
   document.getElementById('planTitle').textContent = mandatory ? 'Set Up Your Account' : 'Profile';
   switchSettingsTab(tab);
   document.getElementById('planName').value = userPlan ? (userPlan.plan_name || '') : '';
@@ -1346,6 +1388,138 @@ document.getElementById('planCancel').onclick = ()=> planOverlay.classList.remov
 document.getElementById('settingsBtn').onclick = ()=>{
   openPlanModal({ mandatory:false });
 };
+
+/* ---------------- Onboarding tutorial ----------------
+   Launched once by planSubmit above, right after a brand-new account saves
+   its mandatory first-time dining plan. Walks through the five things a new
+   user needs to find: logging a dining hall swipe, logging an outside
+   meal/grocery run, viewing the breakdown, getting back to the main page,
+   and reopening this same Profile modal later. Each step points at a real
+   on-page element (navigating between the main/breakdown pages as needed by
+   reusing the same buttons a user would click) rather than describing the UI
+   in the abstract, and can be skipped at any point. */
+const TUTORIAL_STEPS = [
+  { selector:'#hallGrid', page:'main',
+    title:'Log a dining hall meal',
+    text:'Tap any dining hall’s card to log the swipes you used there.' },
+  { selector:'.enterMealPanel', page:'main',
+    title:'Log an outside meal',
+    text:'Eating off-campus or grabbing groceries? Use "+ Log a Meal" here to record what you spent.' },
+  { selector:'#breakdownBtn', page:'main',
+    title:'View your breakdown',
+    text:'"See Breakdown" shows charts of your swipes and spending over time.' },
+  { selector:'#backBtn', page:'breakdown',
+    title:'Back to the main page',
+    text:'Click here any time to return to the main LionSwipe page.' },
+  { selector:'#settingsBtn', page:'main',
+    title:'Update your profile',
+    text:'Click "Profile" any time to change your dining plan, spending goal, or grocery budget.' },
+];
+let tutorialStep = 0;
+let tutorialHighlightEl = null;
+// The set of log ids that existed when the tutorial opened — since steps 1
+// and 2 leave the real hall-swipe/spend buttons clickable (only the one
+// highlighted element pops above the dim overlay), a curious new user can
+// actually log real meals while following along. Anything in `logs` at
+// endTutorial that isn't in this set was created during the tour and gets
+// undone — see undoTutorialMealLogs.
+let tutorialLogIdsAtStart = null;
+const tutorialOverlay = document.getElementById('tutorialOverlay');
+const tutorialCard = document.getElementById('tutorialCard');
+
+// Navigates to the page a step needs by clicking the same button a user
+// would, instead of touching breakdownPage/mainPage's classes directly, so
+// renderBreakdown() etc. still run exactly as they normally would.
+function tutorialGoToPage(page){
+  const onBreakdown = document.getElementById('breakdownPage').classList.contains('show');
+  if(page==='breakdown' && !onBreakdown) document.getElementById('breakdownBtn').click();
+  else if(page==='main' && onBreakdown) document.getElementById('backBtn').click();
+}
+
+function positionTutorialCard(target){
+  const margin = 14;
+  const cardW = tutorialCard.offsetWidth;
+  const cardH = tutorialCard.offsetHeight;
+  let top, left;
+  if(target){
+    const r = target.getBoundingClientRect();
+    top = r.bottom + margin;
+    left = r.left;
+    if(top + cardH > window.innerHeight - margin) top = Math.max(margin, r.top - cardH - margin);
+    if(left + cardW > window.innerWidth - margin) left = window.innerWidth - cardW - margin;
+    if(left < margin) left = margin;
+  } else {
+    top = (window.innerHeight - cardH)/2;
+    left = (window.innerWidth - cardW)/2;
+  }
+  tutorialCard.style.top = `${Math.round(top)}px`;
+  tutorialCard.style.left = `${Math.round(left)}px`;
+}
+
+function renderTutorialStep(){
+  const step = TUTORIAL_STEPS[tutorialStep];
+  tutorialGoToPage(step.page);
+
+  if(tutorialHighlightEl) tutorialHighlightEl.classList.remove('tutorialHighlight');
+  const target = document.querySelector(step.selector);
+  tutorialHighlightEl = target;
+  if(target){
+    target.classList.add('tutorialHighlight');
+    target.scrollIntoView({ block:'center' });
+  }
+
+  document.getElementById('tutorialStepCount').textContent = `Step ${tutorialStep+1} of ${TUTORIAL_STEPS.length}`;
+  document.getElementById('tutorialTitle').textContent = step.title;
+  document.getElementById('tutorialText').textContent = step.text;
+  // display, not visibility — .btn has a 150ms transition on "all" properties,
+  // which per spec delays a visibility change until the transition ends,
+  // leaving the Back button visibly rendered for a beat on step 1.
+  document.getElementById('tutorialBack').style.display = tutorialStep===0 ? 'none' : '';
+  document.getElementById('tutorialNext').textContent = tutorialStep===TUTORIAL_STEPS.length-1 ? 'Finish' : 'Next';
+
+  positionTutorialCard(target);
+}
+
+function startTutorial(){
+  tutorialStep = 0;
+  tutorialLogIdsAtStart = new Set(logs.map(l=>l.id));
+  tutorialOverlay.classList.add('show');
+  renderTutorialStep();
+}
+// Deletes any meal/spend entries logged while the tutorial was open (see
+// tutorialLogIdsAtStart above) and tells the user it happened, so a test
+// swipe/purchase made just to see what the highlighted button does doesn't
+// silently stick around as real data. Only touches logs — it never reverts
+// the dining plan/profile itself.
+async function undoTutorialMealLogs(){
+  if(!tutorialLogIdsAtStart) return;
+  const startIds = tutorialLogIdsAtStart;
+  tutorialLogIdsAtStart = null;
+  const loggedDuringTutorial = logs.filter(l=>!startIds.has(l.id));
+  if(loggedDuringTutorial.length === 0) return;
+  for(const l of loggedDuringTutorial){ await deleteLog(l.id); }
+  alert(`${loggedDuringTutorial.length===1 ? 'A meal you logged' : `${loggedDuringTutorial.length} meals you logged`} during the tutorial ${loggedDuringTutorial.length===1 ? 'has' : 'have'} been undone.`);
+}
+async function endTutorial(){
+  if(tutorialHighlightEl) tutorialHighlightEl.classList.remove('tutorialHighlight');
+  tutorialHighlightEl = null;
+  tutorialOverlay.classList.remove('show');
+  await undoTutorialMealLogs();
+}
+document.getElementById('tutorialSkip').onclick = endTutorial;
+document.getElementById('tutorialNext').onclick = ()=>{
+  if(tutorialStep === TUTORIAL_STEPS.length-1){ endTutorial(); return; }
+  tutorialStep++;
+  renderTutorialStep();
+};
+document.getElementById('tutorialBack').onclick = ()=>{
+  if(tutorialStep === 0) return;
+  tutorialStep--;
+  renderTutorialStep();
+};
+window.addEventListener('resize', ()=>{
+  if(tutorialOverlay.classList.contains('show')) positionTutorialCard(tutorialHighlightEl);
+});
 
 /* ---------------- Help modal ---------------- */
 const helpOverlay = document.getElementById('helpOverlay');
@@ -1430,6 +1604,10 @@ document.getElementById('planSubmit').onclick = async ()=>{
 
   if(!ok){ errEl.textContent = 'Could not save — try again.'; errEl.style.display='block'; return; }
   planOverlay.classList.remove('show');
+  if(planModalMandatory){
+    planModalMandatory = false;
+    startTutorial();
+  }
 };
 
 /* ---------------- Login / Signup (Supabase Auth) ---------------- */
