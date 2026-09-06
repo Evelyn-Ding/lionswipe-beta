@@ -1328,6 +1328,12 @@ document.getElementById('planSubmit').onclick = async ()=>{
 
 /* ---------------- Login / Signup (Supabase Auth) ---------------- */
 let authMode = 'login';
+// True only while the overlay is showing as the automatic landing prompt (set
+// where getSession() resolves with no signed-in user, below) — swaps the dismiss
+// button to a more visible "Skip for now" and lets a click on the backdrop
+// dismiss it too, without changing that behavior for every other place this
+// same overlay is opened from.
+let isLandingPrompt = false;
 const loginOverlay = document.getElementById('loginOverlay');
 document.getElementById('loginBtn').onclick = async ()=>{
   if(!supabase){ alert('Supabase is not configured yet (see config.js / README.md).'); return; }
@@ -1335,9 +1341,21 @@ document.getElementById('loginBtn').onclick = async ()=>{
     await supabase.auth.signOut();
     return;
   }
+  isLandingPrompt = false;
   authMode='login'; renderAuth(); loginOverlay.classList.add('show');
 };
-document.getElementById('authCancel').onclick = ()=> loginOverlay.classList.remove('show');
+document.getElementById('authCancel').onclick = ()=>{
+  isLandingPrompt = false;
+  loginOverlay.classList.remove('show');
+};
+// Clicking the dimmed backdrop (not the modal box itself) dismisses the overlay,
+// same as the visible skip/cancel button.
+loginOverlay.onclick = (e)=>{
+  if(e.target === loginOverlay){
+    isLandingPrompt = false;
+    loginOverlay.classList.remove('show');
+  }
+};
 document.getElementById('authSwitch').onclick = ()=>{
   authMode = authMode==='login' ? 'signup' : 'login';
   renderAuth();
@@ -1346,6 +1364,7 @@ function renderAuth(){
   document.getElementById('authTitle').textContent = authMode==='login' ? 'Log In' : 'Sign Up';
   document.getElementById('authSubmit').textContent = authMode==='login' ? 'Log In' : 'Sign Up';
   document.getElementById('authSwitch').textContent = authMode==='login' ? "Don't have an account? Sign up" : "Already have an account? Log in";
+  document.getElementById('authCancel').textContent = isLandingPrompt ? 'Skip for now' : 'Cancel';
   document.getElementById('authErr').style.display='none';
   document.getElementById('authInfo').style.display='none';
 }
@@ -1374,6 +1393,7 @@ document.getElementById('authSubmit').onclick = async ()=>{
     const { error } = await supabase.auth.signInWithPassword({ email, password: pass });
     if(error){ errEl.textContent = error.message; errEl.style.display='block'; return; }
   }
+  isLandingPrompt = false;
   loginOverlay.classList.remove('show');
 };
 
@@ -1427,6 +1447,12 @@ if(supabase){
   supabase.auth.onAuthStateChange(async (_event, session)=>{
     currentUser = session ? session.user : null;
     updateLoginBtn();
+    // Closes the auto landing popup if the user ends up signed in some other way
+    // (e.g. confirming their email in another tab) while it's still showing.
+    if(currentUser && isLandingPrompt){
+      isLandingPrompt = false;
+      loginOverlay.classList.remove('show');
+    }
     await refreshLogs();   // logs must be loaded before loadOrPromptPlan so rollover leftover-swipe math is correct
     await loadOrPromptPlan();
     await loadSpendGoal();
@@ -1440,6 +1466,12 @@ if(supabase){
     await loadOrPromptPlan();
     await loadSpendGoal();
     await loadGroceryGoal();
+    if(!currentUser){
+      isLandingPrompt = true;
+      authMode = 'login';
+      renderAuth();
+      loginOverlay.classList.add('show');
+    }
   });
 } else {
   // No Supabase project configured (e.g. local preview with an empty config.js) —
@@ -1548,6 +1580,7 @@ function updateSwipesSummary(){
   if(guestLink){
     guestLink.onclick = (e)=>{
       e.preventDefault();
+      isLandingPrompt = false;
       authMode = 'signup'; renderAuth(); loginOverlay.classList.add('show');
     };
   }
@@ -1634,6 +1667,7 @@ async function renderMarket(){
     signedOut.innerHTML = `Log in with your @columbia.edu / @barnard.edu email to browse and post listings. <a href="#" id="marketSignInLink">Log in / sign up</a>`;
     document.getElementById('marketSignInLink').onclick = (e)=>{
       e.preventDefault();
+      isLandingPrompt = false;
       authMode = 'login'; renderAuth(); loginOverlay.classList.add('show');
     };
     return;
