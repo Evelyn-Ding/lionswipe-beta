@@ -75,7 +75,12 @@ The happy path — no correction ever needed.
   - `newSwipesUsed_ssol = 175 − 130 = 45`
   - `swipes_adjustment = 45 − 40 = 5`
 - **Dashboard now shows:** Meal Swipes Used = 45, Swipes Left = 130 (both match SSOL). Meal Swipes Logged by You still correctly reads 40 — all 40 original entries are untouched and still editable in Meal History below. The 45-vs-40 gap documents the 5-swipe discrepancy.
-- **Caveat worth knowing:** correcting via this modal and editing/adding individual entries in Meal History are two independent tools. If this student later goes back and manually logs the 2 forgotten visits (raising `usedSemester_logged` to 42), `swipes_adjustment` stays at `5` unless re-corrected — so `getSwipesUsedSsol` would become 47, now *over*-correcting by 2. The fix is the same either way: re-open the Swipes Left card and re-sync against SSOL again after cleaning up Meal History, since each save fully replaces the offset based on the numbers at that moment.
+- **Editing Meal History afterward moves the totals directly, on top of whatever correction is active.** `swipes_adjustment` is never touched by editing or deleting a log entry — only `usedSemester_logged` changes, and it flows straight through the same formula. So if this student later fixes one of the 40 logged entries — say a hall visit was logged as 10 swipes but should have been 5 — `usedSemester_logged` drops from 40 to 35, and:
+  ```
+  Meal Swipes Used = usedSemester_logged + swipes_adjustment = 35 + 5 = 40
+  Swipes Left      = total_swipes − Meal Swipes Used         = 175 − 40 = 135
+  ```
+  i.e. Swipes Left moves by exactly the same 5 the edit changed, exactly as if they'd logged (or un-logged) 5 fewer swipes from the main page — `swipes_adjustment` is just carried forward unchanged underneath it. This is intentional: a correction and a Meal History edit are two independent, additive adjustments to the same running total, not two competing sources of truth. The one thing to know is that this composes literally — if an edit happens to touch entries that a past SSOL correction was already covering for, re-checking SSOL and re-correcting (rather than assuming the two will cancel out automatically) is the way to keep both numbers accurate.
 
 ### 3d. Switches dining plans mid-semester
 
@@ -84,14 +89,21 @@ The happy path — no correction ever needed.
 - `swipes_adjustment` **carries forward unchanged** (still `5`) — a plan-total change doesn't reset it, because the correction is about how much has actually been used, not about the plan total.
 - **Dashboard now shows:** Meal Swipes Used stays 65 (correctly unaffected by the plan swap), Swipes Left recalculates immediately against the new total: `210 − 65 = 145`.
 
-## 4. What never changes, no matter which case applies
+## 4. SSOL correction vs. Meal History edits — not either/or, but don't double-fix the same gap
+
+These are two independent, additive tools, not competing sources of truth — which one to reach for depends on what you actually know is wrong:
+
+- **Know exactly which entry is wrong?** Fix it directly in Meal History (wrong swipe count, forgotten visit, a typo). It flows straight into the total with no offset involved — no need to touch the Swipes Left card at all.
+- **Only know the aggregate is off, not which entries caused it?** Use the Swipes Left card to set the real number from SSOL. Just don't *also* go add/fix the same entries in Meal History afterward for the same gap — neither mechanism knows what the other already accounted for, so doing both for the same discrepancy double-counts it (see 3c). If that happens, re-open the Swipes Left card and re-sync to the current real number — each save fully replaces the offset, so that immediately corrects it.
+
+## 5. What never changes, no matter which case applies
 
 - Individual `meal_logs` rows are never edited or deleted by a correction — every dining hall visit a student has logged stays exactly as entered, visible and independently editable in Meal History.
 - A correction never touches `total_swipes` — only `swipes_adjustment`.
 - Editing the full dining plan (Profile → new `total_swipes`) carries the existing `swipes_adjustment` forward rather than resetting it (see 3d).
 - Every correction is a full re-sync ("what's true right now"), never additive on top of a previous one.
 
-## 5. Database migration
+## 6. Database migration
 
 `meal_plans` needs one new column. If you're running `schema.sql` fresh, it's already included in the `create table` statement. **On an existing table**, run this once in the Supabase SQL editor for whichever project `lionswipe-beta` points at:
 

@@ -100,14 +100,15 @@
   .tab.active{background:var(--navy);color:var(--primary-fg);}
 
   /* ---- Dining hall grid ---- */
-  .hallGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-bottom:22px;}
+  .hallGrid{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-bottom:22px;}
+  @media (max-width:900px){ .hallGrid{grid-template-columns:repeat(auto-fit,minmax(220px,1fr));} }
   .hallCard{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;cursor:pointer;transition:.15s;position:relative;}
   .hallCard:hover{border-color:var(--navy);box-shadow:0 3px 10px rgba(86,84,134,.12);}
   .hallCard.closed{opacity:.55;cursor:default;}
   .hallCard h3{margin:0 0 2px;font-size:17px;color:var(--navy);}
   .hallCard .hours{font-family:'Figtree',ui-sans-serif,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;font-size:11px;color:var(--muted);margin-bottom:8px;}
-  .hallCard .stationName{font-family:'Figtree',ui-sans-serif,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--gold);margin:8px 0 3px;}
-  .hallCard ul{list-style:none;padding:0;margin:0;font-size:14px;line-height:1.55;}
+  .hallCard .stationName{font-family:'Figtree',ui-sans-serif,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--gold);margin:7px 0 2px;}
+  .hallCard ul{list-style:none;padding:0;margin:0;font-size:12px;line-height:1.4;}
   .hallCard .closedTxt{font-family:'Figtree',ui-sans-serif,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;font-size:13px;color:var(--muted);}
 
   /* ---- Enter Your Own Meal ---- */
@@ -205,6 +206,9 @@
   #swipesLeftCard:hover{border-color:var(--navy);background:var(--columbia-blue);}
   #swipesLeftCard .clickHint{font-size:10.5px;font-weight:600;color:var(--navy);margin-top:6px;}
   .chartBlock{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px;margin-bottom:22px;}
+  .chartWithFormula{display:flex;gap:18px;align-items:flex-start;flex-wrap:wrap;}
+  .chartWithFormula .chartMain{flex:1;min-width:260px;}
+  .chartWithFormula .formulaCard{flex:0 0 240px;max-width:280px;padding:0;border:none;background:transparent;}
   .chartBlock h4{margin:0 0 12px;color:var(--navy);font-family:'Figtree',ui-sans-serif,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;font-size:13px;text-transform:uppercase;letter-spacing:.06em;}
   .scrollBars{display:flex;gap:14px;overflow-x:auto;padding-bottom:6px;}
   .barCol{display:flex;flex-direction:column;align-items:center;min-width:48px;font-family:'Figtree',ui-sans-serif,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;}
@@ -234,10 +238,24 @@
   .planOptionBtn{width:100%;font-family:'Figtree',ui-sans-serif,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;text-align:left;border:1.5px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;padding:8px 12px;cursor:pointer;transition:.15s;}
   .planOptionBtn:hover{border-color:var(--navy);}
   .planOptionBtn.selected{border-color:var(--navy);background:var(--columbia-blue);}
-  .planOptionBtn.custom{border-style:dashed;}
   .poName{font-weight:700;color:var(--navy);font-size:13px;}
   .poMeta{font-size:11px;color:var(--muted);margin-top:2px;line-height:1.4;}
   .planDivider{font-family:'Figtree',ui-sans-serif,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;font-size:11px;color:var(--muted);text-align:center;margin:14px 0;text-transform:uppercase;letter-spacing:.05em;}
+  .ssolCheckRow{display:flex;align-items:flex-start;gap:8px;font-size:12.5px;color:var(--ink);margin:10px 0 4px;cursor:pointer;}
+  .ssolCheckRow span{flex:1;}
+  .infoBtn{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;flex-shrink:0;border-radius:50%;border:1.5px solid var(--navy);color:var(--navy);background:var(--card);font-size:11px;font-weight:700;font-style:italic;font-family:Georgia,serif;cursor:pointer;line-height:1;padding:0;}
+  .ssolHelpModal{max-width:440px;text-align:left;max-height:85vh;overflow-y:auto;}
+  .ssolHelpModal h3{text-align:center;}
+  .ssolSteps{margin:10px 0;padding-left:20px;font-size:13.5px;line-height:1.5;color:var(--ink);}
+  .ssolSteps li{margin-bottom:10px;}
+  .dashboardChip{display:inline-flex;align-items:center;gap:6px;background:var(--secondary);border:1px solid var(--line);border-radius:8px;padding:3px 10px;font-size:12.5px;color:var(--ink);font-weight:600;margin:0 2px;}
+  .ssolRolloverNote{background:var(--columbia-blue);border-radius:10px;padding:12px 14px;font-size:12.5px;line-height:1.5;color:var(--ink);margin-top:14px;}
+  .ssolRolloverNote ul{margin:6px 0 0;padding-left:18px;}
+  .ssolRolloverNote li{margin-bottom:6px;}
+  .formulaCard{text-align:left;font-size:11.5px;color:var(--muted);line-height:1.55;padding:14px 16px;}
+  .formulaCard .formulaTitle{font-family:'Figtree',ui-sans-serif,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:6px;}
+  .formulaCard .formulaLine{margin-bottom:5px;}
+  .formulaCard .formulaLine b{color:var(--ink);}
   .settingsTabs{display:flex;gap:6px;margin-bottom:16px;}
   .settingsTab{flex:1;font-family:'Figtree',ui-sans-serif,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;font-size:12.5px;font-weight:600;padding:8px 10px;border-radius:8px;border:1.5px solid var(--line);background:var(--card);color:var(--muted);cursor:pointer;}
   .settingsTab.active{border-color:var(--navy);color:var(--navy);background:var(--columbia-blue);}
@@ -304,12 +322,17 @@
     </div>
     <div class="statGrid" id="statGrid"></div>
     <div class="chartBlock">
-      <h4>Meal Swipes Used / Week &mdash; scroll for history &amp; target pace</h4>
-      <div class="chartLegend">
-        <div><span class="sw" style="background:var(--navy);"></span>Swipes used</div>
-        <div><span class="sw target"></span>Target pace needed to use up your plan by semester end</div>
+      <div class="chartWithFormula">
+        <div class="chartMain">
+          <h4>Meal Swipes Used / Week &mdash; scroll for history &amp; target pace</h4>
+          <div class="chartLegend">
+            <div><span class="sw" style="background:var(--navy);"></span>Swipes used</div>
+            <div><span class="sw target"></span>Target pace needed to use up your plan by semester end</div>
+          </div>
+          <div class="scrollBars" id="swipeChart"></div>
+        </div>
+        <div id="swipeFormulaSlot"></div>
       </div>
-      <div class="scrollBars" id="swipeChart"></div>
     </div>
     <div class="statGrid" id="statGrid2"></div>
     <div class="chartBlock">
@@ -387,6 +410,7 @@
     <h3 id="authTitle">Log In</h3>
     <input class="authField" id="authEmail" placeholder="uni@columbia.edu / @barnard.edu">
     <input class="authField" id="authPass" type="password" placeholder="Password">
+    <input class="authField" id="authCode" placeholder="6-digit code from your email" style="display:none;" inputmode="numeric">
     <div class="err" id="authErr" style="display:none;"></div>
     <div class="info" id="authInfo" style="display:none;"></div>
     <button class="btn solid" id="authSubmit" style="width:100%;">Log In</button>
@@ -431,13 +455,12 @@
 <div class="overlay" id="swipesLeftOverlay">
   <div class="modal util" style="max-width:380px;text-align:left;">
     <h3 style="text-align:center;">Correct Swipes Left</h3>
-    <p class="util" style="font-size:13px;color:var(--muted);">Enter your actual swipes left, exactly as it shows on SSOL.</p>
+    <p class="util" style="font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px;">Enter your actual swipes left, exactly as it shows on SSOL. <button type="button" class="infoBtn" id="swipesLeftHelpBtn" title="Where do I find this on SSOL?" aria-label="Where do I find this on SSOL?">i</button></p>
     <input type="number" id="swipesLeftCorrectionInput" min="0" step="1" placeholder="e.g. 120">
     <label style="display:flex;align-items:flex-start;gap:8px;font-size:13px;color:var(--ink);margin:14px 0 10px;cursor:pointer;">
       <input type="checkbox" id="swipesLeftConfirmCheck" style="margin-top:3px;">
       <span>I confirm this is the accurate # of swipes updated on SSOL.</span>
     </label>
-    <p class="util" style="font-size:12px;color:var(--muted);line-height:1.5;">Any dining hall swipes you've already logged stay saved — you can still view them anytime below in Meal History. They just won't be counted toward Swipes Used anymore once you save this, since this number becomes the current one going forward.</p>
     <div class="row">
       <button class="btn solid" id="swipesLeftConfirmBtn" disabled>Save</button>
       <button class="btn" id="swipesLeftCancelBtn">Cancel</button>
@@ -470,22 +493,36 @@
     </div>
 
     <div id="planTabPanel">
-      <p style="font-size:13px;color:var(--muted);">Select your plan below, or enter it manually. Full details at <a href="https://dining.columbia.edu/student-dining-plans" target="_blank" rel="noopener">dining.columbia.edu/student-dining-plans</a>.</p>
+      <p style="font-size:13px;color:var(--muted);">Select your plan below. Full details at <a href="https://dining.columbia.edu/student-dining-plans" target="_blank" rel="noopener">dining.columbia.edu/student-dining-plans</a>.</p>
       <div class="info" id="planRolloverNote" style="display:none;"></div>
 
       <div class="planOptions util" id="planOptions"></div>
 
-      <div class="planDivider">or enter manually</div>
+      <!-- No visible "enter manually" option anymore — students pick one of the
+           presets above. These three fields still carry the actual values (a
+           preset click fills them in; savePlan reads them on Save) so the rest
+           of the save/edit logic didn't need to change, they're just never
+           shown to anyone. -->
+      <div id="planManualFields" style="display:none;">
+        <label style="display:block;text-align:left;font-size:12px;color:var(--muted);margin-bottom:4px;">Plan name (optional)</label>
+        <input class="authField" id="planName" placeholder="e.g. Plan B">
 
-      <label style="display:block;text-align:left;font-size:12px;color:var(--muted);margin-bottom:4px;">Plan name (optional)</label>
-      <input class="authField" id="planName" placeholder="e.g. Plan B">
+        <label style="display:block;text-align:left;font-size:12px;color:var(--muted);margin-bottom:4px;">Total swipes for the semester</label>
+        <input class="authField" id="planTotalSwipes" type="number" min="0" placeholder="e.g. 175">
 
-      <label style="display:block;text-align:left;font-size:12px;color:var(--muted);margin-bottom:4px;">Total swipes for the semester</label>
-      <input class="authField" id="planTotalSwipes" type="number" min="0" placeholder="e.g. 175">
+        <label style="display:block;text-align:left;font-size:12px;color:var(--muted);margin-bottom:4px;">Swipes per week (target pace)</label>
+        <input class="authField" id="planWeeklyAllowance" type="number" min="0" placeholder="e.g. 14">
+      </div>
 
-      <label style="display:block;text-align:left;font-size:12px;color:var(--muted);margin-bottom:4px;">Swipes per week (target pace)</label>
-      <input class="authField" id="planWeeklyAllowance" type="number" min="0" placeholder="e.g. 14">
-      <p style="font-size:11px;color:var(--muted);text-align:left;margin-top:-4px;">Only know one? Fill in whichever you have — the other can stay a rough estimate and you can edit it later from Profile in the header. Leave both blank to skip the dining plan entirely.</p>
+      <label class="ssolCheckRow">
+        <input type="checkbox" id="planSsolCheck">
+        <span>Joining after the semester has already started? Click to update your accurate # of meal swipes from <a href="https://ssol.columbia.edu" target="_blank" rel="noopener" onclick="event.stopPropagation()">SSOL</a>.</span>
+        <button type="button" class="infoBtn" id="planSsolHelpBtn" title="Where do I find this on SSOL?" aria-label="Where do I find this on SSOL?">i</button>
+      </label>
+      <div id="planSsolFieldWrap" style="display:none;margin-bottom:6px;">
+        <label style="display:block;text-align:left;font-size:12px;color:var(--muted);margin-bottom:4px;">Your accurate swipes left, from SSOL</label>
+        <input class="authField" id="planSsolSwipesLeft" type="number" min="0" step="1" placeholder="e.g. 120">
+      </div>
     </div>
 
     <div id="spendTabPanel" style="display:none;">
@@ -646,6 +683,30 @@
   </div>
 </div>
 
+<div class="overlay" id="ssolHelpOverlay">
+  <div class="modal ssolHelpModal util">
+    <h3>Finding Your Meal Swipes on SSOL</h3>
+    <ol class="ssolSteps">
+      <li>Go to <a href="https://ssol.columbia.edu" target="_blank" rel="noopener">ssol.columbia.edu</a> and log in.</li>
+      <li>Click the <span class="dashboardChip">&#9776; Dashboard</span> button, then go to <b>Campus Services &rarr; Dining &rarr; View Cardholder Transactions</b>.</li>
+    </ol>
+    <div class="ssolRolloverNote">
+      <b>Why use LionSwipe to keep your own log instead of just using SSOL?</b>
+      <ol>
+        <li>SSOL is hard to navigate (Duo authentication is very annoying to me).</li>
+        <li>If you're on a term-based (semester) plan, your Fall swipes will roll over into Spring... but SSOL will hide the leftover Fall swipes count from you. That's why LionSwipe helps track ALL your swipes. :)</li>
+      </ol>
+    </div>
+    <p style="font-size:11.5px;color:var(--muted);line-height:1.5;margin:10px 0 0;">"As a courtesy, unused meals from the Fall Term will rollover to Spring Term. However, these meals are not available until all meal swipes for Spring Term have been used and cannot be viewed in SSOL." &mdash; <a href="https://dining.columbia.edu/content/frequently-asked-questions" target="_blank" rel="noopener">Columbia Dining</a></p>
+    <p style="font-size:12px;color:var(--muted);line-height:1.6;margin:10px 0 0;">
+      &bull; Weekly plans reset every Sunday with a fresh balance — nothing carries between weeks or terms.<br>
+      &bull; Term-based plans instead carry unused Fall swipes into Spring, but those carried-over swipes aren't usable (or visible on SSOL at all) until you've used up your entire Spring allowance first.<br>
+      &bull; For every meal plan, all swipes expire at the end of the academic year.
+    </p>
+    <div style="margin-top:14px;text-align:center;"><button class="btn" id="ssolHelpClose">Close</button></div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="config.js"></script>
 <script>
@@ -682,28 +743,15 @@ if(!CFG.SUPABASE_URL || CFG.SUPABASE_URL.includes('YOUR-PROJECT-REF')){
   supabase = window.supabase.createClient(CFG.SUPABASE_URL, CFG.SUPABASE_ANON_KEY);
 }
 
-// Handles the "Confirm your email" link landing back on our own domain. The
-// Supabase "Confirm signup" email template is customized (see README.md) to
-// link here with a token_hash instead of Supabase's default link straight to
-// https://<project-ref>.supabase.co/auth/v1/verify — a visible link to that
-// bare, unrelated-looking domain in an email claiming to be from lionswipe.com
-// is exactly the sender/link-domain-mismatch pattern Google Workspace's
-// Advanced Phishing Protection silently quarantines (confirmed 2026-09-04:
-// Resend showed "Delivered" but the email never reached a @columbia.edu inbox
-// with the default template; switching the link to our own domain and
-// verifying the token_hash client-side here fixed it). Only the "Confirm
-// signup" flow uses this today — no password-reset flow exists yet.
-if(supabase){
-  const confirmParams = new URLSearchParams(window.location.search);
-  const tokenHash = confirmParams.get('token_hash');
-  const otpType = confirmParams.get('type');
-  if(tokenHash && otpType){
-    history.replaceState(null, '', window.location.pathname);
-    supabase.auth.verifyOtp({ token_hash: tokenHash, type: otpType }).then(({ error })=>{
-      alert(error ? 'That confirmation link is invalid or has expired. Please sign up again to get a new one.' : 'Email confirmed! You are now logged in.');
-    });
-  }
-}
+// The "Confirm signup" email sends a 6-digit code ({{ .Token }} in the Supabase
+// template, see README.md) instead of a clickable magic link — even after
+// pointing the link at our own domain to fix the sender/link-domain mismatch,
+// Google Workspace's Advanced Phishing Protection kept silently quarantining
+// the email for @columbia.edu/@barnard.edu recipients (confirmed 2026-09-05:
+// Resend/Supabase logs showed the email sent, but it never reached an inbox —
+// not even spam). A bare numeric code has no link for that heuristic to flag.
+// The user types the code into the login modal (search authCode below), which
+// calls supabase.auth.verifyOtp({ email, token, type:'signup' }).
 
 const SEMESTER_END = CFG.SEMESTER_END ? new Date(CFG.SEMESTER_END) : new Date('2026-12-15T23:59:59-05:00');
 const SEMESTER_START = CFG.SEMESTER_START ? new Date(CFG.SEMESTER_START) : new Date('2026-09-02T00:00:00-04:00');
@@ -794,8 +842,35 @@ tick(); setInterval(tick,15000);
    /api/menus currently serves curated sample data mirroring the site's structure
    rather than a live scrape — see api/menus.js for how to swap in a real source
    (e.g. a headless-browser scraping service) without touching this file. */
+// Which meal tab should be active on load, based on the current time in
+// Columbia's own timezone — mirrors liondine.com defaulting to whichever meal
+// tab is "current" on page load rather than always opening on the same one.
+// liondine doesn't expose its own switch-over schedule anywhere we could read
+// it, so these boundaries are our own best approximation of typical Columbia
+// dining hours (confirmed against liondine.com itself at two points: 10:52am ET
+// showed Breakfast active, 10:42pm ET showed Late Night active — both fit here).
+function currentMealByTime(){
+  const hour = Number(new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', hour: 'numeric', hour12: false }).format(new Date()));
+  if(hour >= 21 || hour < 2) return "Late Night";
+  if(hour < 11) return "Breakfast";
+  if(hour < 16) return "Lunch";
+  return "Dinner";
+}
+
 let MENUS = null;
-let currentMeal = "Dinner";
+let currentMeal = currentMealByTime();
+
+// Fixed display order for the dining halls scrape-menus.js pulls from
+// liondine.com (which already aggregates Columbia + Barnard in this exact
+// order/naming) — rendered as its own box regardless of whether today's data
+// has an entry for it, so a hall with nothing scraped (closed, or not yet
+// published) still shows a "No data available" box in its usual spot rather
+// than disappearing. Must match the hall names liondine.com's own <h3> uses,
+// which scrape-menus.js passes straight through as MENUS[meal] keys.
+const DINING_HALLS = [
+  'Ferris', "JJ's", 'Faculty House', 'Grace Dodge', "Johnny's", 'Fac Shack',
+  'John Jay', 'Hewitt', "Chef Mike's", 'Diana', "Chef Don's"
+];
 async function loadMenus(){
   hallGrid.innerHTML = `<div class="loading">Loading today's menus...</div>`;
   try{
@@ -826,18 +901,22 @@ function renderHalls(){
   if(!MENUS) return;
   hallGrid.innerHTML = '';
   const data = MENUS[currentMeal] || {};
-  Object.keys(data).forEach(hall=>{
+  DINING_HALLS.forEach(hall=>{
     const info = data[hall];
     const card = document.createElement('div');
-    card.className = 'hallCard' + (info.closed ? ' closed' : '');
-    if(info.closed){
-      card.innerHTML = `<h3>${hall}</h3><div class="closedTxt">Closed for ${currentMeal.toLowerCase()}</div>`;
+    const hasMenu = info && info.stations && info.stations.length > 0;
+    if(!hasMenu){
+      card.className = 'hallCard closed';
+      const msg = (info && info.message) || 'No data available';
+      card.innerHTML = `<h3>${hall}</h3><div class="closedTxt">${msg}</div>`;
     } else {
+      card.className = 'hallCard';
       let stationsHtml = info.stations.map(s=>`
         <div class="stationName">${s.name}</div>
         <ul>${s.items.map(i=>`<li>${i}</li>`).join('')}</ul>
       `).join('');
-      card.innerHTML = `<h3>${hall}</h3><div class="hours util">${info.hours}</div>${stationsHtml}`;
+      const hoursHtml = info.hours ? `<div class="hours util">${info.hours}</div>` : '';
+      card.innerHTML = `<h3>${hall}</h3>${hoursHtml}${stationsHtml}`;
       card.onclick = ()=> openSwipeModal(hall);
     }
     hallGrid.appendChild(card);
@@ -1191,10 +1270,7 @@ function renderPlanOptions(){
       <div class="poMeta">${total} total swipes (${p.meals} + ${p.comp} complimentary) &middot; ${paceNote}</div>
       <div class="poMeta">$${p.diningDollars} Dining Dollars &middot; $${p.flex} Flex &middot; $${p.costTerm}/term</div>
     </button>`;
-  }).join('') + `<button type="button" class="planOptionBtn custom" id="planCustomBtn">
-      <div class="poName">Custom / not sure yet</div>
-      <div class="poMeta">Enter your own numbers below</div>
-    </button>`;
+  }).join('');
 
   wrap.querySelectorAll('.planOptionBtn[data-i]').forEach(btn=>{
     btn.onclick = ()=>{
@@ -1207,11 +1283,6 @@ function renderPlanOptions(){
       btn.classList.add('selected');
     };
   });
-  document.getElementById('planCustomBtn').onclick = ()=>{
-    wrap.querySelectorAll('.planOptionBtn').forEach(b=>b.classList.remove('selected'));
-    document.getElementById('planCustomBtn').classList.add('selected');
-    document.getElementById('planName').focus();
-  };
 }
 renderPlanOptions();
 
@@ -1236,29 +1307,34 @@ function openPlanModal({mandatory=false, rollover=false, prevType=null, leftover
   document.getElementById('groceryGoalAmount').value = groceryGoal ? groceryGoal.amount : '';
   document.getElementById('groceryGoalPeriod').value = groceryGoal ? groceryGoal.period : 'week';
 
-  // Highlight the matching preset if the saved/typed plan name matches one exactly,
-  // otherwise leave nothing selected (manual entry or an unrecognized name).
+  // Highlight the matching preset if the saved/typed plan name matches one exactly.
   const optsWrap = document.getElementById('planOptions');
   optsWrap.querySelectorAll('.planOptionBtn').forEach(b=>b.classList.remove('selected'));
   const matchIdx = userPlan ? DINING_PLANS.findIndex(p=>p.name === userPlan.plan_name) : -1;
   if(matchIdx >= 0) optsWrap.querySelector(`.planOptionBtn[data-i="${matchIdx}"]`).classList.add('selected');
 
+  // The SSOL correction checkbox always starts unchecked/blank — it's a
+  // one-time action taken deliberately each time, not a saved preference.
+  document.getElementById('planSsolCheck').checked = false;
+  document.getElementById('planSsolFieldWrap').style.display = 'none';
+  document.getElementById('planSsolSwipesLeft').value = '';
+
   const noteEl = document.getElementById('planRolloverNote');
   if(rollover && prevType === 'fall' && leftover > 0){
     noteEl.style.display = 'block';
-    noteEl.textContent = `Your Fall semester ended with ${leftover} unused swipe${leftover===1?'':'s'} — we've pre-filled the total below with just that carryover. Add your new Spring semester's allocation on top (check dining.columbia.edu/student-dining-plans) before saving.`;
+    noteEl.textContent = `Your Fall semester ended with ${leftover} unused swipe${leftover===1?'':'s'} — pick your new Spring plan below, then check "joining after the semester started?" and enter your combined total (new plan + that carryover) once it's posted on SSOL.`;
   } else if(rollover){
     noteEl.style.display = 'block';
-    noteEl.textContent = `A new semester has started — please review and update your dining plan.`;
+    noteEl.textContent = `A new semester has started — please pick your dining plan below.`;
   } else {
     noteEl.style.display = 'none';
   }
 
-  // Rollover pre-fills only the real carryover number (never a guessed baseline);
-  // editing an existing plan prefills the user's real saved values; first-time setup
-  // starts blank so nothing invented ever gets saved as if it were real.
-  const totalVal = rollover ? (leftover > 0 ? leftover : '') : (userPlan ? userPlan.total_swipes : '');
-  const weeklyVal = rollover ? '' : (userPlan ? userPlan.weekly_allowance : '');
+  // Rollover/first-time setup starts blank (a preset must be picked — nothing
+  // invented gets saved as if it were real); editing an existing plan
+  // prefills the user's real saved values.
+  const totalVal = (rollover || !userPlan) ? '' : userPlan.total_swipes;
+  const weeklyVal = (rollover || !userPlan) ? '' : userPlan.weekly_allowance;
   document.getElementById('planTotalSwipes').value = totalVal;
   document.getElementById('planWeeklyAllowance').value = weeklyVal;
   document.getElementById('planErr').style.display = 'none';
@@ -1276,21 +1352,37 @@ const helpOverlay = document.getElementById('helpOverlay');
 document.getElementById('helpBtn').onclick = ()=> helpOverlay.classList.add('show');
 document.getElementById('helpCancel').onclick = ()=> helpOverlay.classList.remove('show');
 
+/* ---------------- SSOL help modal (shared by the plan modal and Correct Swipes Left) ---------------- */
+const ssolHelpOverlay = document.getElementById('ssolHelpOverlay');
+document.getElementById('planSsolHelpBtn').onclick = ()=> ssolHelpOverlay.classList.add('show');
+document.getElementById('swipesLeftHelpBtn').onclick = ()=> ssolHelpOverlay.classList.add('show');
+document.getElementById('ssolHelpClose').onclick = ()=> ssolHelpOverlay.classList.remove('show');
+
+document.getElementById('planSsolCheck').onchange = function(){
+  document.getElementById('planSsolFieldWrap').style.display = this.checked ? 'block' : 'none';
+};
+
 document.getElementById('planSubmit').onclick = async ()=>{
   const errEl = document.getElementById('planErr');
   errEl.style.display = 'none';
 
-  // Both tabs save together regardless of which is active — each is independently
-  // optional. Dining plan fields only get validated/saved if at least one was
-  // touched; same for the spending goal amount (blank amount = leave/clear it).
+  // A dining plan is mandatory — pick one of the presets above (this also
+  // covers editing: reopening Profile pre-fills these from the existing plan,
+  // so an already-set-up student never hits this just for touching a
+  // different tab). Spending/grocery goals stay independently optional.
   const planName = document.getElementById('planName').value.trim();
   const totalStr = document.getElementById('planTotalSwipes').value.trim();
   const weeklyStr = document.getElementById('planWeeklyAllowance').value.trim();
   const total = parseInt(totalStr, 10);
   const weekly = parseInt(weeklyStr, 10);
   const planTouched = totalStr !== '' || weeklyStr !== '';
-  if(planTouched && (isNaN(total) || total < 0 || isNaN(weekly) || weekly < 0)){
-    errEl.textContent = 'Please enter valid numbers for total swipes and swipes/week (or leave both blank to skip the dining plan).';
+  if(!planTouched){
+    errEl.textContent = 'Please select a dining plan before saving.';
+    errEl.style.display = 'block';
+    return;
+  }
+  if(isNaN(total) || total < 0 || isNaN(weekly) || weekly < 0){
+    errEl.textContent = 'Please select a valid dining plan before saving.';
     errEl.style.display = 'block';
     return;
   }
@@ -1315,12 +1407,26 @@ document.getElementById('planSubmit').onclick = async ()=>{
     return;
   }
 
-  let ok = true;
-  if(planTouched) ok = await savePlan(total, weekly, planName) && ok;
+  const ssolChecked = document.getElementById('planSsolCheck').checked;
+  const ssolSwipesLeft = parseInt(document.getElementById('planSsolSwipesLeft').value, 10);
+  if(ssolChecked && (isNaN(ssolSwipesLeft) || ssolSwipesLeft < 0)){
+    errEl.textContent = 'Please enter your accurate swipes left from SSOL (or uncheck that box).';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  let ok = await savePlan(total, weekly, planName);
   if(spendTouched) ok = await saveSpendGoal(spendAmount, spendPeriod) && ok;
   else if(spendGoal) ok = await clearSpendGoal() && ok;
   if(groceryTouched) ok = await saveGroceryGoal(groceryAmount, groceryPeriod) && ok;
   else if(groceryGoal) ok = await clearGroceryGoal() && ok;
+
+  // Applied after the plan itself saves, since it back-solves against
+  // whatever total_swipes just got saved above (see updateSwipesLeft).
+  if(ssolChecked && userPlan){
+    const usedSemester_logged = logs.filter(l=>l.type==='hall' && l.ts >= SEMESTER_START.getTime()).reduce((s,l)=>s+l.swipes,0);
+    ok = await updateSwipesLeft(ssolSwipesLeft, usedSemester_logged) && ok;
+  }
 
   if(!ok){ errEl.textContent = 'Could not save — try again.'; errEl.style.display='block'; return; }
   planOverlay.classList.remove('show');
@@ -1347,6 +1453,7 @@ document.getElementById('loginBtn').onclick = async ()=>{
 document.getElementById('authCancel').onclick = ()=>{
   isLandingPrompt = false;
   loginOverlay.classList.remove('show');
+  authMode='login'; renderAuth();
 };
 // Clicking the dimmed backdrop (not the modal box itself) dismisses the overlay,
 // same as the visible skip/cancel button.
@@ -1354,26 +1461,68 @@ loginOverlay.onclick = (e)=>{
   if(e.target === loginOverlay){
     isLandingPrompt = false;
     loginOverlay.classList.remove('show');
+    authMode='login'; renderAuth();
   }
 };
-document.getElementById('authSwitch').onclick = ()=>{
+// While confirming a signup, authSwitch is repurposed as "resend code" (see renderAuth) —
+// it can't just toggle login/signup like normal since the email is already fixed at this point.
+document.getElementById('authSwitch').onclick = async ()=>{
+  if(authMode==='confirm'){
+    const errEl = document.getElementById('authErr');
+    const infoEl = document.getElementById('authInfo');
+    errEl.style.display='none'; infoEl.style.display='none';
+    const { error } = await supabase.auth.resend({ type:'signup', email: pendingConfirmEmail });
+    if(error){ errEl.textContent = error.message; errEl.style.display='block'; }
+    else { infoEl.textContent = 'Code resent — check your email.'; infoEl.style.display='block'; }
+    return;
+  }
   authMode = authMode==='login' ? 'signup' : 'login';
   renderAuth();
 };
 function renderAuth(){
-  document.getElementById('authTitle').textContent = authMode==='login' ? 'Log In' : 'Sign Up';
-  document.getElementById('authSubmit').textContent = authMode==='login' ? 'Log In' : 'Sign Up';
-  document.getElementById('authSwitch').textContent = authMode==='login' ? "Don't have an account? Sign up" : "Already have an account? Log in";
+  const passField = document.getElementById('authPass');
+  const codeField = document.getElementById('authCode');
+  const switchEl = document.getElementById('authSwitch');
   document.getElementById('authCancel').textContent = isLandingPrompt ? 'Skip for now' : 'Cancel';
   document.getElementById('authErr').style.display='none';
   document.getElementById('authInfo').style.display='none';
+  if(authMode==='confirm'){
+    document.getElementById('authTitle').textContent = 'Confirm your email';
+    document.getElementById('authSubmit').textContent = 'Confirm';
+    passField.style.display='none';
+    codeField.style.display='block';
+    codeField.value='';
+    switchEl.textContent = "Didn't get a code? Resend";
+  } else {
+    document.getElementById('authTitle').textContent = authMode==='login' ? 'Log In' : 'Sign Up';
+    document.getElementById('authSubmit').textContent = authMode==='login' ? 'Log In' : 'Sign Up';
+    passField.style.display='block';
+    codeField.style.display='none';
+    switchEl.textContent = authMode==='login' ? "Don't have an account? Sign up" : "Already have an account? Log in";
+  }
 }
+// Set once a signup needs email confirmation, so the "confirm code" step (and its
+// resend) know which address to verify against without re-reading the (by then
+// hidden) email field.
+let pendingConfirmEmail = '';
 document.getElementById('authSubmit').onclick = async ()=>{
-  const email = document.getElementById('authEmail').value.trim().toLowerCase();
-  const pass = document.getElementById('authPass').value;
   const errEl = document.getElementById('authErr');
   const infoEl = document.getElementById('authInfo');
   errEl.style.display='none'; infoEl.style.display='none';
+
+  if(authMode==='confirm'){
+    const code = document.getElementById('authCode').value.trim();
+    if(!code){ errEl.textContent='Enter the 6-digit code from your email.'; errEl.style.display='block'; return; }
+    const { error } = await supabase.auth.verifyOtp({ email: pendingConfirmEmail, token: code, type:'signup' });
+    if(error){ errEl.textContent = 'That code is invalid or has expired — try resending it.'; errEl.style.display='block'; return; }
+    isLandingPrompt = false;
+    loginOverlay.classList.remove('show');
+    authMode='login';
+    return;
+  }
+
+  const email = document.getElementById('authEmail').value.trim().toLowerCase();
+  const pass = document.getElementById('authPass').value;
 
   if(!/@(columbia|barnard)\.edu$/.test(email)){
     errEl.textContent = 'Please use your Columbia or Barnard email (@columbia.edu / @barnard.edu).';
@@ -1385,7 +1534,10 @@ document.getElementById('authSubmit').onclick = async ()=>{
     const { data, error } = await supabase.auth.signUp({ email, password: pass });
     if(error){ errEl.textContent = error.message; errEl.style.display='block'; return; }
     if(data.user && !data.session){
-      infoEl.textContent = 'Check your email to confirm your account, then log in.';
+      pendingConfirmEmail = email;
+      authMode = 'confirm';
+      renderAuth();
+      infoEl.textContent = 'We emailed you a 6-digit code — enter it above to confirm your account.';
       infoEl.style.display='block';
       return;
     }
@@ -2423,6 +2575,11 @@ function renderBreakdown(){
     ${statCard(getSwipesUsedSsol(usedSemester_logged),'Swipes Used')}
     ${statCard(weekNeeded===null?'—':weekNeeded,'Swipes/Week Needed')}
   `;
+  // Shares the chart block below (there's usually spare width there early in
+  // the semester, before many weeks' bars have accumulated) rather than
+  // sitting as a 4th box in the row above.
+  document.getElementById('swipeFormulaSlot').innerHTML =
+    swipesFormulaCard(usedSemester_logged, swipesLeft_ssol, weekNeeded, weeksRemaining);
   document.getElementById('statGrid2').innerHTML = `
     ${statCard('$'+spentOutWeek.toFixed(2),'Spent This Week (Eating Out)')}
     ${statCard('$'+spentOutMonth.toFixed(2),'Spent This Month (Eating Out)')}
@@ -2575,6 +2732,28 @@ document.getElementById('mealHistoryList').onclick = async (e)=>{
   if(btn.dataset.action === 'edit-log') openEditLogModal(log);
 };
 function statCard(val,lbl){ return `<div class="statCard"><div class="val">${val}</div><div class="lbl util">${lbl}</div></div>`; }
+
+// Spells out getSwipesUsedSsol/getSwipesLeftSsol/swipesPerWeekNeeded above with
+// the viewer's own current numbers plugged in, so the three stat cards next to
+// it are checkable by hand instead of just trusted. Renders nothing if there's
+// no plan yet — there's nothing to explain until Swipes Left has a real value.
+function swipesFormulaCard(usedSemester_logged, swipesLeft_ssol, weekNeeded, weeksRemaining){
+  if(!userPlan) return '';
+  const adjustment = userPlan.swipes_adjustment || 0;
+  const swipesUsed_ssol = usedSemester_logged + adjustment;
+  const usedLine = adjustment === 0
+    ? `Swipes Used = swipes you've logged this semester (<b>${usedSemester_logged}</b>)`
+    : `Swipes Used = logged swipes (${usedSemester_logged}) ${adjustment>0?'+':'−'} your SSOL correction (${Math.abs(adjustment)}) = <b>${swipesUsed_ssol}</b>`;
+  const leftLine = `Swipes Left = plan total (${userPlan.total_swipes}) − Swipes Used (${swipesUsed_ssol}) = <b>${swipesLeft_ssol}</b>`;
+  const paceLine = weekNeeded===null ? '' :
+    `Swipes/Week Needed = Swipes Left (${swipesLeft_ssol}) &divide; Weeks Left (${weeksRemaining}) = <b>${weekNeeded}</b>`;
+  return `<div class="statCard formulaCard">
+    <div class="formulaTitle">How these numbers are calculated</div>
+    <div class="formulaLine">${usedLine}</div>
+    <div class="formulaLine">${leftLine}</div>
+    ${paceLine ? `<div class="formulaLine">${paceLine}</div>` : ''}
+  </div>`;
+}
 
 // "Swipes Left" is the one stat card that's directly editable (see
 // updateSwipesLeft) — Swipes Used and Swipes/Week Needed are pure
