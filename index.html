@@ -132,11 +132,19 @@
      No centered modal box here — .tutorialOverlay just dims the page, and
      the element being explained gets .tutorialHighlight so it renders back
      on top of that dim layer (via z-index, not a cutout) instead of a fixed
-     modal covering the real UI it's pointing at. */
-  .tutorialOverlay{position:fixed;inset:0;background:rgba(0,20,40,.55);z-index:200;display:none;}
+     modal covering the real UI it's pointing at.
+     Stack order matters here: .overlay (every real modal — swipe, spend,
+     profile, etc.) sits at z-index:50, and .tutorialHighlight makes whatever
+     it's applied to (e.g. #hallGrid) its own top-level stacking context, not
+     just a locally-raised element. Keeping the whole tutorial stack below 50
+     means a real modal opened from the spotlighted element (e.g. confirming
+     a dining hall swipe) always renders on top of the tour, instead of the
+     highlighted element's now-elevated stacking context burying both that
+     modal and the tutorial's own card behind it. */
+  .tutorialOverlay{position:fixed;inset:0;background:rgba(0,20,40,.55);z-index:40;display:none;}
   .tutorialOverlay.show{display:block;}
-  .tutorialHighlight{position:relative;z-index:201;box-shadow:0 0 0 4px var(--card),0 0 0 8px var(--navy),0 14px 34px rgba(0,0,0,.35)!important;border-radius:var(--radius);}
-  .tutorialCard{position:fixed;z-index:202;background:var(--card);color:var(--ink);border-radius:14px;padding:18px 20px;width:280px;max-width:calc(100vw - 32px);box-shadow:0 10px 30px rgba(0,0,0,.35);}
+  .tutorialHighlight{position:relative;z-index:41;box-shadow:0 0 0 4px var(--card),0 0 0 8px var(--navy),0 14px 34px rgba(0,0,0,.35)!important;border-radius:var(--radius);}
+  .tutorialCard{position:fixed;z-index:42;background:var(--card);color:var(--ink);border-radius:14px;padding:18px 20px;width:280px;max-width:calc(100vw - 32px);box-shadow:0 10px 30px rgba(0,0,0,.35);}
   .tutorialCard h4{margin:0 0 8px;color:var(--navy);font-family:var(--font-display);font-size:16px;}
   .tutorialCard p{margin:0 0 14px;font-size:13px;line-height:1.5;}
   .tutorialStepCount{font-size:10.5px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;font-weight:700;margin-bottom:6px;}
