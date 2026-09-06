@@ -133,18 +133,21 @@
      the element being explained gets .tutorialHighlight so it renders back
      on top of that dim layer (via z-index, not a cutout) instead of a fixed
      modal covering the real UI it's pointing at.
-     Stack order matters here: .overlay (every real modal — swipe, spend,
-     profile, etc.) sits at z-index:50, and .tutorialHighlight makes whatever
-     it's applied to (e.g. #hallGrid) its own top-level stacking context, not
-     just a locally-raised element. Keeping the whole tutorial stack below 50
-     means a real modal opened from the spotlighted element (e.g. confirming
-     a dining hall swipe) always renders on top of the tour, instead of the
-     highlighted element's now-elevated stacking context burying both that
-     modal and the tutorial's own card behind it. */
+     Stack order (low to high): normal page content < .tutorialOverlay's dim
+     < .tutorialHighlight (pops out of the dim) < .tutorialCard (always wins
+     over the highlighted element itself) < .overlay/z-index:50 (every real
+     modal — swipe, spend, profile, etc. — always wins over the whole tour).
+     .tutorialCard must be a plain top-level sibling of .tutorialOverlay, not
+     nested inside it (see the HTML) — a nested element's z-index only orders
+     it among that parent's own children; the parent's (lower) z-index still
+     caps how it compares to .tutorialHighlight, a separate top-level
+     stacking context, so a nested card would fall behind the highlighted
+     element wherever the two visually overlap, e.g. once the page scrolls. */
   .tutorialOverlay{position:fixed;inset:0;background:rgba(0,20,40,.55);z-index:40;display:none;}
   .tutorialOverlay.show{display:block;}
   .tutorialHighlight{position:relative;z-index:41;box-shadow:0 0 0 4px var(--card),0 0 0 8px var(--navy),0 14px 34px rgba(0,0,0,.35)!important;border-radius:var(--radius);}
-  .tutorialCard{position:fixed;z-index:42;background:var(--card);color:var(--ink);border-radius:14px;padding:18px 20px;width:280px;max-width:calc(100vw - 32px);box-shadow:0 10px 30px rgba(0,0,0,.35);}
+  .tutorialCard{position:fixed;z-index:45;display:none;background:var(--card);color:var(--ink);border-radius:14px;padding:18px 20px;width:280px;max-width:calc(100vw - 32px);box-shadow:0 10px 30px rgba(0,0,0,.35);}
+  .tutorialCard.show{display:block;}
   .tutorialCard h4{margin:0 0 8px;color:var(--navy);font-family:var(--font-display);font-size:16px;}
   .tutorialCard p{margin:0 0 14px;font-size:13px;line-height:1.5;}
   .tutorialStepCount{font-size:10.5px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;font-weight:700;margin-bottom:6px;}
@@ -592,18 +595,23 @@
      mandatory first-time profile setup (see startTutorial). Unlike the other
      overlays above, this one doesn't dim/center a modal box; it dims the page
      and lets the single element being explained (see .tutorialHighlight) pop
-     back out on top, with a positioned card pointing at it. -->
-<div class="tutorialOverlay" id="tutorialOverlay">
-  <div class="tutorialCard util" id="tutorialCard">
-    <div class="tutorialStepCount" id="tutorialStepCount"></div>
-    <h4 id="tutorialTitle"></h4>
-    <p id="tutorialText"></p>
-    <div class="tutorialActions">
-      <button type="button" class="tutorialSkip" id="tutorialSkip">Skip tutorial</button>
-      <div class="tutorialBtns">
-        <button type="button" class="btn" id="tutorialBack">Back</button>
-        <button type="button" class="btn solid" id="tutorialNext">Next</button>
-      </div>
+     back out on top, with a positioned card pointing at it.
+     The card is a SIBLING of the dim overlay, not nested inside it — a
+     nested card's z-index only orders it among the overlay's own children,
+     it's still capped by the overlay's own (lower) z-index for comparisons
+     against anything outside the overlay, so a nested card would render
+     behind .tutorialHighlight (a separate top-level stacking context)
+     wherever the two visually overlap, e.g. after the page is scrolled. -->
+<div class="tutorialOverlay" id="tutorialOverlay"></div>
+<div class="tutorialCard util" id="tutorialCard">
+  <div class="tutorialStepCount" id="tutorialStepCount"></div>
+  <h4 id="tutorialTitle"></h4>
+  <p id="tutorialText"></p>
+  <div class="tutorialActions">
+    <button type="button" class="tutorialSkip" id="tutorialSkip">Skip tutorial</button>
+    <div class="tutorialBtns">
+      <button type="button" class="btn" id="tutorialBack">Back</button>
+      <button type="button" class="btn solid" id="tutorialNext">Next</button>
     </div>
   </div>
 </div>
@@ -1492,6 +1500,7 @@ function startTutorial(){
   tutorialStep = 0;
   tutorialLogIdsAtStart = new Set(logs.map(l=>l.id));
   tutorialOverlay.classList.add('show');
+  tutorialCard.classList.add('show');
   renderTutorialStep();
 }
 // Deletes any meal/spend entries logged while the tutorial was open (see
@@ -1512,6 +1521,7 @@ async function endTutorial(){
   if(tutorialHighlightEl) tutorialHighlightEl.classList.remove('tutorialHighlight');
   tutorialHighlightEl = null;
   tutorialOverlay.classList.remove('show');
+  tutorialCard.classList.remove('show');
   await undoTutorialMealLogs();
 }
 document.getElementById('tutorialSkip').onclick = endTutorial;
