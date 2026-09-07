@@ -125,7 +125,7 @@
   .counter{display:flex;align-items:center;justify-content:center;gap:16px;margin:18px 0;}
   .counter button{width:34px;height:34px;border-radius:50%;border:1.5px solid var(--navy);background:var(--card);color:var(--navy);font-size:18px;}
   .counter .n{font-family:var(--font-display);font-size:28px;min-width:36px;font-weight:700;color:var(--navy);}
-  .modal input[type=number]{width:100%;padding:10px;font-size:16px;border:1.5px solid var(--line);border-radius:8px;margin:14px 0;font-family:'Figtree',ui-sans-serif,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;background:var(--card);color:var(--ink);}
+  .modal input[type=number],.modal input[type=date]{width:100%;padding:10px;font-size:16px;border:1.5px solid var(--line);border-radius:8px;margin:14px 0;font-family:'Figtree',ui-sans-serif,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;background:var(--card);color:var(--ink);}
   .modal .row{display:flex;gap:8px;justify-content:center;margin-top:10px;}
 
   /* ---- Onboarding tutorial ----
@@ -456,6 +456,7 @@
       <div class="n" id="swipeCount">1</div>
       <button id="swipePlus">+</button>
     </div>
+    <input type="date" id="swipeDate">
     <div class="row">
       <button class="btn solid" id="swipeConfirm">Log Swipe</button>
       <button class="btn" id="swipeCancel">Cancel</button>
@@ -473,6 +474,7 @@
     <input class="authField" id="spendPlaceName" placeholder="e.g. Chipotle">
     <p class="util" style="font-size:13px;color:var(--muted);">How much did you spend?</p>
     <input type="number" id="spendAmount" placeholder="$0.00" step="0.01">
+    <input type="date" id="spendDate">
     <div class="row">
       <button class="btn solid" id="spendConfirm">Log Meal</button>
       <button class="btn" id="spendCancel">Cancel</button>
@@ -503,6 +505,7 @@
     <input class="authField" id="editLogName">
     <p class="util" style="font-size:13px;color:var(--muted);" id="editLogValueLabel">Amount</p>
     <input type="number" id="editLogValue" step="0.01">
+    <input type="date" id="editLogDate">
     <div class="row">
       <button class="btn solid" id="editLogConfirm">Save</button>
       <button class="btn" id="editLogCancel">Cancel</button>
@@ -988,6 +991,24 @@ function renderHalls(){
   });
 }
 
+/* ---------------- Date helpers (shared by swipe/spend/edit-log modals) ----------------
+   <input type=date> works in local YYYY-MM-DD strings, so we parse/format by hand
+   instead of going through Date's UTC-based ISO parsing — that avoids the classic
+   "picked the 5th, saved as the 4th" bug for viewers west of UTC. When combining a
+   picked date with a timestamp, time-of-day is preserved from that timestamp (or
+   "now" for a fresh log) so same-day entries keep a stable relative order. */
+function dateInputValueFromTs(ts){
+  const d = new Date(ts);
+  const y = d.getFullYear(), m = String(d.getMonth()+1).padStart(2,'0'), day = String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+}
+function todayDateInputValue(){ return dateInputValueFromTs(Date.now()); }
+function tsFromDateInput(value, preserveTimeFromTs){
+  const [y,m,day] = value.split('-').map(Number);
+  const time = new Date(preserveTimeFromTs!=null ? preserveTimeFromTs : Date.now());
+  return new Date(y, m-1, day, time.getHours(), time.getMinutes(), time.getSeconds(), time.getMilliseconds()).getTime();
+}
+
 /* ---------------- Swipe modal ---------------- */
 let swipeHall = null, swipeCount = 1;
 const swipeOverlay = document.getElementById('swipeOverlay');
@@ -995,13 +1016,16 @@ function openSwipeModal(hall){
   swipeHall = hall; swipeCount = 1;
   document.getElementById('swipeHallName').textContent = hall;
   document.getElementById('swipeCount').textContent = swipeCount;
+  document.getElementById('swipeDate').value = todayDateInputValue();
   swipeOverlay.classList.add('show');
 }
 document.getElementById('swipeMinus').onclick = ()=>{ swipeCount = Math.max(1, swipeCount-1); document.getElementById('swipeCount').textContent = swipeCount; };
 document.getElementById('swipePlus').onclick = ()=>{ swipeCount++; document.getElementById('swipeCount').textContent = swipeCount; };
 document.getElementById('swipeCancel').onclick = ()=> swipeOverlay.classList.remove('show');
 document.getElementById('swipeConfirm').onclick = async ()=>{
-  await insertLog({ type:'hall', name:swipeHall, swipes:swipeCount, ts:new Date().toISOString() });
+  const dateVal = document.getElementById('swipeDate').value || todayDateInputValue();
+  const ts = new Date(tsFromDateInput(dateVal, null)).toISOString();
+  await insertLog({ type:'hall', name:swipeHall, swipes:swipeCount, ts });
   swipeOverlay.classList.remove('show');
 };
 
@@ -1025,6 +1049,7 @@ function openSpendModal(name){
   setSpendLogType('out');
   nameInput.value = name || '';
   document.getElementById('spendAmount').value = '';
+  document.getElementById('spendDate').value = todayDateInputValue();
   spendOverlay.classList.add('show');
   if(name){ document.getElementById('spendAmount').focus(); } else { nameInput.focus(); }
 }
@@ -1034,7 +1059,9 @@ document.getElementById('spendConfirm').onclick = async ()=>{
   const name = document.getElementById('spendPlaceName').value.trim();
   const amt = parseFloat(document.getElementById('spendAmount').value);
   if(!name || isNaN(amt) || amt<0) return;
-  await insertLog({ type:spendLogType, name, amount:amt, ts:new Date().toISOString() });
+  const dateVal = document.getElementById('spendDate').value || todayDateInputValue();
+  const ts = new Date(tsFromDateInput(dateVal, null)).toISOString();
+  await insertLog({ type:spendLogType, name, amount:amt, ts });
   spendOverlay.classList.remove('show');
 };
 
@@ -1055,6 +1082,7 @@ function openEditLogModal(log){
   const valueInput = document.getElementById('editLogValue');
   valueInput.step = log.type==='hall' ? '1' : '0.01';
   valueInput.value = log.type==='hall' ? log.swipes : log.amount;
+  document.getElementById('editLogDate').value = dateInputValueFromTs(log.ts);
   editLogOverlay.classList.add('show');
 }
 document.getElementById('editLogCancel').onclick = ()=> editLogOverlay.classList.remove('show');
@@ -1062,9 +1090,12 @@ document.getElementById('editLogConfirm').onclick = async ()=>{
   const name = document.getElementById('editLogName').value.trim();
   const val = parseFloat(document.getElementById('editLogValue').value);
   if(!name || isNaN(val) || val<0) return;
+  const dateVal = document.getElementById('editLogDate').value || todayDateInputValue();
+  const origLog = logs.find(l=>l.id===editLogId);
+  const ts = new Date(tsFromDateInput(dateVal, origLog ? origLog.ts : null)).toISOString();
   const patch = editLogType==='hall'
-    ? { name, swipes: Math.round(val), amount: null }
-    : { name, swipes: null, amount: val };
+    ? { name, swipes: Math.round(val), amount: null, ts }
+    : { name, swipes: null, amount: val, ts };
   await updateLog(editLogId, patch);
   editLogOverlay.classList.remove('show');
   renderBreakdown();
@@ -1139,7 +1170,11 @@ async function updateLog(id, patch){
     const guestLogs = loadGuestLogs();
     const idx = guestLogs.findIndex(l=>l.id===id);
     if(idx===-1) return;
-    guestLogs[idx] = { ...guestLogs[idx], ...patch };
+    // Guest logs store ts as epoch ms (see insertLog's guest branch); patch.ts, when
+    // present, comes in as an ISO string like the Supabase row shape below, so it
+    // needs the same conversion applied before merging into guest storage.
+    const guestPatch = patch.ts!=null ? { ...patch, ts: new Date(patch.ts).getTime() } : patch;
+    guestLogs[idx] = { ...guestLogs[idx], ...guestPatch };
     saveGuestLogs(guestLogs);
     logs = guestLogs;
     updateSwipesSummary();
