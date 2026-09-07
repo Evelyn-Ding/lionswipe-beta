@@ -64,9 +64,12 @@
   .brand .subtitle{font-family:var(--font-body);font-size:12.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--gold);margin-top:2px;}
   .brandButtons{display:flex;justify-content:center;gap:8px;margin-top:12px;flex-wrap:wrap;}
   .marketNudgeWrap{margin-top:10px;}
-  .tutorialNudge{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:8px;margin-top:10px;}
-  .tutorialNudgeImg{width:34px;height:34px;object-fit:contain;flex-shrink:0;}
-  .tutorialNudgeBubble{background:var(--secondary);border:1px solid var(--line);border-radius:10px;padding:6px 10px;font-size:11.5px;font-weight:600;color:var(--ink);white-space:nowrap;}
+  .tutorialNudge{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:10px;margin-top:10px;max-width:100%;}
+  .tutorialNudgeImg{width:44px;height:44px;object-fit:contain;flex-shrink:0;}
+  .tutorialNudgeBubble{position:relative;background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:10px 14px;display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:10px;max-width:100%;}
+  .tutorialNudgeBubble::before{content:'';position:absolute;left:-8px;top:50%;transform:translateY(-50%);width:0;height:0;border-top:4px solid transparent;border-bottom:8px solid transparent;border-right:8px solid var(--line);}
+  .tutorialNudgeBubble::after{content:'';position:absolute;left:-7px;top:50%;transform:translateY(-50%);width:0;height:0;border-top:3px solid transparent;border-bottom:7px solid transparent;border-right:7px solid var(--card);}
+  .tutorialNudgeText{font-size:11.5px;font-weight:600;color:var(--ink);white-space:nowrap;}
   /* .brandIcon{display:inline-block;vertical-align:middle;margin-left:0;height:1.5em;width:auto;} */
 
   .headerRight{flex:1 1 0;text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:10px;min-width:190px;}
@@ -331,8 +334,10 @@
         </div>
         <div class="tutorialNudge util">
           <img src="assets/lion-waving.png" alt="LionSwipe mascot" class="tutorialNudgeImg">
-          <div class="tutorialNudgeBubble">New to LionSwipe?</div>
-          <button class="btn solid util" id="tutorialBtn">Tutorial</button>
+          <div class="tutorialNudgeBubble">
+            <span class="tutorialNudgeText">New to LionSwipe?</span>
+            <button class="btn solid util" id="tutorialBtn">Tutorial</button>
+          </div>
         </div>
         <div class="marketNudgeWrap flagMarket">
           <button class="btn solid util" id="marketBtn">Swipe Market &rarr;</button>
@@ -1650,7 +1655,7 @@ async function undoTutorialMealLogs(){
   const loggedDuringTutorial = logs.filter(l=>!startIds.has(l.id));
   if(loggedDuringTutorial.length === 0) return;
   for(const l of loggedDuringTutorial){ await deleteLog(l.id); }
-  alert(`${loggedDuringTutorial.length===1 ? 'A meal you logged' : `${loggedDuringTutorial.length} meals you logged`} during the tutorial ${loggedDuringTutorial.length===1 ? 'has' : 'have'} been undone.`);
+  alert('The meal(s) and spending you logged during the tutorial have been undone.');
 }
 async function endTutorial(){
   if(tutorialHighlightEl) tutorialHighlightEl.classList.remove('tutorialHighlight');
