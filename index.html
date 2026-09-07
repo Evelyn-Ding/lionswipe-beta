@@ -695,6 +695,18 @@
   </div>
 </div>
 
+<div class="overlay" id="guestMigrateOverlay">
+  <div class="modal util" style="max-width:380px;text-align:left;">
+    <h3 style="text-align:center;">Guest data found</h3>
+    <p id="guestMigrateMsg" style="font-size:13px;color:var(--ink);line-height:1.6;"></p>
+    <button class="btn solid" id="guestMigrateYes" style="width:100%;">Migrate</button>
+    <div class="row" style="margin-top:8px;">
+      <button class="btn" id="guestMigrateNotNow">Not now</button>
+      <button class="btn" id="guestMigrateNever">Discard</button>
+    </div>
+  </div>
+</div>
+
 <div class="overlay" id="messageOverlay">
   <div class="modal util" style="max-width:380px;">
     <h3 id="messageTitle" style="margin-bottom:2px;">Message</h3>
@@ -1748,6 +1760,25 @@ document.getElementById('authSubmit').onclick = async ()=>{
 // Offers to copy this browser's guest (localStorage) logs/plan/spending-goal into
 // the account that just signed in — fires on a real sign-in/sign-up (Supabase's
 // 'SIGNED_IN' event), not on every page load of an already-logged-in session.
+function askGuestMigrationChoice(message){
+  return new Promise(resolve=>{
+    const overlay = document.getElementById('guestMigrateOverlay');
+    document.getElementById('guestMigrateMsg').textContent = message;
+    const yesBtn = document.getElementById('guestMigrateYes');
+    const notNowBtn = document.getElementById('guestMigrateNotNow');
+    const neverBtn = document.getElementById('guestMigrateNever');
+    const cleanup = (choice)=>{
+      overlay.classList.remove('show');
+      yesBtn.onclick = notNowBtn.onclick = neverBtn.onclick = null;
+      resolve(choice);
+    };
+    yesBtn.onclick = ()=> cleanup('migrate');
+    notNowBtn.onclick = ()=> cleanup('skip');
+    neverBtn.onclick = ()=> cleanup('discard');
+    overlay.classList.add('show');
+  });
+}
+
 async function maybeOfferGuestMigration(){
   const guestLogs = loadGuestLogs();
   const guestPlan = loadGuestPlan();
@@ -1772,8 +1803,9 @@ async function maybeOfferGuestMigration(){
   if(groceryGoalWillMigrate) parts.push('a grocery budget');
   if(parts.length===0){ clearGuestData(); return; }
 
-  const migrate = confirm(`You have guest data saved in this browser (${parts.join(', ')}). Migrate it into your account now? (Your logged swipes/meals will be added to your account's history. Your account's existing dining plan/spending goal/grocery budget, if any, will be kept as-is.)`);
-  if(!migrate) return;
+  const choice = await askGuestMigrationChoice(`You have guest data saved in this browser (${parts.join(', ')}). Migrate it into your account? Your logged swipes/meals will be added to your account's history. Your account's existing dining plan/spending goal/grocery budget, if any, will be kept as-is.`);
+  if(choice==='discard'){ clearGuestData(); return; }
+  if(choice!=='migrate') return;
 
   try{
     if(guestLogs.length){
