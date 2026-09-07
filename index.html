@@ -283,10 +283,13 @@
   .ssolRolloverNote{background:var(--columbia-blue);border-radius:10px;padding:12px 14px;font-size:12.5px;line-height:1.5;color:var(--ink);margin-top:14px;}
   .ssolRolloverNote ul,.ssolRolloverNote ol{margin:6px 0;padding-left:18px;}
   .ssolRolloverNote li{margin-bottom:6px;}
-  .lionTipRow{display:flex;align-items:flex-end;gap:10px;margin-top:14px;}
+  .lionTipRow{display:flex;align-items:center;gap:10px;margin-top:14px;}
   .lionTipImg{width:56px;height:56px;object-fit:contain;flex-shrink:0;}
   .lionTipBubble{position:relative;background:var(--secondary);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:12.5px;line-height:1.5;color:var(--ink);flex:1;}
-  .lionTipBubble::before{content:'';position:absolute;left:-7px;bottom:14px;width:0;height:0;border-top:7px solid transparent;border-bottom:7px solid transparent;border-right:7px solid var(--secondary);}
+  .lionTipBubble::before{content:'';position:absolute;left:-7px;top:50%;transform:translateY(-50%);width:0;height:0;border-top:7px solid transparent;border-bottom:7px solid transparent;border-right:7px solid var(--secondary);}
+  .ssolFactList{margin:8px 0 0;padding-left:16px;font-size:12px;color:var(--muted);line-height:1.6;}
+  .ssolFactList li{margin-bottom:6px;}
+  .ssolFactList li:last-child{margin-bottom:0;}
   .formulaCard{text-align:left;font-size:11.5px;color:var(--muted);line-height:1.55;padding:14px 16px;}
   .formulaCard .formulaTitle{font-family:'Figtree',ui-sans-serif,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:6px;}
   .formulaCard .formulaLine{margin-bottom:5px;}
@@ -323,9 +326,9 @@
           <button class="btn util" id="settingsBtn">&#9881; Profile</button>
           <button class="btn util" id="themeToggleBtn">&#9789; Dark</button>
         </div>
-        <div class="marketNudgeWrap">
-          <button class="btn solid util" id="tutorialBtn">Tutorial</button>
-          <div class="marketNudge util">New to LionSwipe? Click here for a tutorial...</div>
+        <div class="ssolRolloverNote util" style="margin-top:10px;">
+          New to LionSwipe? Click here for a tutorial...
+          <div style="margin-top:10px;"><button class="btn solid util" id="tutorialBtn">Tutorial</button></div>
         </div>
         <div class="marketNudgeWrap flagMarket">
           <button class="btn solid util" id="marketBtn">Swipe Market &rarr;</button>
@@ -805,19 +808,24 @@
         <li>SSOL is hard to use.</li>
         <li>SSOL doesn't tell you a target pace to use up all your meal swipes.</li>
       </ol>
-      LionSwipe helps you optimize your meal plan!
+      <b>LionSwipe helps you optimize your meal plan!</b>
     </div>
     <div class="lionTipRow">
       <img src="assets/lion-ramen.png" alt="LionSwipe mascot" class="lionTipImg">
       <div class="lionTipBubble">Psst&hellip; if you're on a term-based (semester) plan, your Fall swipes will roll over into Spring, but SSOL will only show the Spring swipes and not show your leftover swipes from the Fall.</div>
     </div>
-    <p style="font-size:12.5px;color:var(--ink);font-weight:600;margin:16px 0 6px;">We read the fine print for you:</p>
-    <p style="font-size:11.5px;color:var(--muted);line-height:1.5;margin:0;">"As a courtesy, unused meals from the Fall Term will rollover to Spring Term. However, these meals are not available until all meal swipes for Spring Term have been used and cannot be viewed in SSOL." &mdash; <a href="https://dining.columbia.edu/content/frequently-asked-questions" target="_blank" rel="noopener">Columbia Dining</a></p>
-    <p style="font-size:12px;color:var(--muted);line-height:1.6;margin:10px 0 0;">
-      &bull; Weekly plans reset every Sunday with a fresh balance — nothing carries between weeks or terms.<br>
-      &bull; Term-based plans instead carry unused Fall swipes into Spring, but those carried-over swipes aren't usable (or visible on SSOL at all) until you've used up your entire Spring allowance first.<br>
-      &bull; For every meal plan, all swipes expire at the end of the academic year.
-    </p>
+    <div class="lionTipRow" style="margin-top:16px;">
+      <img src="assets/lion-waving.png" alt="LionSwipe mascot" class="lionTipImg">
+      <div class="lionTipBubble">
+        <b>We read the fine print for you:</b>
+        <p style="font-size:11.5px;color:var(--muted);line-height:1.5;margin:8px 0 0;">"As a courtesy, unused meals from the Fall Term will rollover to Spring Term. However, these meals are not available until all meal swipes for Spring Term have been used and cannot be viewed in SSOL." &mdash; <a href="https://dining.columbia.edu/content/frequently-asked-questions" target="_blank" rel="noopener">Columbia Dining</a></p>
+        <ul class="ssolFactList">
+          <li>Weekly plans reset every Sunday with a fresh balance — nothing carries between weeks or terms.</li>
+          <li>Term-based plans instead carry unused Fall swipes into Spring, but those carried-over swipes aren't usable (or visible on SSOL at all) until you've used up your entire Spring allowance first.</li>
+          <li>For every meal plan, all swipes expire at the end of the academic year.</li>
+        </ul>
+      </div>
+    </div>
     <div style="margin-top:14px;text-align:center;"><button class="btn" id="ssolHelpClose">Close</button></div>
   </div>
 </div>
@@ -1662,6 +1670,7 @@ document.getElementById('tutorialBack').onclick = ()=>{
   tutorialStep--;
   renderTutorialStep();
 };
+document.getElementById('tutorialBtn').onclick = startTutorial;
 window.addEventListener('resize', ()=>{
   if(tutorialOverlay.classList.contains('show')) positionTutorialCard(tutorialHighlightEl);
 });
@@ -1669,7 +1678,6 @@ window.addEventListener('resize', ()=>{
 /* ---------------- Help modal ---------------- */
 const helpOverlay = document.getElementById('helpOverlay');
 document.getElementById('helpBtn').onclick = ()=> helpOverlay.classList.add('show');
-document.getElementById('tutorialBtn').onclick = ()=> helpOverlay.classList.add('show');
 document.getElementById('helpCancel').onclick = ()=> helpOverlay.classList.remove('show');
 
 /* ---------------- SSOL help modal (shared by the plan modal and Correct Swipes Left) ---------------- */
