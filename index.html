@@ -255,6 +255,9 @@
   .barVal{font-size:10.5px;margin-top:4px;color:var(--ink);}
   .barLbl{font-size:9.5px;color:var(--muted);margin-top:2px;text-align:center;}
   .pieWrap{display:flex;align-items:center;gap:24px;flex-wrap:wrap;}
+  .pieRow{display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start;}
+  .pieRowItem{flex:1;min-width:190px;}
+  .pieRowLabel{font-family:'Figtree',ui-sans-serif,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:10px;}
   .legend{font-family:'Figtree',ui-sans-serif,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;font-size:13px;}
   .legend div{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
   .sw{width:12px;height:12px;border-radius:3px;flex-shrink:0;}
@@ -416,17 +419,22 @@
       <div class="scrollBars" id="groceryChart"></div>
     </div>
     <div class="chartBlock">
-      <h4>Dining Hall vs. Eating Out</h4>
-      <div class="pieWrap">
-        <svg id="pieSvg" width="160" height="160" viewBox="0 0 160 160"></svg>
-        <div class="legend" id="pieLegend"></div>
-      </div>
-    </div>
-    <div class="chartBlock">
-      <h4>Eating Out vs. Grocery Spending</h4>
-      <div class="pieWrap">
-        <svg id="spendPieSvg" width="160" height="160" viewBox="0 0 160 160"></svg>
-        <div class="legend" id="spendPieLegend"></div>
+      <div class="pieRow">
+        <div class="pieRowItem">
+          <div class="pieRowLabel">Dining Hall vs. Eating Out</div>
+          <div class="pieWrap">
+            <svg id="pieSvg" width="130" height="130" viewBox="0 0 160 160"></svg>
+            <div class="legend" id="pieLegend"></div>
+          </div>
+        </div>
+        <div class="pieRowItem">
+          <div class="pieRowLabel">Eating Out vs. Grocery Spending</div>
+          <div class="pieWrap">
+            <svg id="spendPieSvg" width="130" height="130" viewBox="0 0 160 160"></svg>
+            <div class="legend" id="spendPieLegend"></div>
+          </div>
+        </div>
+        <div class="pieRowItem util" id="walletSpendSummary"></div>
       </div>
     </div>
     <div class="chartBlock">
@@ -1453,6 +1461,21 @@ function planTotalAndWeekly(p){
   const weekly = p.weekly || Math.round(total / SEMESTER_WEEKS);
   return { total, weekly };
 }
+// Dining Dollars/Flex totals aren't saved on the user's own row (meal_plans has
+// no diningDollars/flex columns) — they're looked up from DINING_PLANS by the
+// saved plan_name instead, same as renderPlanOptions' "selected" match above.
+// Shared by the header summary and the Breakdown pie-chart row so both always
+// show the same numbers.
+function walletSpendTotals(){
+  const planPreset = userPlan ? DINING_PLANS.find(p=>p.name===userPlan.plan_name) : null;
+  const spentDiningDollars = logs.filter(l=>l.type==='diningDollars' && l.ts>=SEMESTER_START.getTime()).reduce((s,l)=>s+l.amount,0);
+  const spentFlex = logs.filter(l=>l.type==='flex' && l.ts>=SEMESTER_START.getTime()).reduce((s,l)=>s+l.amount,0);
+  return {
+    spentDiningDollars, spentFlex,
+    diningDollarsTotal: planPreset ? planPreset.diningDollars : null,
+    flexTotal: planPreset ? planPreset.flex : null,
+  };
+}
 function renderPlanOptions(){
   const wrap = document.getElementById('planOptions');
   wrap.innerHTML = DINING_PLANS.map((p,i)=>{
@@ -2078,12 +2101,16 @@ function updateSwipesSummary(){
     ? `<div class="swipesLine guestNote">Saved in this browser only — <a href="#" id="guestSignInLink">sign in / create account</a> to save it permanently.</div>`
     : '';
 
+  const { spentDiningDollars, spentFlex, diningDollarsTotal, flexTotal } = walletSpendTotals();
+
   document.getElementById('swipesSummary').innerHTML = `
+    <div class="swipesLine" id="swipesLeftLine"><span>Swipes left:</span><b>${swipesLeft_ssol===null?'—':swipesLeft_ssol}</b></div>
     <div class="swipesLine"><span>Swipes used:</span><b>${getSwipesUsedSsol(usedSemester_logged)}</b></div>
     <div class="swipesLine"><span>Swipes/week needed:</span><b>${weekNeeded}</b></div>
-    <div class="swipesLine" id="swipesLeftLine"><span>Swipes left:</span><b>${swipesLeft_ssol===null?'—':swipesLeft_ssol}</b></div>
     <div class="swipesLine"><span>Total spent eating out this week:</span><b>$${spentOutWeek.toFixed(2)}</b></div>
     <div class="swipesLine"><span>Total spent on groceries this week:</span><b>$${spentGroceryWeek.toFixed(2)}</b></div>
+    <div class="swipesLine"><span>Dining Dollars:</span><b>$${spentDiningDollars.toFixed(2)} / ${diningDollarsTotal===null?'—':'$'+diningDollarsTotal} spent</b></div>
+    <div class="swipesLine"><span>Flex:</span><b>$${spentFlex.toFixed(2)} / ${flexTotal===null?'—':'$'+flexTotal} spent</b></div>
     ${spendGoalLine}
     ${groceryGoalLine}
     ${guestNote}
@@ -3055,6 +3082,13 @@ function renderBreakdown(){
   const outSpentAll = logs.filter(l=>l.type==='out').reduce((s,l)=>s+l.amount,0);
   const grocerySpentAll = logs.filter(l=>l.type==='grocery').reduce((s,l)=>s+l.amount,0);
   drawSpendPie(outSpentAll, grocerySpentAll);
+
+  const { spentDiningDollars, spentFlex, diningDollarsTotal, flexTotal } = walletSpendTotals();
+  document.getElementById('walletSpendSummary').innerHTML = `
+    <div class="pieRowLabel">Dining Dollars &amp; Flex</div>
+    <div class="swipesLine"><span>Dining Dollars:</span><b>$${spentDiningDollars.toFixed(2)} / ${diningDollarsTotal===null?'—':'$'+diningDollarsTotal} spent</b></div>
+    <div class="swipesLine"><span>Flex:</span><b>$${spentFlex.toFixed(2)} / ${flexTotal===null?'—':'$'+flexTotal} spent</b></div>
+  `;
 
   renderHallFrequencyChart();
   renderMealHistory(usedSemester_logged);
