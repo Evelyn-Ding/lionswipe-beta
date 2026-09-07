@@ -899,8 +899,8 @@ if(!CFG.SUPABASE_URL || CFG.SUPABASE_URL.includes('YOUR-PROJECT-REF')){
 // The user types the code into the login modal (search authCode below), which
 // calls supabase.auth.verifyOtp({ email, token, type:'signup' }).
 
-const SEMESTER_END = CFG.SEMESTER_END ? new Date(CFG.SEMESTER_END) : new Date('2026-12-15T23:59:59-05:00');
-const SEMESTER_START = CFG.SEMESTER_START ? new Date(CFG.SEMESTER_START) : new Date('2026-09-02T00:00:00-04:00');
+const SEMESTER_END = CFG.SEMESTER_END ? new Date(CFG.SEMESTER_END) : new Date('2026-12-23T23:59:59-05:00');
+const SEMESTER_START = CFG.SEMESTER_START ? new Date(CFG.SEMESTER_START) : new Date('2026-09-04T00:00:00-04:00');
 // 'fall' or 'spring' — set in config.js each term. Drives end-of-semester swipe rollover:
 // unused Fall swipes carry into Spring; Spring->Fall just prompts a plan review, no rollover.
 const SEMESTER_TYPE = CFG.SEMESTER_TYPE === 'spring' ? 'spring' : 'fall';
@@ -1455,7 +1455,7 @@ async function clearGroceryGoal(){
 // (dining.columbia.edu/student-dining-plans). total = base meals + complimentary
 // meals (the full usable swipe balance); weekly is only set for the plans that
 // actually reset weekly — term-based plans get a computed target-pace suggestion.
-const SEMESTER_WEEKS = 15; // rough teaching-weeks estimate, used only for term-plan pacing suggestions
+const SEMESTER_WEEKS = 16; // matches totalSemesterWeeks() for SEMESTER_START/END above (9/4-12/23), used only for term-plan pacing suggestions
 const DINING_PLANS = [
   { name:'Plan A / Weekly',     meals:252, comp:15, weekly:14,   diningDollars:0,   flex:200, costTerm:3453 },
   { name:'Plan A / Term',       meals:235, comp:15, weekly:null, diningDollars:100, flex:100, costTerm:3394 },
@@ -2066,9 +2066,6 @@ document.getElementById('deleteAccountBtn').onclick = async ()=>{
 function updateSwipesSummary(){
   const now = new Date();
   const usedSemester_logged = logs.filter(l=>l.type==='hall' && l.ts >= SEMESTER_START.getTime()).reduce((s,l)=>s+l.swipes,0);
-  const weekLogs = logsThisPeriod('week');
-  const spentOutWeek = weekLogs.filter(l=>l.type==='out').reduce((s,l)=>s+l.amount,0);
-  const spentGroceryWeek = weekLogs.filter(l=>l.type==='grocery').reduce((s,l)=>s+l.amount,0);
 
   // "Swipes left" depends on a real saved plan (total_swipes) — show "—" rather
   // than inventing a number when there isn't one yet.
@@ -2090,7 +2087,7 @@ function updateSwipesSummary(){
         const spentInGoalPeriod = logsThisPeriod(spendGoal.period).filter(l=>l.type==='out').reduce((s,l)=>s+l.amount,0);
         const periodLabel = {day:'today', week:'this week', month:'this month', semester:'this semester'}[spendGoal.period];
         const over = spentInGoalPeriod > spendGoal.amount;
-        return `<div class="swipesLine editable" id="spendGoalLine" title="Click to edit your spending goal"><span>Spend goal (${periodLabel}):</span><b style="${over?'color:var(--danger);':''}">$${spentInGoalPeriod.toFixed(2)} / $${spendGoal.amount.toFixed(2)}</b></div>`;
+        return `<div class="swipesLine editable" id="spendGoalLine" title="Click to edit your spending goal"><span>Eating out budget (${periodLabel}):</span><b style="${over?'color:var(--danger);':''}">$${spentInGoalPeriod.toFixed(2)} / $${spendGoal.amount.toFixed(2)}</b></div>`;
       })()
     : '';
 
@@ -2117,8 +2114,6 @@ function updateSwipesSummary(){
     <div class="swipesLine" id="swipesLeftLine"><span>Swipes left:</span><b>${swipesLeft_ssol===null?'—':swipesLeft_ssol}</b></div>
     <div class="swipesLine"><span>Swipes used:</span><b>${getSwipesUsedSsol(usedSemester_logged)}</b></div>
     <div class="swipesLine"><span>Swipes/week needed:</span><b>${weekNeeded}</b></div>
-    <div class="swipesLine"><span>Total spent eating out this week:</span><b>$${spentOutWeek.toFixed(2)}</b></div>
-    <div class="swipesLine"><span>Total spent on groceries this week:</span><b>$${spentGroceryWeek.toFixed(2)}</b></div>
     <div class="swipesLine"><span>Dining Dollars:</span><b>$${spentDiningDollars.toFixed(2)} / ${diningDollarsTotal===null?'—':'$'+diningDollarsTotal} spent</b></div>
     <div class="swipesLine"><span>Flex:</span><b>$${spentFlex.toFixed(2)} / ${flexTotal===null?'—':'$'+flexTotal} spent</b></div>
     ${spendGoalLine}
@@ -3160,7 +3155,7 @@ function swipesFormulaCard(usedSemester_logged, swipesLeft_ssol, weekNeeded, wee
     : `Swipes Used = logged swipes (${usedSemester_logged}) ${adjustment>0?'+':'−'} your SSOL correction (${Math.abs(adjustment)}) = <b>${swipesUsed_ssol}</b>`;
   const leftLine = `Swipes Left = plan total (${userPlan.total_swipes}) − Swipes Used (${swipesUsed_ssol}) = <b>${swipesLeft_ssol}</b>`;
   const paceLine = weekNeeded===null ? '' :
-    `Swipes/Week Needed = Swipes Left (${swipesLeft_ssol}) &divide; Weeks Left (${weeksRemaining}) = <b>${weekNeeded}</b>`;
+    `Swipes/Week Needed = Swipes Left (${swipesLeft_ssol}) / Weeks Left (${weeksRemaining}) = <b>${weekNeeded}</b>`;
   return `<div class="statCard formulaCard">
     <div class="formulaTitle">How these numbers are calculated</div>
     <div class="formulaLine">${usedLine}</div>
@@ -3186,7 +3181,7 @@ function spendFormulaCard(category, goal, targetPerWeek, weeksRemaining, spentSe
     <div class="formulaTitle">How these numbers are calculated</div>
     <div class="formulaLine">Semester Budget = weekly ${label} ($${weeklyGoalAmount.toFixed(2)}/week) &times; total weeks (${weeksTotal}) = <b>$${semesterBudget.toFixed(2)}</b></div>
     <div class="formulaLine">Remaining Budget = Semester Budget ($${semesterBudget.toFixed(2)}) − Spent So Far ($${spentSemester.toFixed(2)}) = <b>$${remainingBudget.toFixed(2)}</b></div>
-    <div class="formulaLine">Target $/Week Needed = Remaining Budget ($${remainingBudget.toFixed(2)}) &divide; Weeks Left (${weeksRemaining}) = <b>$${targetPerWeek.toFixed(2)}</b></div>
+    <div class="formulaLine">Target $/Week Needed = Remaining Budget ($${remainingBudget.toFixed(2)}) / Weeks Left (${weeksRemaining}) = <b>$${targetPerWeek.toFixed(2)}</b></div>
   </div>`;
 }
 
