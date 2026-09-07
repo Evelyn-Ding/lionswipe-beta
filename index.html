@@ -64,6 +64,12 @@
   .brand .subtitle{font-family:var(--font-body);font-size:12.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--gold);margin-top:2px;}
   .brandButtons{display:flex;justify-content:center;gap:8px;margin-top:12px;flex-wrap:wrap;}
   .marketNudgeWrap{margin-top:10px;}
+  .tutorialNudge{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:10px;margin-top:10px;max-width:100%;}
+  .tutorialNudgeImg{width:44px;height:44px;object-fit:contain;flex-shrink:0;}
+  .tutorialNudgeBubble{position:relative;background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:10px 14px;display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:10px;max-width:100%;}
+  .tutorialNudgeBubble::before{content:'';position:absolute;left:-8px;top:50%;transform:translateY(-50%);width:0;height:0;border-top:4px solid transparent;border-bottom:8px solid transparent;border-right:8px solid var(--line);}
+  .tutorialNudgeBubble::after{content:'';position:absolute;left:-7px;top:50%;transform:translateY(-50%);width:0;height:0;border-top:3px solid transparent;border-bottom:7px solid transparent;border-right:7px solid var(--card);}
+  .tutorialNudgeText{font-size:11.5px;font-weight:600;color:var(--ink);white-space:nowrap;}
   /* .brandIcon{display:inline-block;vertical-align:middle;margin-left:0;height:1.5em;width:auto;} */
 
   .headerRight{flex:1 1 0;text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:10px;min-width:190px;}
@@ -326,9 +332,12 @@
           <button class="btn util" id="settingsBtn">&#9881; Profile</button>
           <button class="btn util" id="themeToggleBtn">&#9789; Dark</button>
         </div>
-        <div class="ssolRolloverNote util" style="margin-top:10px;">
-          New to LionSwipe? Click here for a tutorial...
-          <div style="margin-top:10px;"><button class="btn solid util" id="tutorialBtn">Tutorial</button></div>
+        <div class="tutorialNudge util">
+          <img src="assets/lion-waving.png" alt="LionSwipe mascot" class="tutorialNudgeImg">
+          <div class="tutorialNudgeBubble">
+            <span class="tutorialNudgeText">New to LionSwipe?</span>
+            <button class="btn solid util" id="tutorialBtn">Tutorial</button>
+          </div>
         </div>
         <div class="marketNudgeWrap flagMarket">
           <button class="btn solid util" id="marketBtn">Swipe Market &rarr;</button>
@@ -814,18 +823,14 @@
       <img src="assets/lion-ramen.png" alt="LionSwipe mascot" class="lionTipImg">
       <div class="lionTipBubble">Psst&hellip; if you're on a term-based (semester) plan, your Fall swipes will roll over into Spring, but SSOL will only show the Spring swipes and not show your leftover swipes from the Fall.</div>
     </div>
-    <div class="lionTipRow" style="margin-top:16px;">
-      <img src="assets/lion-waving.png" alt="LionSwipe mascot" class="lionTipImg">
-      <div class="lionTipBubble">
-        <b>We read the fine print for you:</b>
-        <p style="font-size:11.5px;color:var(--muted);line-height:1.5;margin:8px 0 0;">"As a courtesy, unused meals from the Fall Term will rollover to Spring Term. However, these meals are not available until all meal swipes for Spring Term have been used and cannot be viewed in SSOL." &mdash; <a href="https://dining.columbia.edu/content/frequently-asked-questions" target="_blank" rel="noopener">Columbia Dining</a></p>
-        <ul class="ssolFactList">
-          <li>Weekly plans reset every Sunday with a fresh balance — nothing carries between weeks or terms.</li>
-          <li>Term-based plans instead carry unused Fall swipes into Spring, but those carried-over swipes aren't usable (or visible on SSOL at all) until you've used up your entire Spring allowance first.</li>
-          <li>For every meal plan, all swipes expire at the end of the academic year.</li>
-        </ul>
-      </div>
-    </div>
+    <p style="font-size:12.5px;color:var(--ink);font-weight:600;margin:16px 0 6px;">We read the fine print for you:</p>
+    <p style="font-size:11.5px;color:var(--muted);line-height:1.5;margin:0;">"As a courtesy, unused meals from the Fall Term will rollover to Spring Term. However, these meals are not available until all meal swipes for Spring Term have been used and cannot be viewed in SSOL." &mdash; <a href="https://dining.columbia.edu/content/frequently-asked-questions" target="_blank" rel="noopener">Columbia Dining</a></p>
+    <p style="font-size:12.5px;color:var(--ink);font-weight:600;margin:14px 0 6px;">More general info about dining plans:</p>
+    <ul class="ssolFactList">
+      <li>Weekly plans reset every Sunday with a fresh balance — nothing carries between weeks or terms.</li>
+      <li>Term-based plans instead carry unused Fall swipes into Spring, but those carried-over swipes aren't usable (or visible on SSOL at all) until you've used up your entire Spring allowance first.</li>
+      <li>For every meal plan, all swipes expire at the end of the academic year.</li>
+    </ul>
     <div style="margin-top:14px;text-align:center;"><button class="btn" id="ssolHelpClose">Close</button></div>
   </div>
 </div>
@@ -1650,7 +1655,7 @@ async function undoTutorialMealLogs(){
   const loggedDuringTutorial = logs.filter(l=>!startIds.has(l.id));
   if(loggedDuringTutorial.length === 0) return;
   for(const l of loggedDuringTutorial){ await deleteLog(l.id); }
-  alert(`${loggedDuringTutorial.length===1 ? 'A meal you logged' : `${loggedDuringTutorial.length} meals you logged`} during the tutorial ${loggedDuringTutorial.length===1 ? 'has' : 'have'} been undone.`);
+  alert('The meal(s) and spending you logged during the tutorial have been undone.');
 }
 async function endTutorial(){
   if(tutorialHighlightEl) tutorialHighlightEl.classList.remove('tutorialHighlight');
