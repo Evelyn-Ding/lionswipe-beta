@@ -258,6 +258,7 @@
   .pieRow{display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start;}
   .pieRowItem{flex:1;min-width:190px;}
   .pieRowLabel{font-family:'Figtree',ui-sans-serif,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:10px;}
+  .walletPieEmpty{color:var(--muted);font-size:12px;line-height:1.4;max-width:170px;}
   .legend{font-family:'Figtree',ui-sans-serif,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;font-size:13px;}
   .legend div{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
   .sw{width:12px;height:12px;border-radius:3px;flex-shrink:0;}
@@ -444,7 +445,20 @@
             <div class="legend" id="spendPieLegend"></div>
           </div>
         </div>
-        <div class="pieRowItem util" id="walletSpendSummary"></div>
+        <div class="pieRowItem">
+          <div class="pieRowLabel">Dining Dollars Spent</div>
+          <div class="pieWrap">
+            <svg id="dollarsPieSvg" width="130" height="130" viewBox="0 0 160 160"></svg>
+            <div class="legend" id="dollarsPieLegend"></div>
+          </div>
+        </div>
+        <div class="pieRowItem">
+          <div class="pieRowLabel">Flex Spent</div>
+          <div class="pieWrap">
+            <svg id="flexPieSvg" width="130" height="130" viewBox="0 0 160 160"></svg>
+            <div class="legend" id="flexPieLegend"></div>
+          </div>
+        </div>
       </div>
     </div>
     <div class="chartBlock">
@@ -3090,11 +3104,8 @@ function renderBreakdown(){
   drawSpendPie(outSpentAll, grocerySpentAll);
 
   const { spentDiningDollars, spentFlex, diningDollarsTotal, flexTotal } = walletSpendTotals();
-  document.getElementById('walletSpendSummary').innerHTML = `
-    <div class="pieRowLabel">Dining Dollars &amp; Flex</div>
-    <div class="swipesLine"><span>Dining Dollars:</span><b>$${spentDiningDollars.toFixed(2)} / ${diningDollarsTotal===null?'—':'$'+diningDollarsTotal} spent</b></div>
-    <div class="swipesLine"><span>Flex:</span><b>$${spentFlex.toFixed(2)} / ${flexTotal===null?'—':'$'+flexTotal} spent</b></div>
-  `;
+  drawWalletPie('dollarsPieSvg', 'dollarsPieLegend', 'Dining Dollars', spentDiningDollars, diningDollarsTotal, '#D9A441');
+  drawWalletPie('flexPieSvg', 'flexPieLegend', 'Flex', spentFlex, flexTotal, '#415283');
 
   renderHallFrequencyChart();
   renderMealHistory(usedSemester_logged);
@@ -3288,6 +3299,44 @@ function drawSpendPie(outAmt, groceryAmt){
   document.getElementById('spendPieLegend').innerHTML = `
     <div><span class="sw" style="background:#D9A441;"></span>Eating Out — $${outAmt.toFixed(2)}</div>
     <div><span class="sw" style="background:#415283;"></span>Grocery — $${groceryAmt.toFixed(2)}</div>
+  `;
+}
+
+// Dining Dollars/Flex "spent vs. remaining" pie — `total` is the plan's
+// allotment for that category (from DINING_PLANS, via walletSpendTotals), so
+// this can be null (no plan selected yet) or 0 (plan includes none of it),
+// both handled as an empty state instead of a divide-by-zero pie.
+function drawWalletPie(svgId, legendId, label, spent, total, spentColor){
+  const svg = document.getElementById(svgId);
+  const legend = document.getElementById(legendId);
+  if(total === null){
+    svg.innerHTML = '';
+    legend.innerHTML = `<div class="walletPieEmpty">Select a dining plan in Profile to see ${label} remaining.</div>`;
+    return;
+  }
+  if(total <= 0){
+    svg.innerHTML = '';
+    legend.innerHTML = `<div class="walletPieEmpty">Your plan doesn't include ${label}.</div>`;
+    return;
+  }
+  const remaining = Math.max(0, total - spent);
+  const spentAngle = (Math.min(spent, total) / total) * 360;
+  const r=70,cx=80,cy=80;
+  function polar(cx,cy,r,angle){ const rad=(angle-90)*Math.PI/180; return [cx+r*Math.cos(rad), cy+r*Math.sin(rad)]; }
+  function arcPath(startAngle,endAngle,color){
+    const [x1,y1]=polar(cx,cy,r,startAngle);
+    const [x2,y2]=polar(cx,cy,r,endAngle);
+    const large = endAngle-startAngle>180?1:0;
+    return `<path d="M${cx},${cy} L${x1},${y1} A${r},${r} 0 ${large} 1 ${x2},${y2} Z" fill="${color}"/>`;
+  }
+  let html = '';
+  html += arcPath(0, spentAngle, spentColor);
+  html += arcPath(spentAngle, 360, '#E2E8F0');
+  svg.innerHTML = html;
+  legend.innerHTML = `
+    <div><span class="sw" style="background:${spentColor};"></span>Spent — $${spent.toFixed(2)}</div>
+    <div><span class="sw" style="background:#E2E8F0;"></span>Remaining — $${remaining.toFixed(2)}</div>
+    <div style="margin-top:4px;color:var(--muted);font-size:11px;">of $${total} total</div>
   `;
 }
 
