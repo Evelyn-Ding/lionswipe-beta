@@ -112,8 +112,11 @@
   .hallCard .closedTxt{font-family:'Figtree',ui-sans-serif,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;font-size:13px;color:var(--muted);}
 
   /* ---- Enter Your Own Meal ---- */
+  .enterMealRow{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:22px;}
+  @media (max-width:700px){ .enterMealRow{grid-template-columns:1fr;} }
+  .enterMealRow .enterMealPanel{margin-bottom:0;}
   .enterMealPanel{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;margin-bottom:22px;}
-  .enterMealPanel h3{margin:0;color:var(--navy);font-weight:700;font-size:19px;}
+  .enterMealPanel h3{margin:0;color:var(--navy);font-weight:700;font-size:19px;display:flex;align-items:center;gap:7px;}
   .enterMealSub{font-size:13px;color:var(--muted);margin:6px 0 16px;}
   ::placeholder{color:var(--muted);opacity:1;}
 
@@ -125,7 +128,7 @@
   .counter{display:flex;align-items:center;justify-content:center;gap:16px;margin:18px 0;}
   .counter button{width:34px;height:34px;border-radius:50%;border:1.5px solid var(--navy);background:var(--card);color:var(--navy);font-size:18px;}
   .counter .n{font-family:var(--font-display);font-size:28px;min-width:36px;font-weight:700;color:var(--navy);}
-  .modal input[type=number]{width:100%;padding:10px;font-size:16px;border:1.5px solid var(--line);border-radius:8px;margin:14px 0;font-family:'Figtree',ui-sans-serif,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;background:var(--card);color:var(--ink);}
+  .modal input[type=number],.modal input[type=date]{width:100%;padding:10px;font-size:16px;border:1.5px solid var(--line);border-radius:8px;margin:14px 0;font-family:'Figtree',ui-sans-serif,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;background:var(--card);color:var(--ink);}
   .modal .row{display:flex;gap:8px;justify-content:center;margin-top:10px;}
 
   /* ---- Help modal ---- */
@@ -305,10 +308,22 @@
 
     <div class="hallGrid" id="hallGrid"></div>
 
-    <div class="enterMealPanel">
-      <h3>Enter Your Own Meal</h3>
-      <div class="enterMealSub util">Log an eating-out purchase or a grocery run.</div>
-      <button class="btn solid util" id="enterMealBtn" style="width:100%;">+ Log a Meal</button>
+    <div class="enterMealRow">
+      <div class="enterMealPanel">
+        <h3>Enter Your Own Meal</h3>
+        <div class="enterMealSub util">Log an <b>eating-out purchase</b> or a <b>grocery run</b>.</div>
+        <button class="btn solid util" id="enterMealBtn" style="width:100%;">+ Log a Meal</button>
+      </div>
+      <div class="enterMealPanel">
+        <h3>Dining Dollars</h3>
+        <div class="enterMealSub util">Log purchase with dining dollars.</div>
+        <button class="btn solid util" id="enterDiningDollarsBtn" style="width:100%;">+ Log a Purchase</button>
+      </div>
+      <div class="enterMealPanel">
+        <h3>Flex<button type="button" class="infoBtn" id="flexInfoBtn" title="Where is Flex accepted at Columbia?" aria-label="Where is Flex accepted at Columbia?">i</button></h3>
+        <div class="enterMealSub util">Log purchase with flex.</div>
+        <button class="btn solid util" id="enterFlexBtn" style="width:100%;">+ Log a Purchase</button>
+      </div>
     </div>
   </div>
 
@@ -448,6 +463,22 @@
     <div class="row">
       <button class="btn solid" id="spendConfirm">Log Meal</button>
       <button class="btn" id="spendCancel">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="walletOverlay">
+  <div class="modal">
+    <h3 id="walletTitle">Log Dining Dollars Purchase</h3>
+    <p class="util" style="font-size:13px;color:var(--muted);">Where did you go?</p>
+    <input class="authField" id="walletPlaceName" placeholder="e.g. Blue Java">
+    <p class="util" style="font-size:13px;color:var(--muted);">$ spent</p>
+    <input type="number" id="walletAmount" placeholder="$0.00" step="0.01">
+    <p class="util" style="font-size:13px;color:var(--muted);">Date</p>
+    <input type="date" id="walletDate">
+    <div class="row">
+      <button class="btn solid" id="walletConfirm">Log Purchase</button>
+      <button class="btn" id="walletCancel">Cancel</button>
     </div>
   </div>
 </div>
@@ -973,6 +1004,37 @@ document.getElementById('spendConfirm').onclick = async ()=>{
   spendOverlay.classList.remove('show');
 };
 
+/* ---------------- Wallet modal (Dining Dollars / Flex) ----------------
+   Shared by both "Dining Dollars" and "Flex" panels — walletLogType tracks
+   which one opened it. Unlike the spend modal above, this one lets the user
+   pick a date instead of always stamping "now", so a purchase can be logged
+   after the fact. Parsed as local noon (not midnight UTC) so the date shown
+   in Meal History always matches what was typed, regardless of timezone. */
+let walletLogType = 'diningDollars';
+const walletOverlay = document.getElementById('walletOverlay');
+function openWalletModal(type){
+  walletLogType = type;
+  document.getElementById('walletTitle').textContent = type==='flex' ? 'Log Flex Purchase' : 'Log Dining Dollars Purchase';
+  document.getElementById('walletPlaceName').value = '';
+  document.getElementById('walletAmount').value = '';
+  document.getElementById('walletDate').value = new Date().toISOString().slice(0,10);
+  walletOverlay.classList.add('show');
+  document.getElementById('walletPlaceName').focus();
+}
+document.getElementById('enterDiningDollarsBtn').onclick = ()=> openWalletModal('diningDollars');
+document.getElementById('enterFlexBtn').onclick = ()=> openWalletModal('flex');
+document.getElementById('flexInfoBtn').onclick = ()=> window.open('https://www.acceptinglocations.com/columbia/', '_blank', 'noopener');
+document.getElementById('walletCancel').onclick = ()=> walletOverlay.classList.remove('show');
+document.getElementById('walletConfirm').onclick = async ()=>{
+  const name = document.getElementById('walletPlaceName').value.trim();
+  const amt = parseFloat(document.getElementById('walletAmount').value);
+  const dateStr = document.getElementById('walletDate').value;
+  if(!name || isNaN(amt) || amt<0 || !dateStr) return;
+  const ts = new Date(dateStr + 'T12:00:00').toISOString();
+  await insertLog({ type:walletLogType, name, amount:amt, ts });
+  walletOverlay.classList.remove('show');
+};
+
 /* ---------------- Edit-log modal (Meal History, Breakdown page) ----------------
    One shared modal for both entry types: label/field text swap based on
    whether the row being edited is a dining-hall swipe or an eating-out spend,
@@ -983,8 +1045,10 @@ const editLogOverlay = document.getElementById('editLogOverlay');
 function openEditLogModal(log){
   editLogId = log.id;
   editLogType = log.type;
-  document.getElementById('editLogTitle').textContent = log.type==='hall' ? 'Edit Dining Hall Visit' : log.type==='grocery' ? 'Edit Grocery Entry' : 'Edit Meal';
-  document.getElementById('editLogNameLabel').textContent = log.type==='hall' ? 'Dining hall' : log.type==='grocery' ? 'Where did you shop?' : 'Where did you eat?';
+  const editLogTitles = { hall:'Edit Dining Hall Visit', grocery:'Edit Grocery Entry', diningDollars:'Edit Dining Dollars Entry', flex:'Edit Flex Entry' };
+  const editLogNameLabels = { hall:'Dining hall', grocery:'Where did you shop?', diningDollars:'Where did you go?', flex:'Where did you go?' };
+  document.getElementById('editLogTitle').textContent = editLogTitles[log.type] || 'Edit Meal';
+  document.getElementById('editLogNameLabel').textContent = editLogNameLabels[log.type] || 'Where did you eat?';
   document.getElementById('editLogName').value = log.name || '';
   document.getElementById('editLogValueLabel').textContent = log.type==='hall' ? 'Swipes used' : 'Amount spent';
   const valueInput = document.getElementById('editLogValue');
@@ -2670,7 +2734,8 @@ function renderMealHistory(usedSemester_logged){
     const dateLabel = new Date(l.ts).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
     const isHall = l.type==='hall';
     const priceLabel = isHall ? `${l.swipes}<small>swipe${l.swipes===1?'':'s'}</small>` : `$${(l.amount||0).toFixed(2)}<small>spent</small>`;
-    const typeLabel = isHall ? 'Dining Hall' : l.type==='grocery' ? 'Grocery' : 'Eating Out';
+    const typeLabels = { grocery:'Grocery', diningDollars:'Dining Dollars', flex:'Flex' };
+    const typeLabel = isHall ? 'Dining Hall' : (typeLabels[l.type] || 'Eating Out');
     return `<div class="listingCard">
       <div class="lPrice">${priceLabel}</div>
       <div class="lInfo">

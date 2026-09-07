@@ -4,12 +4,17 @@ create table if not exists public.meal_logs (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users(id) on delete cascade,
   ts timestamptz not null default now(),
-  type text not null check (type in ('hall','out','grocery')),
+  type text not null check (type in ('hall','out','grocery','diningDollars','flex')),
   name text not null,
   swipes int,        -- set when type = 'hall'
-  amount numeric,    -- set when type = 'out'
+  amount numeric,    -- set when type in ('out','grocery','diningDollars','flex')
   created_at timestamptz not null default now()
 );
+
+-- If you already created meal_logs before this update, run this to allow the
+-- new 'diningDollars' and 'flex' log types (Dining Dollars / Flex panels):
+-- alter table public.meal_logs drop constraint if exists meal_logs_type_check;
+-- alter table public.meal_logs add constraint meal_logs_type_check check (type in ('hall','out','grocery','diningDollars','flex'));
 
 alter table public.meal_logs enable row level security;
 
