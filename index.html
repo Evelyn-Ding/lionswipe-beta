@@ -1755,13 +1755,24 @@ async function maybeOfferGuestMigration(){
   const guestGroceryGoal = loadGuestGroceryGoal();
   if(guestLogs.length===0 && !guestPlan && !guestGoal && !guestGroceryGoal) return;
 
+  // Plan/goals are single settings (e.g. "14 swipes/week, $100 allowance"), not running
+  // totals, so migrating them is additive in the sense of "fill in what the account
+  // doesn't already have" — an existing account value is never overwritten by the
+  // guest's. Logs are always additive (appended as new rows) since they're a history,
+  // not a setting, and loadOrPromptPlan()/loadSpendGoal()/loadGroceryGoal() have
+  // already populated userPlan/spendGoal/groceryGoal from the account by this point.
+  const planWillMigrate = guestPlan && !userPlan;
+  const goalWillMigrate = guestGoal && !spendGoal;
+  const groceryGoalWillMigrate = guestGroceryGoal && !groceryGoal;
+
   const parts = [];
   if(guestLogs.length) parts.push(`${guestLogs.length} logged swipe${guestLogs.length===1?'':'s'}/meal${guestLogs.length===1?'':'s'}`);
-  if(guestPlan) parts.push('a dining plan');
-  if(guestGoal) parts.push('a spending goal');
-  if(guestGroceryGoal) parts.push('a grocery budget');
+  if(planWillMigrate) parts.push('a dining plan');
+  if(goalWillMigrate) parts.push('a spending goal');
+  if(groceryGoalWillMigrate) parts.push('a grocery budget');
+  if(parts.length===0){ clearGuestData(); return; }
 
-  const migrate = confirm(`You have guest data saved in this browser (${parts.join(', ')}). Migrate it into your account now? (This will overwrite any dining plan/spending goal/grocery budget already saved on your account.)`);
+  const migrate = confirm(`You have guest data saved in this browser (${parts.join(', ')}). Migrate it into your account now? (Your logged swipes/meals will be added to your account's history. Your account's existing dining plan/spending goal/grocery budget, if any, will be kept as-is.)`);
   if(!migrate) return;
 
   try{
@@ -1770,15 +1781,15 @@ async function maybeOfferGuestMigration(){
       const { error } = await supabase.from('meal_logs').insert(rows);
       if(error) throw error;
     }
-    if(guestPlan){
+    if(planWillMigrate){
       const ok = await savePlan(guestPlan.total_swipes, guestPlan.weekly_allowance, guestPlan.plan_name);
       if(!ok) throw new Error('plan save failed');
     }
-    if(guestGoal){
+    if(goalWillMigrate){
       const ok = await saveSpendGoal(guestGoal.amount, guestGoal.period);
       if(!ok) throw new Error('spending goal save failed');
     }
-    if(guestGroceryGoal){
+    if(groceryGoalWillMigrate){
       const ok = await saveGroceryGoal(guestGroceryGoal.amount, guestGroceryGoal.period);
       if(!ok) throw new Error('grocery budget save failed');
     }
