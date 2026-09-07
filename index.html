@@ -402,21 +402,31 @@
     </div>
     <div class="statGrid" id="statGrid2"></div>
     <div class="chartBlock">
-      <h4>Money Spent Eating Out / Week &mdash; scroll for history &amp; target pace</h4>
-      <div class="chartLegend">
-        <div><span class="sw" style="background:var(--gold);"></span>Spent eating out</div>
-        <div><span class="sw target"></span>Target spend to hit your spending goal</div>
+      <div class="chartWithFormula">
+        <div class="chartMain">
+          <h4>Money Spent Eating Out / Week &mdash; scroll for history &amp; target pace</h4>
+          <div class="chartLegend">
+            <div><span class="sw" style="background:var(--gold);"></span>Spent eating out</div>
+            <div><span class="sw target"></span>Target spend to hit your spending goal</div>
+          </div>
+          <div class="scrollBars" id="outChart"></div>
+        </div>
+        <div id="outFormulaSlot"></div>
       </div>
-      <div class="scrollBars" id="outChart"></div>
     </div>
     <div class="statGrid" id="statGrid3"></div>
     <div class="chartBlock">
-      <h4>Grocery Spending / Week &mdash; scroll for history &amp; target pace</h4>
-      <div class="chartLegend">
-        <div><span class="sw" style="background:var(--navy);"></span>Spent on groceries</div>
-        <div><span class="sw target"></span>Target spend to hit your grocery budget</div>
+      <div class="chartWithFormula">
+        <div class="chartMain">
+          <h4>Grocery Spending / Week &mdash; scroll for history &amp; target pace</h4>
+          <div class="chartLegend">
+            <div><span class="sw" style="background:var(--navy);"></span>Spent on groceries</div>
+            <div><span class="sw target"></span>Target spend to hit your grocery budget</div>
+          </div>
+          <div class="scrollBars" id="groceryChart"></div>
+        </div>
+        <div id="groceryFormulaSlot"></div>
       </div>
-      <div class="scrollBars" id="groceryChart"></div>
     </div>
     <div class="chartBlock">
       <div class="pieRow">
@@ -2939,17 +2949,16 @@ function groceryPerWeekNeeded(now){
 function renderBreakdown(){
   const now = Date.now();
   const weekLogs = logsThisPeriod('week');
-  const monthLogs = logsThisPeriod('month');
   const semesterLogs = logsThisPeriod('semester');
   const usedSemester_logged = logs.filter(l=>l.type==='hall' && l.ts >= SEMESTER_START.getTime()).reduce((s,l)=>s+l.swipes,0);
   const swipesLeft_ssol = getSwipesLeftSsol(usedSemester_logged);
   const spentOutWeek = weekLogs.filter(l=>l.type==='out').reduce((s,l)=>s+l.amount,0);
-  const spentOutMonth = monthLogs.filter(l=>l.type==='out').reduce((s,l)=>s+l.amount,0);
   const spentOutSemester = semesterLogs.filter(l=>l.type==='out').reduce((s,l)=>s+l.amount,0);
   const spentGroceryWeek = weekLogs.filter(l=>l.type==='grocery').reduce((s,l)=>s+l.amount,0);
-  const spentGroceryMonth = monthLogs.filter(l=>l.type==='grocery').reduce((s,l)=>s+l.amount,0);
   const spentGrocerySemester = semesterLogs.filter(l=>l.type==='grocery').reduce((s,l)=>s+l.amount,0);
   const weekNeeded = swipesPerWeekNeeded(swipesLeft_ssol, now);
+  const outTargetPerWeek = spendPerWeekNeeded(now);
+  const groceryTargetPerWeek = groceryPerWeekNeeded(now);
   // Same weeks-left/weeks-total the pacing formulas above divide by — shown next to
   // the plan/goal subtitle so the Swipes/Week Needed (and spend target) numbers are
   // checkable by hand: e.g. Swipes Left / Weeks Left should equal Swipes/Week Needed.
@@ -2977,15 +2986,19 @@ function renderBreakdown(){
     swipesFormulaCard(usedSemester_logged, swipesLeft_ssol, weekNeeded, weeksRemaining);
   document.getElementById('statGrid2').innerHTML = `
     ${statCard('$'+spentOutWeek.toFixed(2),'Spent This Week (Eating Out)')}
-    ${statCard('$'+spentOutMonth.toFixed(2),'Spent This Month (Eating Out)')}
     ${statCard('$'+spentOutSemester.toFixed(2),'Spent This Semester (Eating Out)')}
+    ${statCard(outTargetPerWeek===null?'—':'$'+outTargetPerWeek.toFixed(2),'Target $/Week Needed (Eating Out)')}
   `;
+  document.getElementById('outFormulaSlot').innerHTML =
+    spendFormulaCard('out', spendGoal, outTargetPerWeek, weeksRemaining, spentOutSemester);
   attachSwipesLeftEditor(usedSemester_logged);
   document.getElementById('statGrid3').innerHTML = `
     ${statCard('$'+spentGroceryWeek.toFixed(2),'Spent This Week (Groceries)')}
-    ${statCard('$'+spentGroceryMonth.toFixed(2),'Spent This Month (Groceries)')}
     ${statCard('$'+spentGrocerySemester.toFixed(2),'Spent This Semester (Groceries)')}
+    ${statCard(groceryTargetPerWeek===null?'—':'$'+groceryTargetPerWeek.toFixed(2),'Target $/Week Needed (Groceries)')}
   `;
+  document.getElementById('groceryFormulaSlot').innerHTML =
+    spendFormulaCard('grocery', groceryGoal, groceryTargetPerWeek, weeksRemaining, spentGrocerySemester);
 
   const weeks = {};
   logs.forEach(l=>{
@@ -3025,13 +3038,11 @@ function renderBreakdown(){
     futureTsList.forEach(wk=> swipeWeekArr.push({wk, val:swipeTargetPerWeek, future:true}));
   }
 
-  const outTargetPerWeek = spendPerWeekNeeded(now);
   const outWeekArr = historyArr.map(w=>({wk:w.wk, val:w.out, future:false}));
   if(spendGoal){
     futureTsList.forEach(wk=> outWeekArr.push({wk, val:outTargetPerWeek, future:true}));
   }
 
-  const groceryTargetPerWeek = groceryPerWeekNeeded(now);
   const groceryWeekArr = historyArr.map(w=>({wk:w.wk, val:w.grocery, future:false}));
   if(groceryGoal){
     futureTsList.forEach(wk=> groceryWeekArr.push({wk, val:groceryTargetPerWeek, future:true}));
@@ -3155,6 +3166,27 @@ function swipesFormulaCard(usedSemester_logged, swipesLeft_ssol, weekNeeded, wee
     <div class="formulaLine">${usedLine}</div>
     <div class="formulaLine">${leftLine}</div>
     ${paceLine ? `<div class="formulaLine">${paceLine}</div>` : ''}
+  </div>`;
+}
+
+// Spells out spendPerWeekNeeded/groceryPerWeekNeeded (whichever `category`
+// selects) with the viewer's own numbers plugged in — same idea as
+// swipesFormulaCard above, just for the "Target $/Week Needed" spend stat.
+// Renders nothing until a spending goal/grocery budget is actually set, since
+// there's no target to explain otherwise.
+function spendFormulaCard(category, goal, targetPerWeek, weeksRemaining, spentSemester){
+  if(!goal) return '';
+  const label = category==='grocery' ? 'grocery budget' : 'spending goal';
+  const weeksPerPeriod = { day:1/7, week:1, month:4.33, semester:SEMESTER_WEEKS }[goal.period];
+  const weeklyGoalAmount = goal.amount / weeksPerPeriod;
+  const weeksTotal = totalSemesterWeeks();
+  const semesterBudget = weeklyGoalAmount * weeksTotal;
+  const remainingBudget = Math.max(0, semesterBudget - spentSemester);
+  return `<div class="statCard formulaCard">
+    <div class="formulaTitle">How these numbers are calculated</div>
+    <div class="formulaLine">Semester Budget = weekly ${label} ($${weeklyGoalAmount.toFixed(2)}/week) &times; total weeks (${weeksTotal}) = <b>$${semesterBudget.toFixed(2)}</b></div>
+    <div class="formulaLine">Remaining Budget = Semester Budget ($${semesterBudget.toFixed(2)}) − Spent So Far ($${spentSemester.toFixed(2)}) = <b>$${remainingBudget.toFixed(2)}</b></div>
+    <div class="formulaLine">Target $/Week Needed = Remaining Budget ($${remainingBudget.toFixed(2)}) &divide; Weeks Left (${weeksRemaining}) = <b>$${targetPerWeek.toFixed(2)}</b></div>
   </div>`;
 }
 
