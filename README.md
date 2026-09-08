@@ -41,36 +41,56 @@ SUPABASE_SERVICE_ROLE_KEY=...   # only needed for the scraper, see below — nev
 
 Then open the URL `vercel dev` prints (usually `http://localhost:3000`).
 
-## Testing the menu scraper
+## Menus: how they're fetched
 
-`scripts/scrape-menus.js` pulls today's menus from
-[liondine.com](https://liondine.com), a site that already aggregates every
-Columbia dining hall (`dining.columbia.edu`) and Barnard's two dining locations
+`api/menus.js` fetches today's menus from [liondine.com](https://liondine.com)
+**live, on every request** — a site that already aggregates every Columbia
+dining hall (`dining.columbia.edu`) and Barnard's two dining locations
 (`dineoncampus.com`) into one place, in a fixed 11-hall order, and is plain
 server-rendered HTML with no Cloudflare challenge — so this is just a `fetch()`
 against `liondine.com/breakfast`, `/lunch`, `/dinner`, and `/latenight`, no
-browser needed. See the comment at the top of that file for the exact markup
-it parses (`<div class="col">` per hall, `<div class="food-type">`/
-`<div class="food-name">` per item).
+browser needed. The fetch/parse logic lives in `lib/liondine.js` (see its
+comment for the exact markup parsed: `<div class="col">` per hall,
+`<div class="food-type">`/`<div class="food-name">` per item); the response is
+cached at Vercel's edge for 60s (`s-maxage=60`) so a burst of simultaneous page
+loads shares one liondine fetch rather than each hitting it individually.
+
+This used to go through a separate scraper (`scripts/scrape-menus.js`) writing
+into a Supabase `daily_menus` table on a cron, with `api/menus.js` reading from
+that table instead of liondine directly. That extra caching layer's scrape
+cadence/target could drift out of sync with what the deployed app actually
+read (this happened in production on 2026-09-08 — the scraper kept reporting
+success while the live site silently fell back to stale sample data for
+hours), so it was removed in favor of the direct fetch above. `scripts/
+scrape-menus.js` and its GitHub Actions workflow (`.github/workflows/
+scrape-menus.yml`) still exist and still work, but nothing in the deployed app
+reads their output anymore — they're only useful again if a caching layer in
+front of liondine is wanted back (e.g. for higher traffic).
+
+To manually test the extraction logic against liondine's current markup:
 
 ```
 npm run scrape:menus
 ```
 
-This prints the extracted menus to the terminal. `scripts/scrape-output/*.html`
-(one per meal period) are saved either way for debugging — if a run comes back
-all-empty unexpectedly, check those first for whether liondine's markup changed.
+This prints the extracted menus to the terminal (without writing to Supabase
+unless `SUPABASE_URL`/`SUPABASE_SERVICE_ROLE_KEY` are set — see below).
+`scripts/scrape-output/*.html` (one per meal period) are saved either way for
+debugging — if a run comes back all-empty unexpectedly, check those first for
+whether liondine's markup changed (`api/menus.js` would break the same way,
+since it shares this same parsing code).
 
 Outside of the fall/spring semester (breaks, summer), dining halls publish nothing,
-so a successful run will correctly print all-empty meal periods — that's expected,
+so a successful run will correctly show all-empty meal periods — that's expected,
 not a bug. Re-test once dining halls are back in session (check `SEMESTER_START` in
 `config.js`) to confirm real content comes through.
 
-**Production schedule:** `.github/workflows/scrape-menus.yml` runs the scraper every
-2 hours via GitHub Actions once this repo is pushed to GitHub, using `SUPABASE_URL` /
+If you do want the scraper's cron path running again, it uses `SUPABASE_URL`/
 `SUPABASE_SERVICE_ROLE_KEY` repo secrets (Settings → Secrets and variables →
-Actions). The service role key bypasses Row Level Security to write — never put it
-in `config.js` or anything shipped to the browser.
+Actions) — the service role key bypasses Row Level Security to write, so never
+put it in `config.js` or anything shipped to the browser — and you'd need to
+switch `api/menus.js` back to reading from `daily_menus` instead of calling
+`fetchLiondineMenus()` directly.
 
 ## Auth email deliverability (Supabase "Confirm signup" template)
 

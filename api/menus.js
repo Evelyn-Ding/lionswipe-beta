@@ -1,11 +1,13 @@
 // Vercel serverless function: GET -> today's menus per meal period per dining hall.
 //
-// scripts/scrape-menus.js runs on a schedule (every 2 hours) and writes the day's
-// menus — scraped from liondine.com, which already aggregates Columbia + Barnard
-// dining halls — into the Supabase `daily_menus` table (see schema.sql). This
-// function just reads that table with the same public anon key the rest of the
-// app uses, and falls back to curated sample data if today's row isn't there yet
-// (scraper hasn't run yet, or Supabase isn't configured).
+// Fetches liondine.com (which already aggregates Columbia + Barnard dining halls)
+// live on every request — see lib/liondine.js for the fetch/parse logic, shared
+// with scripts/scrape-menus.js. This replaced an earlier design that scraped on
+// a schedule into a Supabase `daily_menus` table instead: that added a caching
+// layer whose scrape cadence/target could drift out of sync with what the app
+// actually reads (exactly what happened — see git history around 2026-09-08),
+// so the two are now collapsed into one direct fetch. Falls back to curated
+// sample data only if liondine itself is unreachable.
 
 const SAMPLE_MENUS = {
   Breakfast: {
@@ -118,22 +120,16 @@ const SAMPLE_MENUS = {
   }
 };
 
-async function getMenus() {
-  const url = process.env.SUPABASE_URL;
-  const key = process.env.SUPABASE_ANON_KEY;
-  if (!url || !key) return SAMPLE_MENUS;
+import liondine from '../lib/liondine.js';
+const { fetchLiondineMenus } = liondine;
 
+async function getMenus() {
   try {
-    const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' }); // YYYY-MM-DD
-    const resp = await fetch(
-      `${url}/rest/v1/daily_menus?date=eq.${today}&select=menus`,
-      { headers: { apikey: key, Authorization: `Bearer ${key}` } }
-    );
-    if (!resp.ok) return SAMPLE_MENUS;
-    const rows = await resp.json();
-    return (rows && rows[0] && rows[0].menus) || SAMPLE_MENUS;
+    const { menus, anyPageLoaded } = await fetchLiondineMenus();
+    if (!anyPageLoaded) return SAMPLE_MENUS;
+    return menus;
   } catch (err) {
-    console.error('daily_menus lookup failed, using sample data:', err.message);
+    console.error('liondine fetch failed, using sample data:', err.message);
     return SAMPLE_MENUS;
   }
 }
@@ -144,7 +140,11 @@ export default async function handler(req, res) {
   }
   try {
     const menus = await getMenus();
-    res.setHeader('Cache-Control', 's-maxage=900, stale-while-revalidate=1800');
+    // Short edge cache so a burst of simultaneous page loads shares one
+    // liondine fetch instead of each hitting it individually, without
+    // meaningfully delaying how fresh the data is (liondine itself doesn't
+    // update mid-meal-period anyway).
+    res.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate=120');
     res.status(200).json(menus);
   } catch (err) {
     res.status(500).json({ error: err.message });

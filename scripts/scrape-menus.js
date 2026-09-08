@@ -1,6 +1,12 @@
 // Scrapes today's dining hall menus from liondine.com and upserts the result into
-// the Supabase `daily_menus` table so api/menus.js can serve it without touching
-// liondine itself on every page load.
+// the Supabase `daily_menus` table.
+//
+// NOTE: api/menus.js no longer reads from this table — it fetches liondine
+// directly on every request now (see lib/liondine.js, shared with this file's
+// extractMealPage/decodeEntities), after a scrape/cache mismatch here caused
+// the deployed app to show stale data (2026-09-08). This script + the
+// scrape-menus GitHub Actions workflow are unused by the live app as of that
+// change; kept in case a caching layer in front of liondine is wanted again.
 //
 // WHY LIONDINE INSTEAD OF SCRAPING COLUMBIA/BARNARD DIRECTLY: liondine.com already
 // aggregates Columbia's dining.columbia.edu locations *and* Barnard's Hewitt/Diana
@@ -33,10 +39,9 @@
 
 const fs = require('fs');
 const path = require('path');
+const { MEAL_PATHS, extractMealPage } = require('../lib/liondine.js');
 
 const OUT_DIR = path.join(__dirname, 'scrape-output');
-
-const MEAL_PATHS = { Breakfast: 'breakfast', Lunch: 'lunch', Dinner: 'dinner', 'Late Night': 'latenight' };
 
 async function main() {
   fs.mkdirSync(OUT_DIR, { recursive: true });
@@ -80,72 +85,6 @@ async function main() {
   }
   await cleanupOldMenus(today);
   await upsertToSupabase(menus, today);
-}
-
-function decodeEntities(str) {
-  if (!str) return str;
-  return String(str)
-    .replace(/&#0?39;/g, "'")
-    .replace(/&#0?34;/g, '"')
-    .replace(/&amp;/g, '&')
-    .replace(/&quot;/g, '"')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&nbsp;/g, ' ')
-    .replace(/<[^>]*>/g, '') // strip any stray HTML tags
-    .trim();
-}
-
-// One meal page -> { hallName -> {hours, stations} } for halls with a real menu,
-// or { hallName -> {hours, message} } for halls without one — liondine gives a
-// specific reason ("Closed today", "Closed this week", "Closed for latenight",
-// "No menu published for lunch yet") rather than a generic "closed", so we keep
-// it instead of collapsing every no-menu case into one message. In liondine's
-// own hall order (each hall's own short name, e.g. "Ferris", "JJ's" — used as-is
-// as the data key).
-function extractMealPage(html) {
-  const menu = {};
-  const blocks = html.split('<div class="col">').slice(1);
-
-  blocks.forEach(block => {
-    const nameMatch = block.match(/<h3>([\s\S]*?)<\/h3>/);
-    const hoursMatch = block.match(/<div class="hours">([\s\S]*?)<\/div>/);
-    if (!nameMatch) return;
-    const hallName = decodeEntities(nameMatch[1]);
-    // When there's no menu, liondine puts the reason here instead of real hours
-    // (e.g. "Closed this week", "Closed today") — that same text doubles as our
-    // no-menu message below.
-    const hours = hoursMatch ? decodeEntities(hoursMatch[1]) : '';
-
-    const stations = [];
-    const itemRe = /<div class="food-(type|name)">([\s\S]*?)<\/div>/g;
-    let m;
-    while ((m = itemRe.exec(block))) {
-      const [, kind, text] = m;
-      const decoded = decodeEntities(text);
-      if (!decoded) continue;
-      if (kind === 'type') {
-        stations.push({ name: decoded, items: [] });
-      } else if (stations.length) {
-        stations[stations.length - 1].items.push(decoded);
-      }
-    }
-
-    const nonEmptyStations = stations.filter(s => s.items.length > 0);
-    if (nonEmptyStations.length > 0) {
-      menu[hallName] = { hours, stations: nonEmptyStations };
-      return;
-    }
-
-    // No real menu: a hall that's genuinely closed has its reason in `hours`
-    // (e.g. "Closed today"); a hall that's open but hasn't published a menu yet
-    // has real hours plus a separate `menu no-menu` placeholder instead.
-    const noMenuMatch = block.match(/<div class="menu no-menu">([\s\S]*?)<\/div>/);
-    const message = noMenuMatch ? decodeEntities(noMenuMatch[1]) : hours;
-    menu[hallName] = { hours, message };
-  });
-
-  return menu;
 }
 
 // Recursively sorts object keys (leaving array order — meal/station/item order —
