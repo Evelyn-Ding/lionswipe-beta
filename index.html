@@ -114,18 +114,22 @@
   .mobileInfoCard{position:relative;background:var(--card);border-radius:14px;padding:26px 28px;max-width:340px;width:100%;max-height:80vh;overflow-y:auto;text-align:center;}
   .mobileInfoClose{position:absolute;top:6px;right:10px;background:none;border:none;font-size:22px;line-height:1;cursor:pointer;color:var(--muted);padding:4px;}
 
-  /* header is a fixed 3-column row (clock/semester info, brand/title, login
-     info) with min-width floors on the outer two columns — on a phone-width
-     screen those two floors alone (190px + 190px) already exceed the
-     available content width. Below 700px: headerLeft/headerRight shrink to
-     just their trigger buttons and share the top row (top-left: Time/Stats;
-     top-right: Log In/Delete Account/See Breakdown — same left-right split
-     as desktop's header, just buttons instead of full content), with brand
-     wrapping onto its own full-width row below via flex-basis:100%. Tapping
-     Time/Stats opens that content full-screen (see .mobileInfoOverlay
-     above) instead of it ever appearing inline on mobile; See Breakdown is
-     unrelated to this — it already just navigates to the Breakdown page. */
-  @media (max-width:700px){
+  /* Desktop's 3-column header (clock/semester info, brand/title, login info)
+     is fine even at a narrow/resized browser-window width — its text just
+     wraps, per feedback. So this is gated on being an actual touch device
+     (hover:none + pointer:coarse — true on phones/tablets regardless of
+     orientation, false on a desktop browser no matter how narrow you drag
+     it) rather than a max-width breakpoint, which a resized desktop window
+     would also match, incorrectly switching it into the mobile layout.
+     Below, headerLeft/headerRight shrink to just their trigger buttons and
+     share the top row (top-left: Time/Stats; top-right: Log In/Delete
+     Account/See Breakdown — same left-right split as desktop's header, just
+     buttons instead of full content), with brand wrapping onto its own
+     full-width row below via flex-basis:100%. Tapping Time/Stats opens that
+     content full-screen (see .mobileInfoOverlay above) instead of it ever
+     appearing inline on mobile; See Breakdown is unrelated to this — it
+     already just navigates to the Breakdown page. */
+  @media (hover:none) and (pointer:coarse){
     header{flex-wrap:wrap;}
     .headerLeft,.headerRight{flex:0 0 auto;min-width:0;flex-direction:row;flex-wrap:wrap;gap:8px;}
     .headerRight{order:1;}
