@@ -131,7 +131,17 @@
      already just navigates to the Breakdown page. */
   @media (hover:none) and (pointer:coarse){
     header{flex-wrap:wrap;}
-    .headerLeft,.headerRight{flex:0 0 auto;min-width:0;flex-direction:row;flex-wrap:wrap;gap:8px;}
+    /* Stacked vertically (not side by side) so each corner group only ever
+       needs to be as wide as its widest button — "See Breakdown" alongside
+       "Log Out"/"Delete Account" in a row was wider than the viewport and
+       forced the whole page to scroll horizontally, which is also what made
+       the centered elements below (LionSwipe, the divider) look drifted
+       left: it wasn't a centering bug, it was this row overflowing and the
+       page being wider than the screen. align-items comes from the base
+       .headerLeft/.headerRight rules (flex-start/flex-end) — unchanged here,
+       just now applying to the cross axis of a column instead of a row, so
+       each button still hugs its own corner's edge. */
+    .headerLeft,.headerRight{flex:0 0 auto;min-width:0;flex-direction:column;gap:8px;}
     .headerRight{order:1;}
     .brand{flex:1 1 100%;order:2;}
     .brand h1{font-size:30px;}
