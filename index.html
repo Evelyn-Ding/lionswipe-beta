@@ -104,7 +104,13 @@
      column instead of trying to shrink columns that refuse to shrink. */
   @media (max-width:700px){
     header{flex-wrap:wrap;justify-content:center;text-align:center;}
-    .headerLeft,.headerRight{min-width:0;width:100%;align-items:center;text-align:center;}
+    /* .headerLeft/.headerRight set flex-basis:0 via their base "flex:1 1 0" —
+       flex-basis wins over the width property for sizing, so overriding just
+       width here (as a first attempt) had no effect and they stayed shrunk to
+       content size instead of stacking full-width. Overriding flex itself
+       (basis:100%) is what actually forces each column onto its own full-
+       width row. */
+    .headerLeft,.headerRight,.brand{flex:1 1 100%;min-width:0;align-items:center;text-align:center;}
     .swipesBox{text-align:center;}
     .swipesLine.guestNote{max-width:100%;}
     .brand h1{font-size:30px;}
