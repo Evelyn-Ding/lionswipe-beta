@@ -97,11 +97,32 @@
   .swipesLine.guestNote{margin-top:4px;font-size:11px;color:var(--muted);max-width:220px;}
   .swipesLine.guestNote a{color:var(--navy);font-weight:600;}
 
+  /* Collapsible chip that reveals the clock/semester block or the swipes
+     summary on mobile (see the media query below) — hidden entirely on
+     desktop, where both blocks are just always visible in the 3-column
+     header. The caret is a pseudo-element (not typed into the button label)
+     so toggling it is a one-line class swap in JS rather than rewriting text. */
+  .mobileInfoToggle{display:none;}
+  .mobileInfoToggle::after{content:'\25BE';display:inline-block;margin-left:5px;font-size:10px;}
+  .mobileInfoToggle.open::after{content:'\25B4';}
+
   /* header is a fixed 3-column row (clock/semester info, brand/title, login
      info) with min-width floors on the outer two columns — on a phone-width
      screen those two floors alone (190px + 190px) already exceed the
-     available content width, so below 700px it stacks into one centered
-     column instead of trying to shrink columns that refuse to shrink. */
+     available content width, so below 700px it's restructured instead of
+     trying to shrink columns that refuse to shrink:
+       1. brand (the LionSwipe title/buttons) moves first via `order`, per
+          request — it's the thing people actually came for.
+       2. headerRight is trimmed to just Log In/Delete Account/See Breakdown
+          plus a "Your Stats" chip that reveals the full swipes summary
+          (#swipesSummary) in place when tapped, instead of always showing
+          it — that box is a lot of numbers to lead with on a phone.
+       3. headerLeft becomes just a "Time & Semester" chip that reveals the
+          clock block the same way — kept as its own separate chip rather
+          than merged with Stats, since they're unrelated info.
+     Both real content blocks (.clock, #swipesSummary) and their JS-driven
+     ids are untouched — this only changes whether they're visible by
+     default, via the .expanded class the toggle buttons add/remove. */
   @media (max-width:700px){
     header{flex-wrap:wrap;justify-content:center;text-align:center;}
     /* .headerLeft/.headerRight set flex-basis:0 via their base "flex:1 1 0" —
@@ -111,9 +132,17 @@
        (basis:100%) is what actually forces each column onto its own full-
        width row. */
     .headerLeft,.headerRight,.brand{flex:1 1 100%;min-width:0;align-items:center;text-align:center;}
+    .brand{order:-2;}
+    .headerRight{order:-1;flex-direction:row;flex-wrap:wrap;justify-content:center;}
+    .headerLeft{flex-direction:row;flex-wrap:wrap;justify-content:center;}
     .swipesBox{text-align:center;}
     .swipesLine.guestNote{max-width:100%;}
     .brand h1{font-size:30px;}
+    .mobileInfoToggle{display:inline-flex;align-items:center;}
+    .clock{display:none;width:100%;text-align:center;}
+    .clock.expanded{display:block;}
+    #swipesSummary{display:none;width:100%;}
+    #swipesSummary.expanded{display:block;}
   }
 
   /* ---- Meal period tabs ---- */
@@ -339,6 +368,7 @@
   <div id="mainPage">
     <header>
       <div class="headerLeft">
+        <button type="button" class="btn mobileInfoToggle util" id="clockToggleBtn">Time &amp; Semester</button>
         <div class="clock util">
           Columbia Time (ET)
           <span class="time" id="clockTime">--:--</span>
@@ -370,6 +400,7 @@
       </div>
       <div class="headerRight">
         <button class="btn solid util" id="loginBtn">Log In</button>
+        <button type="button" class="btn mobileInfoToggle util" id="statsToggleBtn">Your Stats</button>
         <div class="swipesBox" id="swipesSummary"></div>
         <button class="btn danger util" id="deleteAccountBtn" style="display:none;">Delete Account</button>
         <button class="btn util" id="breakdownBtn">See Breakdown &rarr;</button>
@@ -1015,6 +1046,22 @@ function tick(){
   document.getElementById('semesterWeeksLeft').textContent = weeksRemainingInSemester(now);
 }
 tick(); setInterval(tick,15000);
+
+/* ---------------- Mobile header info toggles ----------------
+   Below the 700px breakpoint (see the media query in <style>), the clock/
+   semester block and the swipes summary start hidden behind these two chips
+   instead of always shown — each just flips its own target's "expanded"
+   class and its own "open" class (which swaps the chip's caret via CSS).
+   No-ops above that breakpoint since the chips themselves are display:none
+   there and the targets are always visible regardless of the class. */
+document.getElementById('clockToggleBtn').onclick = function(){
+  document.querySelector('.clock').classList.toggle('expanded');
+  this.classList.toggle('open');
+};
+document.getElementById('statsToggleBtn').onclick = function(){
+  document.getElementById('swipesSummary').classList.toggle('expanded');
+  this.classList.toggle('open');
+};
 
 /* ---------------- Menu data ----------------
    Fetched from /api/menus (a Vercel serverless function). It reads a Supabase
