@@ -1069,10 +1069,21 @@ function renderHalls(){
     const info = data[hall];
     const card = document.createElement('div');
     const hasMenu = info && info.stations && info.stations.length > 0;
-    if(!hasMenu){
+    // `info` missing entirely (as opposed to present with a real "Closed
+    // today"-type message from liondine) means we genuinely couldn't scrape
+    // anything for this hall/meal — the api/menus.js empty-fallback case.
+    // That's a last resort we want to avoid, not something to hide: send
+    // people to liondine directly, but since we don't actually know whether
+    // the hall is open, keep the card clickable so a swipe can still be
+    // logged rather than blocking that on our own scrape working.
+    if(!info){
+      card.className = 'hallCard';
+      card.innerHTML = `<h3>${hall}</h3><div class="closedTxt">Visit <a href="https://liondine.com" target="_blank" rel="noopener">liondine.com</a> for menus</div>`;
+      card.querySelector('a').onclick = (e)=> e.stopPropagation();
+      card.onclick = ()=> openSwipeModal(hall);
+    } else if(!hasMenu){
       card.className = 'hallCard closed';
-      const msg = (info && info.message) || 'No data available';
-      card.innerHTML = `<h3>${hall}</h3><div class="closedTxt">${msg}</div>`;
+      card.innerHTML = `<h3>${hall}</h3><div class="closedTxt">${info.message}</div>`;
     } else {
       card.className = 'hallCard';
       let stationsHtml = info.stations.map(s=>`
