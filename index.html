@@ -97,52 +97,43 @@
   .swipesLine.guestNote{margin-top:4px;font-size:11px;color:var(--muted);max-width:220px;}
   .swipesLine.guestNote a{color:var(--navy);font-weight:600;}
 
-  /* Collapsible chip that reveals the clock/semester block or the swipes
-     summary on mobile (see the media query below) — hidden entirely on
-     desktop, where both blocks are just always visible in the 3-column
-     header. The caret is a pseudo-element (not typed into the button label)
-     so toggling it is a one-line class swap in JS rather than rewriting text. */
-  .mobileInfoToggle{display:none;}
-  .mobileInfoToggle::after{content:'\25BE';display:inline-block;margin-left:5px;font-size:10px;}
-  .mobileInfoToggle.open::after{content:'\25B4';}
+  /* Trigger button for a .mobileInfoOverlay (see below) — hidden entirely on
+     desktop, where the content it opens (.clock / #swipesSummary) is just
+     always visible inline instead. */
+  .mobileCornerBtn{display:none;}
+  /* Wraps .clock and #swipesSummary in place (no change to desktop, where
+     these rules don't apply and the wrapper is just an inert extra <div>) —
+     on mobile, toggling .expanded turns the wrapper into a full-screen
+     dimmed backdrop and its .mobileInfoCard child into a centered white
+     card, the same visual pattern as this app's other overlays (e.g.
+     #loginOverlay/.modal), rather than reusing those classes directly since
+     those assume a different DOM shape (a single centered modal, not one
+     wrapping pre-existing header content in its original place). */
+  .mobileInfoOverlay{display:none;}
+  .mobileInfoOverlay.expanded{position:fixed;inset:0;z-index:60;background:rgba(0,20,40,.4);display:flex;align-items:center;justify-content:center;padding:20px;}
+  .mobileInfoCard{position:relative;background:var(--card);border-radius:14px;padding:26px 28px;max-width:340px;width:100%;max-height:80vh;overflow-y:auto;text-align:center;}
+  .mobileInfoClose{position:absolute;top:6px;right:10px;background:none;border:none;font-size:22px;line-height:1;cursor:pointer;color:var(--muted);padding:4px;}
 
   /* header is a fixed 3-column row (clock/semester info, brand/title, login
      info) with min-width floors on the outer two columns — on a phone-width
      screen those two floors alone (190px + 190px) already exceed the
-     available content width, so below 700px it's restructured instead of
-     trying to shrink columns that refuse to shrink:
-       1. brand (the LionSwipe title/buttons) moves first via `order`, per
-          request — it's the thing people actually came for.
-       2. headerRight is trimmed to just Log In/Delete Account/See Breakdown
-          plus a "Your Stats" chip that reveals the full swipes summary
-          (#swipesSummary) in place when tapped, instead of always showing
-          it — that box is a lot of numbers to lead with on a phone.
-       3. headerLeft becomes just a "Time & Semester" chip that reveals the
-          clock block the same way — kept as its own separate chip rather
-          than merged with Stats, since they're unrelated info.
-     Both real content blocks (.clock, #swipesSummary) and their JS-driven
-     ids are untouched — this only changes whether they're visible by
-     default, via the .expanded class the toggle buttons add/remove. */
+     available content width. Below 700px: headerLeft/headerRight shrink to
+     just their trigger buttons and share the top row (top-left: Time/Stats;
+     top-right: Log In/Delete Account/See Breakdown — same left-right split
+     as desktop's header, just buttons instead of full content), with brand
+     wrapping onto its own full-width row below via flex-basis:100%. Tapping
+     Time/Stats opens that content full-screen (see .mobileInfoOverlay
+     above) instead of it ever appearing inline on mobile; See Breakdown is
+     unrelated to this — it already just navigates to the Breakdown page. */
   @media (max-width:700px){
-    header{flex-wrap:wrap;justify-content:center;text-align:center;}
-    /* .headerLeft/.headerRight set flex-basis:0 via their base "flex:1 1 0" —
-       flex-basis wins over the width property for sizing, so overriding just
-       width here (as a first attempt) had no effect and they stayed shrunk to
-       content size instead of stacking full-width. Overriding flex itself
-       (basis:100%) is what actually forces each column onto its own full-
-       width row. */
-    .headerLeft,.headerRight,.brand{flex:1 1 100%;min-width:0;align-items:center;text-align:center;}
-    .brand{order:-2;}
-    .headerRight{order:-1;flex-direction:row;flex-wrap:wrap;justify-content:center;}
-    .headerLeft{flex-direction:row;flex-wrap:wrap;justify-content:center;}
+    header{flex-wrap:wrap;}
+    .headerLeft,.headerRight{flex:0 0 auto;min-width:0;flex-direction:row;flex-wrap:wrap;gap:8px;}
+    .headerRight{order:1;}
+    .brand{flex:1 1 100%;order:2;}
+    .brand h1{font-size:30px;}
+    .mobileCornerBtn{display:inline-flex;}
     .swipesBox{text-align:center;}
     .swipesLine.guestNote{max-width:100%;}
-    .brand h1{font-size:30px;}
-    .mobileInfoToggle{display:inline-flex;align-items:center;}
-    .clock{display:none;width:100%;text-align:center;}
-    .clock.expanded{display:block;}
-    #swipesSummary{display:none;width:100%;}
-    #swipesSummary.expanded{display:block;}
   }
 
   /* ---- Meal period tabs ---- */
@@ -368,14 +359,20 @@
   <div id="mainPage">
     <header>
       <div class="headerLeft">
-        <button type="button" class="btn mobileInfoToggle util" id="clockToggleBtn">Time &amp; Semester</button>
-        <div class="clock util">
-          Columbia Time (ET)
-          <span class="time" id="clockTime">--:--</span>
-          <div id="clockDate"></div>
-          <div class="semesterLine">Semester: <b id="semesterTerm">--</b></div>
-          <div class="semesterLine">Weeks total in semester: <b id="semesterWeeksTotal">--</b></div>
-          <div class="semesterLine">Weeks until semester end: <b id="semesterWeeksLeft">--</b></div>
+        <button type="button" class="btn util mobileCornerBtn" id="timeToggleBtn">Time</button>
+        <button type="button" class="btn util mobileCornerBtn" id="statsToggleBtn">Stats</button>
+        <div class="mobileInfoOverlay" id="timeOverlayWrap">
+          <div class="mobileInfoCard">
+            <button type="button" class="mobileInfoClose" id="timeCloseBtn" aria-label="Close">&times;</button>
+            <div class="clock util">
+              Columbia Time (ET)
+              <span class="time" id="clockTime">--:--</span>
+              <div id="clockDate"></div>
+              <div class="semesterLine">Semester: <b id="semesterTerm">--</b></div>
+              <div class="semesterLine">Weeks total in semester: <b id="semesterWeeksTotal">--</b></div>
+              <div class="semesterLine">Weeks until semester end: <b id="semesterWeeksLeft">--</b></div>
+            </div>
+          </div>
         </div>
       </div>
       <div class="brand">
@@ -400,8 +397,12 @@
       </div>
       <div class="headerRight">
         <button class="btn solid util" id="loginBtn">Log In</button>
-        <button type="button" class="btn mobileInfoToggle util" id="statsToggleBtn">Your Stats</button>
-        <div class="swipesBox" id="swipesSummary"></div>
+        <div class="mobileInfoOverlay" id="statsOverlayWrap">
+          <div class="mobileInfoCard">
+            <button type="button" class="mobileInfoClose" id="statsCloseBtn" aria-label="Close">&times;</button>
+            <div class="swipesBox" id="swipesSummary"></div>
+          </div>
+        </div>
         <button class="btn danger util" id="deleteAccountBtn" style="display:none;">Delete Account</button>
         <button class="btn util" id="breakdownBtn">See Breakdown &rarr;</button>
       </div>
@@ -1047,21 +1048,18 @@ function tick(){
 }
 tick(); setInterval(tick,15000);
 
-/* ---------------- Mobile header info toggles ----------------
+/* ---------------- Mobile header info overlays ----------------
    Below the 700px breakpoint (see the media query in <style>), the clock/
-   semester block and the swipes summary start hidden behind these two chips
-   instead of always shown — each just flips its own target's "expanded"
-   class and its own "open" class (which swaps the chip's caret via CSS).
-   No-ops above that breakpoint since the chips themselves are display:none
-   there and the targets are always visible regardless of the class. */
-document.getElementById('clockToggleBtn').onclick = function(){
-  document.querySelector('.clock').classList.toggle('expanded');
-  this.classList.toggle('open');
-};
-document.getElementById('statsToggleBtn').onclick = function(){
-  document.getElementById('swipesSummary').classList.toggle('expanded');
-  this.classList.toggle('open');
-};
+   semester block and the swipes summary are hidden behind "Time"/"Stats"
+   corner buttons instead of always shown inline — tapping one opens that
+   content full-screen (.mobileInfoOverlay adds "expanded"), same pattern as
+   this app's other overlays (e.g. Log In), closed via its own × button.
+   No-ops above that breakpoint since the trigger buttons are display:none
+   there and .clock/#swipesSummary are always visible regardless of this class. */
+document.getElementById('timeToggleBtn').onclick = ()=> document.getElementById('timeOverlayWrap').classList.add('expanded');
+document.getElementById('timeCloseBtn').onclick = ()=> document.getElementById('timeOverlayWrap').classList.remove('expanded');
+document.getElementById('statsToggleBtn').onclick = ()=> document.getElementById('statsOverlayWrap').classList.add('expanded');
+document.getElementById('statsCloseBtn').onclick = ()=> document.getElementById('statsOverlayWrap').classList.remove('expanded');
 
 /* ---------------- Menu data ----------------
    Fetched from /api/menus (a Vercel serverless function). It reads a Supabase
