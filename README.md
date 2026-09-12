@@ -43,22 +43,28 @@ Then open the URL `vercel dev` prints (usually `http://localhost:3000`).
 
 ## Menus: how they're fetched
 
-`api/menus.js` gets today's menus from [liondine.com](https://liondine.com) —
-a site that already aggregates every Columbia dining hall (`dining.columbia.edu`)
-and Barnard's two dining locations (`dineoncampus.com`) into one place, in a
-fixed 11-hall order, and is plain server-rendered HTML with no Cloudflare
-challenge — through three fallback tiers, in order:
+`api/menus.js` gets today's menus from [liondine.com](https://liondine.com)'s
+own `/api/dining` endpoint — a plain public JSON API their site's client-side
+app calls, returning every meal period for every dining hall (Columbia +
+Barnard, liondine already aggregates both) in one response: hours, stations,
+items, even which meal is "current" right now. See `lib/liondine.js`'s header
+comment for the full shape and how this was found (liondine was rebuilt as a
+client-rendered app between 2026-09-08 and 2026-09-12, breaking the plain-HTML
+scraping this used to do — the fix was downloading their JS bundles and
+grepping for `/api/`, not a headless browser). Consuming their own live data
+directly, rather than re-parsing their rendered page, means this app's menus
+match liondine's exactly — same hall names, same hours text, same items.
+
+`api/menus.js` reaches this through three fallback tiers, in order:
 
 1. **Supabase cache** — today's row in the `daily_menus` table, kept fresh by
    `scripts/scrape-menus.js` running every 30 min via GitHub Actions
    (`.github/workflows/scrape-menus.yml`). The common case: cheap, fast, no
    per-request liondine traffic.
 2. **Live liondine fetch** — if today's Supabase row is missing (scraper
-   hasn't run yet, or Supabase is unreachable/unconfigured), fetch liondine
-   directly instead, using the same fetch/parse logic the scraper uses
-   (`lib/liondine.js` — see its comment for the exact markup parsed:
-   `<div class="col">` per hall, `<div class="food-type">`/`<div class="food-name">`
-   per item). This is the rare backstop path, not the normal one.
+   hasn't run yet, or Supabase is unreachable/unconfigured), fetch
+   `liondine.com/api/dining` directly instead (`lib/liondine.js`,
+   `fetchLiondineMenus()`). This is the rare backstop path, not the normal one.
 3. **Empty, not fake** — if even that fails, the API returns an empty menus
    object rather than made-up data. `index.html`'s `renderHalls()` already
    shows a clean "No data available" card per hall when there's no entry for
@@ -74,7 +80,7 @@ several hours have been observed) or occasionally get skipped, even on a
 menus look stale; the live-fetch fallback above also means a slow cron
 degrades gracefully instead of showing wrong data.
 
-To manually test the extraction logic against liondine's current markup:
+To manually test against liondine's current API response:
 
 ```
 npm run scrape:menus
@@ -84,15 +90,16 @@ This prints the extracted menus to the terminal and writes to Supabase if
 `SUPABASE_URL`/`SUPABASE_SERVICE_ROLE_KEY` are set (repo secrets in Settings →
 Secrets and variables → Actions for the GitHub Actions run — the service role
 key bypasses Row Level Security to write, so never put it in `config.js` or
-anything shipped to the browser). `scripts/scrape-output/*.html` (one per meal
-period) are saved either way for debugging — if a run comes back all-empty
-unexpectedly, check those first for whether liondine's markup changed
-(`api/menus.js`'s live-fetch fallback would break the same way, since it
-shares this same parsing code).
+anything shipped to the browser). `scripts/scrape-output/dining.json` (the raw
+response) is saved either way for debugging — if a run comes back all-empty
+unexpectedly, check that first for whether liondine's response shape changed
+again (`api/menus.js`'s live-fetch fallback would break the same way, since it
+shares this same fetch/parse code).
 
-Outside of the fall/spring semester (breaks, summer), dining halls publish nothing,
-so a successful run will correctly show all-empty meal periods — that's expected,
-not a bug. Re-test once dining halls are back in session (check `SEMESTER_START` in
+Outside of the fall/spring semester (breaks, summer), dining halls publish nothing
+(liondine's own API reports `"mode": "summer"` and empty halls), so a successful
+run will correctly show all-empty meal periods — that's expected, not a bug.
+Re-test once dining halls are back in session (check `SEMESTER_START` in
 `config.js`) to confirm real content comes through.
 
 ## Auth email deliverability (Supabase "Confirm signup" template)

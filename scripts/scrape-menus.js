@@ -1,45 +1,25 @@
 // Scrapes today's dining hall menus from liondine.com and upserts the result into
-// the Supabase `daily_menus` table.
+// the Supabase `daily_menus` table, which api/menus.js reads as its primary
+// source (falling back to fetching liondine directly if today's row is
+// missing, then to an honest "no data available" if even that fails — see
+// api/menus.js).
 //
-// NOTE: api/menus.js no longer reads from this table — it fetches liondine
-// directly on every request now (see lib/liondine.js, shared with this file's
-// extractMealPage/decodeEntities), after a scrape/cache mismatch here caused
-// the deployed app to show stale data (2026-09-08). This script + the
-// scrape-menus GitHub Actions workflow are unused by the live app as of that
-// change; kept in case a caching layer in front of liondine is wanted again.
+// WHY LIONDINE INSTEAD OF SCRAPING COLUMBIA/BARNARD DIRECTLY: liondine.com
+// already aggregates Columbia's dining.columbia.edu locations *and* Barnard's
+// two dining locations (dineoncampus.com) into one place, in the same
+// hall-naming this app displays.
 //
-// WHY LIONDINE INSTEAD OF SCRAPING COLUMBIA/BARNARD DIRECTLY: liondine.com already
-// aggregates Columbia's dining.columbia.edu locations *and* Barnard's Hewitt/Diana
-// (dineoncampus.com) into one site, in the exact 11-hall order/naming this app
-// wants (confirmed 2026-09-04 by reading liondine.com's own markup). It's also
-// plain server-rendered HTML with NO Cloudflare challenge (confirmed: a bare curl
-// gets real menu HTML back, unlike dining.columbia.edu) — so this no longer needs
-// Playwright/a real browser at all, just a plain fetch().
-//
-// HOW EXTRACTION WORKS: liondine has one page per meal period —
-// https://liondine.com/breakfast, /lunch, /dinner, /latenight — each server-
-// rendered for "today" (America/New_York, matching this app's own day boundary).
-// Each page has exactly one `<div class="col">...</div>` block per dining hall,
-// always in the same order, e.g.:
-//   <div class="col">
-//     <a href="..."><h3>Ferris</h3></a>
-//     <div class="timing"><div class="hours">10:00 AM to 4:00 PM</div></div>
-//     <div class="menu">
-//       <div class="food-type">Main Line</div>
-//       <div class="food-name">Chocolate Croissants</div>
-//       ...
-//     </div>
-//   </div>
-// A closed/no-menu hall has the same shape with an empty `<div class="menu">`
-// (or a `no-menu` variant with placeholder text) — those are skipped so the
-// front end's existing "no data available" fallback applies uniformly, rather
-// than trying to reproduce liondine's own wording ("Closed this week" etc.).
-// Splitting the page on the literal `<div class="col">` string (rather than a
-// full HTML parser) is enough since these blocks never nest.
+// HOW EXTRACTION WORKS: liondine.com was rebuilt (sometime between
+// 2026-09-08 and 2026-09-12) as a client-rendered Next.js app — see
+// lib/liondine.js's header comment for how that broke the old per-meal-page
+// HTML scraping this file used to do directly, and how `fetchLiondineMenus()`
+// there now gets the same data (actually richer: every meal period for every
+// hall in one response, straight from liondine's own `/api/dining` endpoint)
+// without needing a browser.
 
 const fs = require('fs');
 const path = require('path');
-const { MEAL_PATHS, extractMealPage } = require('../lib/liondine.js');
+const { fetchLiondineMenus } = require('../lib/liondine.js');
 
 const OUT_DIR = path.join(__dirname, 'scrape-output');
 
@@ -47,37 +27,20 @@ async function main() {
   fs.mkdirSync(OUT_DIR, { recursive: true });
 
   const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' }); // YYYY-MM-DD
-  const menus = { Breakfast: {}, Lunch: {}, Dinner: {}, 'Late Night': {} };
-  let anyPageLoaded = false;
+  const { menus, currentMeal, loaded } = await fetchLiondineMenus();
 
-  for (const [meal, mealPath] of Object.entries(MEAL_PATHS)) {
-    const url = `https://liondine.com/${mealPath}`;
-    console.log(`Fetching ${url}...`);
-    let html;
-    try {
-      const resp = await fetch(url, {
-        headers: { 'User-Agent': 'Mozilla/5.0 (compatible; LionSwipe menu sync; +https://lionswipe.vercel.app/)' }
-      });
-      if (!resp.ok) {
-        console.warn(`Fetching ${url} failed: HTTP ${resp.status}`);
-        continue;
-      }
-      html = await resp.text();
-    } catch (e) {
-      console.warn(`Fetching ${url} failed:`, e.message);
-      continue;
-    }
-    fs.writeFileSync(path.join(OUT_DIR, `${mealPath}.html`), html);
-    anyPageLoaded = true;
-    menus[meal] = extractMealPage(html);
-  }
-
-  if (!anyPageLoaded) {
+  if (!loaded) {
+    console.warn('Fetching https://liondine.com/api/dining failed.');
     process.exitCode = 1;
     return;
   }
 
-  console.log(`\nExtracted menus for ${today}:`, JSON.stringify(menus, null, 2));
+  // Saved for debugging (e.g. if liondine's response shape changes again) —
+  // replaces the old per-meal-period *.html snapshots from when this scraped
+  // plain HTML pages instead of one JSON endpoint.
+  fs.writeFileSync(path.join(OUT_DIR, 'dining.json'), JSON.stringify({ menus, currentMeal }, null, 2));
+
+  console.log(`\nExtracted menus for ${today} (current_meal: ${currentMeal}):`, JSON.stringify(menus, null, 2));
   const anyContent = Object.values(menus).some(byHall => Object.keys(byHall).length > 0);
   if (!anyContent) {
     console.log('(All meal periods are empty — normal when dining halls are closed, e.g. over a break. Nothing written to Supabase.)');
@@ -136,7 +99,7 @@ async function upsertToSupabase(menus, dateStr) {
   const { createClient } = require('@supabase/supabase-js');
   const supabase = createClient(url, key);
 
-  // Scraping runs every 2 hours (see .github/workflows/scrape-menus.yml), but
+  // Scraping runs every 30 min (see .github/workflows/scrape-menus.yml), but
   // liondine doesn't necessarily change its published menu between runs — skip
   // the write (and the scraped_at bump) when today's row already holds identical
   // content, so daily_menus only changes when the actual menu does.

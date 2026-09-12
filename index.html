@@ -1005,10 +1005,9 @@ tick(); setInterval(tick,15000);
 // Which meal tab should be active on load, based on the current time in
 // Columbia's own timezone — mirrors liondine.com defaulting to whichever meal
 // tab is "current" on page load rather than always opening on the same one.
-// liondine doesn't expose its own switch-over schedule anywhere we could read
-// it, so these boundaries are our own best approximation of typical Columbia
-// dining hours (confirmed against liondine.com itself at two points: 10:52am ET
-// showed Breakfast active, 10:42pm ET showed Late Night active — both fit here).
+// Used as the initial guess before /api/menus responds (see loadMenus below,
+// which overrides this with liondine's own live current_meal once loaded, for
+// an exact match instead of an approximation).
 function currentMealByTime(){
   const hour = Number(new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', hour: 'numeric', hour12: false }).format(new Date()));
   if(hour >= 21 || hour < 2) return "Late Night";
@@ -1016,26 +1015,31 @@ function currentMealByTime(){
   if(hour < 16) return "Lunch";
   return "Dinner";
 }
+// Maps /api/menus' optional _currentMeal ("breakfast"/"lunch"/"dinner"/
+// "latenight", liondine's own lowercase API casing) to this app's display
+// casing/keys.
+const API_MEAL_KEY_TO_OURS = { breakfast:'Breakfast', lunch:'Lunch', dinner:'Dinner', latenight:'Late Night' };
 
 let MENUS = null;
 let currentMeal = currentMealByTime();
 
-// Fixed display order for the dining halls scrape-menus.js pulls from
-// liondine.com (which already aggregates Columbia + Barnard in this exact
-// order/naming) — rendered as its own box regardless of whether today's data
-// has an entry for it, so a hall with nothing scraped (closed, or not yet
+// Fixed display order for the dining halls (matches liondine.com's own hall
+// set/naming, which api/menus.js passes straight through as MENUS[meal]
+// keys) — rendered as its own box regardless of whether today's data has an
+// entry for it, so a hall with nothing scraped (closed, or not yet
 // published) still shows a "No data available" box in its usual spot rather
-// than disappearing. Must match the hall names liondine.com's own <h3> uses,
-// which scrape-menus.js passes straight through as MENUS[meal] keys.
+// than disappearing.
 const DINING_HALLS = [
   'Ferris', "JJ's", 'Faculty House', 'Grace Dodge', "Johnny's", 'Fac Shack',
-  'John Jay', 'Hewitt', "Chef Mike's", 'Diana', "Chef Don's"
+  'John Jay', 'Hewitt Dining', "Chef Mike's", 'Diana', "Chef Don's", 'Kosher'
 ];
 async function loadMenus(){
   hallGrid.innerHTML = `<div class="loading">Loading today's menus...</div>`;
   try{
     const resp = await fetch('/api/menus');
     MENUS = await resp.json();
+    const liveCurrentMeal = API_MEAL_KEY_TO_OURS[MENUS._currentMeal];
+    if(liveCurrentMeal){ currentMeal = liveCurrentMeal; renderTabs(); }
   }catch(e){
     MENUS = { Breakfast:{}, Lunch:{}, Dinner:{}, "Late Night":{} };
   }

@@ -48,8 +48,16 @@ async function getMenus() {
   if (cached) return cached;
 
   try {
-    const { menus, anyPageLoaded } = await fetchLiondineMenus();
-    if (anyPageLoaded) return menus;
+    const { menus, currentMeal, loaded } = await fetchLiondineMenus();
+    if (loaded) {
+      // _currentMeal is liondine's own live "what meal is it right now",
+      // included alongside (never replacing) the 4 real meal-period keys so
+      // index.html can default to the same tab liondine itself would show,
+      // rather than guessing from a local clock. Only available on this live
+      // path — the Supabase cache above doesn't carry a "right now" concept.
+      if (currentMeal) menus._currentMeal = currentMeal;
+      return menus;
+    }
   } catch (err) {
     console.error('liondine live-fetch backstop failed:', err.message);
   }
