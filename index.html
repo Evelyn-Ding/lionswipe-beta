@@ -997,11 +997,11 @@ function tick(){
 tick(); setInterval(tick,15000);
 
 /* ---------------- Menu data ----------------
-   Fetched from /api/menus (a Vercel serverless function). NOTE: dining.columbia.edu
-   sits behind a Cloudflare JS challenge that blocks plain server-side fetches, so
-   /api/menus currently serves curated sample data mirroring the site's structure
-   rather than a live scrape — see api/menus.js for how to swap in a real source
-   (e.g. a headless-browser scraping service) without touching this file. */
+   Fetched from /api/menus (a Vercel serverless function). It reads a Supabase
+   cache kept fresh by a scheduled scraper, falling back to fetching
+   liondine.com live if that cache is missing, and to an empty menus object
+   (rendered below as "No data available" per hall) if even that fails — see
+   api/menus.js for the fallback chain. Never fabricated placeholder data. */
 // Which meal tab should be active on load, based on the current time in
 // Columbia's own timezone — mirrors liondine.com defaulting to whichever meal
 // tab is "current" on page load rather than always opening on the same one.

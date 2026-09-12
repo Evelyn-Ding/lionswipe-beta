@@ -2,13 +2,14 @@ name: Scrape dining menus
 
 on:
   schedule:
-    # Once daily at 12:00 UTC — 8:00 AM ET during EDT (summer/fall, most of the
-    # semester), 7:00 AM ET during EST (winter), since GitHub Actions cron has no
-    # DST awareness. Picked so it always lands in the 7-8 AM ET window either way.
-    # GitHub Actions scheduled runs can also land 15-60+ min late under load —
-    # use workflow_dispatch below (or re-run from the Actions tab) if today's
-    # menus look stale.
-    - cron: "0 12 * * *"
+    # Every 30 minutes. GitHub Actions scheduled runs are best-effort and can
+    # land late (observed gaps up to several hours during low-load periods) or
+    # occasionally get skipped entirely — running every 30 min rather than
+    # every 2+ hours mainly buys more chances for one of them to land on time,
+    # not a guarantee. api/menus.js falls back to fetching liondine directly if
+    # today's Supabase row is missing/stale, so a slow cron here degrades
+    # gracefully rather than showing wrong data.
+    - cron: "*/30 * * * *"
   workflow_dispatch: {} # lets you trigger a run manually from the Actions tab
 
 jobs:
