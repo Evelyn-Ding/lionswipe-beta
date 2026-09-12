@@ -97,6 +97,25 @@
   .swipesLine.guestNote{margin-top:4px;font-size:11px;color:var(--muted);max-width:220px;}
   .swipesLine.guestNote a{color:var(--navy);font-weight:600;}
 
+  /* header is a fixed 3-column row (clock/semester info, brand/title, login
+     info) with min-width floors on the outer two columns — on a phone-width
+     screen those two floors alone (190px + 190px) already exceed the
+     available content width, so below 700px it stacks into one centered
+     column instead of trying to shrink columns that refuse to shrink. */
+  @media (max-width:700px){
+    header{flex-wrap:wrap;justify-content:center;text-align:center;}
+    /* .headerLeft/.headerRight set flex-basis:0 via their base "flex:1 1 0" —
+       flex-basis wins over the width property for sizing, so overriding just
+       width here (as a first attempt) had no effect and they stayed shrunk to
+       content size instead of stacking full-width. Overriding flex itself
+       (basis:100%) is what actually forces each column onto its own full-
+       width row. */
+    .headerLeft,.headerRight,.brand{flex:1 1 100%;min-width:0;align-items:center;text-align:center;}
+    .swipesBox{text-align:center;}
+    .swipesLine.guestNote{max-width:100%;}
+    .brand h1{font-size:30px;}
+  }
+
   /* ---- Meal period tabs ---- */
   .tabs{display:flex;justify-content:center;gap:10px;margin-bottom:22px;flex-wrap:wrap;}
   .tab{
