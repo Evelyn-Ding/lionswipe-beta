@@ -110,7 +110,7 @@
   @media (max-width:900px){ .hallGrid{grid-template-columns:repeat(auto-fit,minmax(220px,1fr));} }
   .hallCard{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;cursor:pointer;transition:.15s;position:relative;}
   .hallCard:hover{border-color:var(--navy);box-shadow:0 3px 10px rgba(86,84,134,.12);}
-  .hallCard.closed{opacity:.55;cursor:default;}
+  .hallCard.closed{opacity:.55;}
   .hallCard h3{margin:0 0 2px;font-size:17px;color:var(--navy);}
   .hallCard .hours{font-family:'Figtree',ui-sans-serif,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;font-size:11px;color:var(--muted);margin-bottom:8px;}
   .hallCard .stationName{font-family:'Figtree',ui-sans-serif,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--gold);margin:7px 0 2px;}
@@ -1082,8 +1082,12 @@ function renderHalls(){
       card.querySelector('a').onclick = (e)=> e.stopPropagation();
       card.onclick = ()=> openSwipeModal(hall);
     } else if(!hasMenu){
+      // Genuinely closed per liondine, not just missing data — still
+      // clickable so someone can log a swipe used earlier (e.g. backdating a
+      // breakfast swipe after the hall's since closed for the day).
       card.className = 'hallCard closed';
       card.innerHTML = `<h3>${hall}</h3><div class="closedTxt">${info.message}</div>`;
+      card.onclick = ()=> openSwipeModal(hall);
     } else {
       card.className = 'hallCard';
       let stationsHtml = info.stations.map(s=>`
