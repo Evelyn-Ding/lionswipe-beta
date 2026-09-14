@@ -21,6 +21,10 @@ jobs:
         with:
           node-version: 22
       - run: npm install
+      # Only needed for the Barnard (Hewitt Dining/Diana) secondary-source
+      # fallback in lib/dining-secondary.js, used when liondine has no menu
+      # for a hall+meal.
+      - run: npx playwright install --with-deps chromium
       - run: node scripts/scrape-menus.js
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
