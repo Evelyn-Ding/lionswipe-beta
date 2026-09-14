@@ -1,22 +1,27 @@
 // Vercel serverless function: GET -> today's menus per meal period per dining hall.
 //
 // Three-tier fallback, in order:
-//   1. Today's row in the Supabase `daily_menus` table, kept fresh by
+//   1. Fetch liondine.com live — one fast JSON call (lib/liondine.js), not
+//      the old 4-page HTML scrape, so hitting it on every request is cheap
+//      enough to be the primary path rather than something to avoid.
+//   2. If that fails (liondine itself down/unreachable), fall back to
+//      today's row in the Supabase `daily_menus` table, kept fresh by
 //      scripts/scrape-menus.js running on a schedule (see
-//      .github/workflows/scrape-menus.yml) — the common case, cheap and fast.
-//   2. If that row is missing (scraper hasn't run yet today, or Supabase is
-//      unreachable/unconfigured), fetch liondine.com live as a backstop —
-//      same fetch/parse logic the scraper uses, from lib/liondine.js. This is
-//      the rare path, only hit when the cache is stale, so it doesn't turn
-//      into hitting liondine on every single page load.
+//      .github/workflows/scrape-menus.yml).
 //   3. If even that fails, return an empty menus object rather than made-up
 //      placeholder data — index.html's renderHalls() already shows a clean
 //      "No data available" card per hall when there's no entry for it, so an
-//      empty {} per meal period is a real, honest state, not an error. This
-//      app previously fell back to hardcoded curated sample data that looked
-//      plausible enough to be mistaken for a real menu — that silently showed
-//      wrong information instead of admitting menus weren't available, which
-//      is worse than an honest gap.
+//      empty {} per meal period is a real, honest state, not an error.
+//
+// Supabase was tried as the PRIMARY source first (see git history) but that
+// requires the scraper's SUPABASE_URL (a GitHub Actions secret) and this
+// function's SUPABASE_URL (a Vercel env var) to actually point at the same
+// project — they drifted apart at least twice (2026-09-08, 2026-09-14),
+// each time silently serving stale/wrong data from an abandoned project
+// while the scraper kept reporting successful writes elsewhere. Since the
+// live fetch is fast and reliable on its own, Supabase is now just a
+// fallback for a genuine liondine outage, not something either path's
+// correctness depends on day to day.
 
 import liondine from '../lib/liondine.js';
 const { fetchLiondineMenus } = liondine;
@@ -44,9 +49,6 @@ async function getFromSupabase() {
 }
 
 async function getMenus() {
-  const cached = await getFromSupabase();
-  if (cached) return cached;
-
   try {
     const { menus, currentMeal, loaded } = await fetchLiondineMenus();
     if (loaded) {
@@ -54,13 +56,16 @@ async function getMenus() {
       // included alongside (never replacing) the 4 real meal-period keys so
       // index.html can default to the same tab liondine itself would show,
       // rather than guessing from a local clock. Only available on this live
-      // path — the Supabase cache above doesn't carry a "right now" concept.
+      // path — the Supabase fallback below doesn't carry a "right now" concept.
       if (currentMeal) menus._currentMeal = currentMeal;
       return menus;
     }
   } catch (err) {
-    console.error('liondine live-fetch backstop failed:', err.message);
+    console.error('liondine live fetch failed:', err.message);
   }
+
+  const cached = await getFromSupabase();
+  if (cached) return cached;
 
   return EMPTY_MENUS;
 }
