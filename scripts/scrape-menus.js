@@ -56,7 +56,7 @@ async function main() {
     // liondine flagged some hall+meals `ambiguous` (see lib/liondine.js) —
     // double-check those against the hall's own source (dining.columbia.edu
     // or, via Playwright, dineoncampus.com) before settling on "No
-    // information found". Only this scheduled script does this, not
+    // data available.". Only this scheduled script does this, not
     // api/menus.js's request-time live path — see lib/dining-secondary.js.
     await fillGapsFromSecondarySources(menus, today);
 

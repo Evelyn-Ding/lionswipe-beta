@@ -10,7 +10,7 @@
 //      .github/workflows/scrape-menus.yml).
 //   3. If even that fails, return an empty menus object rather than made-up
 //      placeholder data — index.html's renderHalls() already shows a clean
-//      "No data available" card per hall when there's no entry for it, so an
+//      "No data available." card per hall when there's no entry for it, so an
 //      empty {} per meal period is a real, honest state, not an error.
 //
 // Supabase was tried as the PRIMARY source first (see git history) but that

@@ -67,7 +67,7 @@ match liondine's exactly — same hall names, same hours text, same items.
    `fetchLiondineMenus()`). This is the rare backstop path, not the normal one.
 3. **Empty, not fake** — if even that fails, the API returns an empty menus
    object rather than made-up data. `index.html`'s `renderHalls()` already
-   shows a clean "No data available" card per hall when there's no entry for
+   shows a clean "No data available." card per hall when there's no entry for
    it, so this is an honest state, not an error to hide. (This app used to
    fall back to hardcoded sample data that looked plausible enough to be
    mistaken for a real menu when the scrape/cache went stale in production on
