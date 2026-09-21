@@ -3,7 +3,10 @@
 // Three-tier fallback, in order:
 //   1. Fetch liondine.com live — one fast JSON call (lib/liondine.js), not
 //      the old 4-page HTML scrape, so hitting it on every request is cheap
-//      enough to be the primary path rather than something to avoid.
+//      enough to be the primary path rather than something to avoid. Where
+//      liondine truly has no menu for a Columbia hall+meal, that one cell is
+//      then checked against the hall's own dining.columbia.edu page
+//      (lib/dining-secondary.js) before falling back to "No data available."
 //   2. If that fails (liondine itself down/unreachable), fall back to
 //      today's row in the Supabase `daily_menus` table, kept fresh by
 //      scripts/scrape-menus.js running on a schedule (see
@@ -25,6 +28,8 @@
 
 import liondine from '../lib/liondine.js';
 const { fetchLiondineMenus } = liondine;
+import diningSecondary from '../lib/dining-secondary.js';
+const { fillGapsFromSecondarySources } = diningSecondary;
 
 const EMPTY_MENUS = { Breakfast: {}, Lunch: {}, Dinner: {}, 'Late Night': {} };
 
@@ -58,6 +63,15 @@ async function getMenus() {
       // rather than guessing from a local clock. Only available on this live
       // path — the Supabase fallback below doesn't carry a "right now" concept.
       if (currentMeal) menus._currentMeal = currentMeal;
+      // Where liondine truly has no menu (flagged `ambiguous`), try the
+      // hall's own dining.columbia.edu page before showing "No data
+      // available." -- Columbia halls only; see lib/dining-secondary.js.
+      try {
+        const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
+        await fillGapsFromSecondarySources(menus, today, { skipBarnard: true });
+      } catch (err) {
+        console.error('Columbia fallback failed:', err.message);
+      }
       return menus;
     }
   } catch (err) {
