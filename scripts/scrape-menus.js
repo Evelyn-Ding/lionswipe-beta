@@ -17,20 +17,18 @@
 // hall in one response, straight from liondine's own `/api/dining` endpoint)
 // without needing a browser.
 //
-// SECONDARY-SOURCE FALLBACK: liondine sometimes has no menu for a hall+meal.
-// lib/liondine.js already tells genuinely-closed halls (trust liondine's own
-// reason as-is) apart from genuinely ambiguous ones (real/unknown hours, but
-// no menu — liondine simply doesn't have it); only the latter get double-
-// checked here, against dining.columbia.edu or dineoncampus.com — see
-// lib/dining-secondary.js for how. If that secondary source also has
-// nothing, the stored message becomes the literal string "No information
-// found", reserved for cases genuinely confirmed unresolved after checking
-// both sources.
+// NO SECONDARY-SOURCE FALLBACK: liondine sometimes has no menu for a
+// hall+meal. This app trusts that as-is (stored as the literal string "No
+// data available.") rather than cross-checking dining.columbia.edu or
+// dineoncampus.com directly — liondine is itself the aggregator this app
+// mirrors, and an old Playwright-based secondary check (removed 2026-09-22)
+// was both unreliable (Barnard's dineoncampus.com sits behind a WAF that
+// sometimes blocks even the browser-based workaround) and, in practice,
+// redundant with what liondine already reports.
 
 const fs = require('fs');
 const path = require('path');
 const { fetchLiondineMenus } = require('../lib/liondine.js');
-const { fillGapsFromSecondarySources, closeBrowserIfOpen } = require('../lib/dining-secondary.js');
 
 const OUT_DIR = path.join(__dirname, 'scrape-output');
 
@@ -39,38 +37,27 @@ async function main() {
 
   const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' }); // YYYY-MM-DD
 
-  try {
-    const { menus, currentMeal, loaded } = await fetchLiondineMenus();
+  const { menus, currentMeal, loaded } = await fetchLiondineMenus();
 
-    if (!loaded) {
-      console.warn('Fetching https://liondine.com/api/dining failed.');
-      process.exitCode = 1;
-      return;
-    }
-
-    // Saved for debugging (e.g. if liondine's response shape changes again) —
-    // replaces the old per-meal-period *.html snapshots from when this scraped
-    // plain HTML pages instead of one JSON endpoint.
-    fs.writeFileSync(path.join(OUT_DIR, 'dining.json'), JSON.stringify({ menus, currentMeal }, null, 2));
-
-    // liondine flagged some hall+meals `ambiguous` (see lib/liondine.js) —
-    // double-check those against the hall's own source (dining.columbia.edu
-    // or, via Playwright, dineoncampus.com) before settling on "No
-    // data available.". Only this scheduled script does this, not
-    // api/menus.js's request-time live path — see lib/dining-secondary.js.
-    await fillGapsFromSecondarySources(menus, today);
-
-    console.log(`\nExtracted menus for ${today} (current_meal: ${currentMeal}):`, JSON.stringify(menus, null, 2));
-    const anyContent = Object.values(menus).some(byHall => Object.keys(byHall).length > 0);
-    if (!anyContent) {
-      console.log('(All meal periods are empty — normal when dining halls are closed, e.g. over a break. Nothing written to Supabase.)');
-      return;
-    }
-    await cleanupOldMenus(today);
-    await upsertToSupabase(menus, today);
-  } finally {
-    await closeBrowserIfOpen();
+  if (!loaded) {
+    console.warn('Fetching https://liondine.com/api/dining failed.');
+    process.exitCode = 1;
+    return;
   }
+
+  // Saved for debugging (e.g. if liondine's response shape changes again) —
+  // replaces the old per-meal-period *.html snapshots from when this scraped
+  // plain HTML pages instead of one JSON endpoint.
+  fs.writeFileSync(path.join(OUT_DIR, 'dining.json'), JSON.stringify({ menus, currentMeal }, null, 2));
+
+  console.log(`\nExtracted menus for ${today} (current_meal: ${currentMeal}):`, JSON.stringify(menus, null, 2));
+  const anyContent = Object.values(menus).some(byHall => Object.keys(byHall).length > 0);
+  if (!anyContent) {
+    console.log('(All meal periods are empty — normal when dining halls are closed, e.g. over a break. Nothing written to Supabase.)');
+    return;
+  }
+  await cleanupOldMenus(today);
+  await upsertToSupabase(menus, today);
 }
 
 // Recursively sorts object keys (leaving array order — meal/station/item order —
